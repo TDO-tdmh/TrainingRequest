@@ -17,7 +17,8 @@
             theme: {
                 extend: {
                     colors: { 
-                        tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' }
+                        tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' },
+                        surface: '#eef2f6'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -177,7 +178,6 @@
                         <option value="GSD Parking">GSD Parking</option>
                         <option value="IT">IT</option>
                         <option value="Medical Records">Medical Records</option>
-                        <option value="admin" class="font-black text-blue-700">⭐ Administrator</option>
                     </select>
                 </div>
                 <div>
@@ -677,11 +677,6 @@
                     currentDeptName = loginUser;
                     currentUserName = loginUser;
 
-                    // Re-apply admin rights strictly
-                    if (currentDeptName === 'CQI' || currentDeptName === 'Training & Development' || currentDeptName === 'admin') {
-                        currentUserRole = 'Admin';
-                    }
-
                     document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-200 mr-1">${currentDeptName}</span> | ${currentUserRole}`;
                     if (currentUserRole === 'Admin') { document.getElementById('tab-reports').classList.remove('hidden'); document.getElementById('tab-reports').classList.add('flex'); }
                     document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-app').classList.remove('hidden');
@@ -694,7 +689,7 @@
                     if (currentUserRole === 'Admin') {
                         deptInput.classList.add('hidden');
                         deptSelect.classList.remove('hidden');
-                        if(currentDeptName !== 'admin') deptSelect.value = currentDeptName;
+                        deptSelect.value = currentDeptName;
                     } else {
                         deptSelect.classList.add('hidden');
                         deptInput.classList.remove('hidden');
