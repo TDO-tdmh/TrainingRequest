@@ -11,22 +11,13 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Tailwind Custom Theme (Deep Oceanic Slate) -->
+    <!-- Tailwind Config - Clean, Professional Clinical Theme -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: { 
-                        app: {
-                            bg: '#161e2e',      // Deep oceanic background
-                            card: '#1f2937',    // Slightly lighter card panels
-                            input: '#111827',   // Darker input fields
-                            border: '#374151',  // Subtle borders
-                            text: '#f3f4f6',    // Soft white text
-                            muted: '#9ca3af',   // Muted gray-blue text
-                            primary: '#3b82f6', // TDMH Blue accent
-                            hover: '#2563eb'    // Darker blue hover
-                        }
+                        tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -37,16 +28,10 @@
     
     <!-- Custom CSS -->
     <style>
-        body { background-color: #161e2e; color: #f3f4f6; overflow-x: hidden; }
+        /* Eye-pleasing clinical slate background */
+        body { background-color: #f0f4f8; overflow-x: hidden; color: #1e293b; }
         
-        /* Custom Scrollbar for a premium feel */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #161e2e; }
-        ::-webkit-scrollbar-thumb { background: #374151; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #4b5563; }
-        
-        /* Canvas */
-        #signature-pad { border: 2px dashed #374151; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #111827; touch-action: none; cursor: crosshair; transition: border-color 0.3s; }
+        #signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #ffffff; touch-action: none; cursor: crosshair; transition: border-color 0.3s; }
         #signature-pad:focus-within, #signature-pad:hover { border-color: #3b82f6; }
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
@@ -54,11 +39,8 @@
         .toast-enter { animation: slideInRight 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         .toast-exit { animation: fadeOut 0.4s ease-in forwards; }
         
-        .loader { border: 3px solid rgba(59,130,246,0.3); border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
+        .loader { border: 3px solid rgba(30, 58, 138, 0.2); border-top: 3px solid #1e3a8a; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Inputs auto-fill override for dark mode */
-        input:-webkit-autofill, select:-webkit-autofill { -webkit-box-shadow: 0 0 0 30px #111827 inset !important; -webkit-text-fill-color: #f3f4f6 !important; }
 
         /* Print Styles for Official Attendance Roster */
         @media print { 
@@ -81,44 +63,43 @@
 
     <!-- ==================== VIEW 1: PUBLIC SIGN-IN (VIA QR CODE) ==================== -->
     <div id="view-public-signin" class="hidden flex-grow flex flex-col items-center justify-center p-4 py-12">
-        <div class="bg-app-card p-8 md:p-10 rounded-2xl shadow-2xl max-w-lg w-full border border-app-border">
+        <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl max-w-lg w-full border border-slate-200">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-900/50 text-app-primary rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-blue-800"><i class="fa-solid fa-clipboard-user"></i></div>
-                <h1 class="text-2xl font-black text-white uppercase tracking-wide">Training Sign-In</h1>
-                <p id="public-title-display" class="text-app-muted font-bold mt-2 bg-app-input border border-app-border py-2 px-4 rounded-lg inline-block">Loading training details...</p>
+                <div class="w-16 h-16 bg-blue-50 text-blue-700 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-blue-100"><i class="fa-solid fa-clipboard-user"></i></div>
+                <h1 class="text-2xl font-black text-slate-800 uppercase tracking-wide">Training Sign-In</h1>
+                <p id="public-title-display" class="text-slate-500 font-bold mt-2 bg-slate-50 border border-slate-200 py-2 px-4 rounded-lg inline-block">Loading training details...</p>
             </div>
 
             <form id="public-signin-form" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-bold text-app-muted mb-1.5">Full Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-app-input border border-app-border rounded-xl outline-none focus:border-app-primary transition font-medium text-white" placeholder="e.g., Juan Dela Cruz">
+                    <label class="block text-sm font-bold text-slate-600 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition font-medium text-slate-800" placeholder="e.g., Juan Dela Cruz">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-app-muted mb-1.5">Department <span class="text-red-500">*</span></label>
-                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-app-input border border-app-border rounded-xl outline-none focus:border-app-primary transition font-medium text-white">
-                        <option value="" disabled selected>Select Department...</option>
-                        <!-- Populated by JS -->
+                    <label class="block text-sm font-bold text-slate-600 mb-1.5">Department <span class="text-red-500">*</span></label>
+                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-white border border-slate-300 rounded-xl outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 transition font-medium text-slate-800">
+                        <option value="" disabled selected>Loading departments...</option>
                     </select>
                 </div>
                 <div class="pt-2">
-                    <label class="block text-sm font-bold text-app-muted mb-2 flex justify-between items-center">
+                    <label class="block text-sm font-bold text-slate-600 mb-2 flex justify-between items-center">
                         <span>Digital Signature <span class="text-red-500">*</span></span>
-                        <button type="button" id="btn-clear-sig" class="text-xs bg-red-500/10 text-red-400 border border-red-500/20 px-3 py-1.5 rounded-lg font-bold hover:bg-red-500/20 transition">Clear Canvas</button>
+                        <button type="button" id="btn-clear-sig" class="text-xs bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg font-bold hover:bg-red-100 transition">Clear Canvas</button>
                     </label>
                     <canvas id="signature-pad" class="shadow-inner"></canvas>
-                    <p class="text-[10px] text-app-muted mt-2 text-center uppercase font-semibold">Please sign within the dotted box</p>
+                    <p class="text-[10px] text-slate-400 mt-2 text-center uppercase font-semibold">Please sign within the dotted box</p>
                 </div>
-                <button type="submit" id="btn-public-submit" class="w-full bg-app-primary hover:bg-app-hover text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] flex items-center justify-center text-lg">
+                <button type="submit" id="btn-public-submit" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] flex items-center justify-center text-lg">
                     Submit Secure Attendance
                 </button>
             </form>
 
             <div id="public-success" class="hidden text-center py-10 transform scale-95 transition-transform duration-300">
-                <div class="w-24 h-24 bg-green-500/20 border border-green-500/30 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-400"></i></div>
-                <h2 class="text-3xl font-black text-white mb-3">Recorded!</h2>
-                <div class="bg-blue-900/30 p-4 rounded-xl border border-blue-800/50 mt-6">
-                    <p class="text-xs font-black text-blue-400 uppercase tracking-widest leading-relaxed">Thank you for your participation.</p>
-                    <p class="text-sm font-medium text-app-muted mt-1">You may now close this browser tab.</p>
+                <div class="w-24 h-24 bg-green-50 border border-green-200 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-500"></i></div>
+                <h2 class="text-3xl font-black text-slate-800 mb-3">Recorded!</h2>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-6">
+                    <p class="text-xs font-black text-blue-700 uppercase tracking-widest leading-relaxed">Thank you for your participation.</p>
+                    <p class="text-sm font-medium text-slate-600 mt-1">You may now close this browser tab.</p>
                 </div>
             </div>
         </div>
@@ -127,34 +108,33 @@
 
     <!-- ==================== VIEW 2: PROFESSIONAL LOGIN ==================== -->
     <div id="view-login" class="flex-grow flex items-center justify-center p-4">
-        <div class="bg-app-card p-10 md:p-12 rounded-2xl shadow-2xl max-w-sm w-full border border-app-border relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-2 bg-app-primary"></div>
+        <div class="bg-white p-10 md:p-12 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-blue-700"></div>
             
             <div class="text-center mb-8 mt-2">
-                <div class="w-16 h-16 bg-blue-900/30 rounded-full flex items-center justify-center mx-auto mb-4 text-app-primary border border-blue-800/50 shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
-                <h1 class="text-2xl font-black text-white tracking-tight">TDMH Portal</h1>
-                <p class="text-[10px] font-bold text-app-muted mt-1.5 uppercase tracking-widest">Training & Development</p>
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-700 border border-blue-100 shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
+                <h1 class="text-2xl font-black text-slate-800 tracking-tight">TDMH Portal</h1>
+                <p class="text-[10px] font-bold text-slate-500 mt-1.5 uppercase tracking-widest">Training & Development</p>
             </div>
 
             <form id="login-form" class="space-y-5">
                 <div>
-                    <label class="block text-xs font-bold text-app-muted uppercase tracking-wider mb-1.5">Department</label>
-                    <select id="login-dept" required class="w-full px-4 py-3 bg-app-input border border-app-border rounded-lg outline-none focus:border-app-primary font-semibold text-white">
-                        <option value="" disabled selected>Select Department...</option>
-                        <!-- Populated by JS -->
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Department</label>
+                    <select id="login-dept" required class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-semibold text-slate-700">
+                        <option value="" disabled selected>Loading...</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-app-muted uppercase tracking-wider mb-1.5">Password</label>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
                     <div class="relative">
-                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-app-input border border-app-border rounded-lg outline-none focus:border-app-primary font-medium tracking-widest text-white pr-12">
-                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-app-muted hover:text-white transition cursor-pointer">
+                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-white border border-slate-300 rounded-lg outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600 font-medium tracking-widest text-slate-800 pr-12">
+                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition cursor-pointer">
                             <i class="fa-solid fa-eye text-lg"></i>
                         </button>
                     </div>
                 </div>
-                <div id="login-error" class="hidden text-red-400 text-xs font-bold text-center bg-red-900/20 border border-red-800/50 py-3 rounded-lg"></div>
-                <button type="submit" id="btn-login" class="w-full bg-app-primary text-white font-bold py-3.5 rounded-lg hover:bg-app-hover transition-all shadow-md flex items-center justify-center mt-4 active:scale-[0.98]">
+                <div id="login-error" class="hidden text-red-600 text-xs font-bold text-center bg-red-50 border border-red-200 py-3 rounded-lg"></div>
+                <button type="submit" id="btn-login" class="w-full bg-blue-700 text-white font-bold py-3.5 rounded-lg hover:bg-blue-800 transition-all shadow-md flex items-center justify-center mt-4 active:scale-[0.98]">
                     Secure Login
                 </button>
             </form>
@@ -166,18 +146,18 @@
     <div id="view-app" class="hidden flex-grow flex flex-col h-screen overflow-hidden">
         
         <!-- Top Navbar -->
-        <nav class="bg-app-card border-b border-app-border text-white shadow-md z-20 flex-shrink-0 no-print">
+        <nav class="bg-white border-b border-slate-200 shadow-sm z-20 flex-shrink-0 no-print">
             <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-app-primary/20 border border-app-primary/30 rounded-lg flex items-center justify-center shadow-inner"><i class="fa-solid fa-hospital-user text-app-primary"></i></div>
-                        <span class="font-black text-lg tracking-wide hidden sm:block">TDMH Operations</span>
+                        <div class="w-9 h-9 bg-blue-50 border border-blue-100 rounded-lg flex items-center justify-center shadow-sm"><i class="fa-solid fa-hospital-user text-blue-700"></i></div>
+                        <span class="font-black text-lg tracking-wide hidden sm:block text-slate-800">TDMH Operations</span>
                     </div>
                     
                     <div class="flex items-center space-x-3 md:space-x-4">
-                        <button id="nav-sync" class="text-xs md:text-sm bg-blue-900/50 hover:bg-blue-800 px-3 md:px-4 py-1.5 rounded-md transition font-bold flex items-center border border-blue-800"><i class="fa-solid fa-rotate mr-2 text-blue-400"></i> <span class="hidden md:inline text-blue-100">Sync Data</span></button>
-                        <div class="text-xs md:text-sm bg-app-bg px-3 md:px-4 py-1.5 rounded-md font-bold border border-app-border flex items-center gap-2"><i class="fa-solid fa-user-shield text-app-muted"></i> <span id="user-badge" class="tracking-wide">User</span></div>
-                        <button id="nav-logout" class="text-sm bg-red-500/10 hover:bg-red-500 text-red-400 hover:text-white px-3 py-1.5 rounded-md transition font-bold border border-red-500/20" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+                        <button id="nav-sync" class="text-xs md:text-sm bg-white hover:bg-slate-50 text-slate-600 px-3 md:px-4 py-1.5 rounded-md transition font-bold flex items-center border border-slate-300 shadow-sm"><i class="fa-solid fa-rotate mr-2 text-blue-600"></i> <span class="hidden md:inline">Sync Data</span></button>
+                        <div class="text-xs md:text-sm bg-slate-50 px-3 md:px-4 py-1.5 rounded-md font-bold border border-slate-200 flex items-center gap-2 text-slate-700"><i class="fa-solid fa-user-shield text-slate-400"></i> <span id="user-badge" class="tracking-wide">User</span></div>
+                        <button id="nav-logout" class="text-sm bg-red-50 hover:bg-red-100 text-red-600 px-3 py-1.5 rounded-md transition font-bold border border-red-200 shadow-sm" title="Logout"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 </div>
             </div>
@@ -186,40 +166,40 @@
         <div class="flex-grow flex overflow-hidden max-w-[1400px] w-full mx-auto relative no-print">
             
             <!-- Sidebar Navigation -->
-            <div class="w-64 bg-app-card border-r border-app-border flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex">
-                <div class="px-6 mb-3 text-[10px] font-black text-app-muted uppercase tracking-widest">Workspace Menu</div>
-                <button data-tab="dashboard" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold bg-blue-900/20 text-app-primary border-r-4 border-app-primary transition group"><i class="fa-solid fa-table-columns w-7 opacity-80 group-hover:opacity-100 transition-opacity"></i> Dashboard</button>
-                <button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-app-muted hover:bg-app-bg hover:text-white transition group border-r-4 border-transparent"><i class="fa-solid fa-file-circle-plus w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> New Request</button>
-                <button data-tab="reports" id="tab-reports-btn" class="nav-tab hidden items-center w-full px-6 py-3.5 text-left font-bold text-app-muted hover:bg-app-bg hover:text-white transition group border-r-4 border-transparent"><i class="fa-solid fa-chart-pie w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> ISO Reports</button>
+            <div class="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex shadow-sm">
+                <div class="px-6 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Workspace Menu</div>
+                <button data-tab="dashboard" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold bg-blue-50 text-blue-700 border-r-4 border-blue-700 transition group"><i class="fa-solid fa-table-columns w-7 opacity-80 group-hover:opacity-100 transition-opacity"></i> Dashboard</button>
+                <button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition group border-r-4 border-transparent"><i class="fa-solid fa-file-circle-plus w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> New Request</button>
+                <button data-tab="reports" id="tab-reports-btn" class="nav-tab hidden items-center w-full px-6 py-3.5 text-left font-bold text-slate-600 hover:bg-slate-50 hover:text-blue-700 transition group border-r-4 border-transparent"><i class="fa-solid fa-chart-pie w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> ISO Reports</button>
             </div>
 
             <!-- Mobile Menu Toggle -->
             <div class="absolute bottom-4 right-4 z-50 md:hidden flex flex-col gap-2">
-                 <button data-tab="dashboard" class="nav-tab w-12 h-12 bg-app-primary text-white rounded-full shadow-lg flex items-center justify-center"><i class="fa-solid fa-table-columns"></i></button>
-                 <button data-tab="new-request" class="nav-tab w-12 h-12 bg-app-primary text-white rounded-full shadow-lg flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
+                 <button data-tab="dashboard" class="nav-tab w-12 h-12 bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center"><i class="fa-solid fa-table-columns"></i></button>
+                 <button data-tab="new-request" class="nav-tab w-12 h-12 bg-blue-700 text-white rounded-full shadow-lg flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
             </div>
 
             <!-- MAIN CONTENT AREA -->
-            <div class="flex-grow overflow-y-auto bg-app-bg relative p-4 md:p-8" id="main-content-area">
+            <div class="flex-grow overflow-y-auto bg-transparent relative p-4 md:p-8" id="main-content-area">
                 
                 <!-- GLOBAL APP LOADER -->
-                <div id="global-loader" class="absolute inset-0 bg-app-bg/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+                <div id="global-loader" class="absolute inset-0 bg-white/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
                     <div class="loader mb-4"></div>
-                    <p class="text-app-primary font-bold tracking-widest animate-pulse">SYNCING DATABASE...</p>
+                    <p class="text-blue-700 font-bold tracking-widest animate-pulse">SYNCING DATABASE...</p>
                 </div>
 
                 <!-- ==================== SUB-VIEW: DASHBOARD ==================== -->
                 <div id="subview-dashboard" class="subview-section max-w-6xl mx-auto pb-20">
                     <div class="flex justify-between items-end mb-6">
                         <div>
-                            <h2 class="text-2xl font-black text-white">Training Operations</h2>
-                            <p class="text-app-muted text-sm font-medium mt-1">Manage requests, approvals, and event attendance.</p>
+                            <h2 class="text-2xl font-black text-slate-800">Training Operations</h2>
+                            <p class="text-slate-500 text-sm font-medium mt-1">Manage requests, approvals, and event attendance.</p>
                         </div>
                     </div>
                     
-                    <div class="bg-app-card border border-app-border rounded-xl shadow-sm overflow-x-auto">
+                    <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-x-auto">
                         <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-app-input border-b border-app-border text-app-muted uppercase text-[11px] font-black tracking-wider">
+                            <thead class="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-[11px] font-black tracking-wider">
                                 <tr>
                                     <th class="px-6 py-4">Request ID</th>
                                     <th class="px-6 py-4">Department</th>
@@ -228,7 +208,7 @@
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="dashboard-tbody" class="divide-y divide-app-border text-white">
+                            <tbody id="dashboard-tbody" class="divide-y divide-slate-100 text-slate-800">
                                 <!-- Dashboard Requests Injected Here -->
                             </tbody>
                         </table>
@@ -236,20 +216,20 @@
                 </div>
 
                 <!-- ==================== SUB-VIEW: NEW REQUEST FORM ==================== -->
-                <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-app-card p-8 rounded-xl shadow-sm border border-app-border mb-20">
-                    <h2 class="text-2xl font-black text-white mb-8 border-b border-app-border pb-4">Create Training Request</h2>
+                <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-slate-200 mb-20">
+                    <h2 class="text-2xl font-black text-slate-800 mb-8 border-b border-slate-100 pb-4">Create Training Request</h2>
                     <form id="request-form" class="space-y-8">
                         
-                        <div class="bg-blue-900/10 border border-blue-900/30 p-5 rounded-lg">
-                            <label class="block text-sm font-black text-blue-400 uppercase tracking-widest mb-3">Training Type</label>
+                        <div class="bg-blue-50/50 border border-blue-100 p-5 rounded-lg">
+                            <label class="block text-sm font-black text-blue-800 uppercase tracking-widest mb-3">Training Type</label>
                             <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-6">
-                                <label class="flex items-center cursor-pointer p-3 bg-app-input border border-app-border rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-500 transition relative overflow-hidden">
-                                    <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-500 bg-app-bg border-app-border z-10 focus:ring-blue-500 focus:ring-offset-app-input">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-white">External Seminar</span><span class="block text-xs text-app-muted">1 Person. Outside hospital.</span></div>
+                                <label class="flex items-center cursor-pointer p-3 bg-white border border-slate-200 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-300 z-10 focus:ring-blue-500">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-800">External Seminar</span><span class="block text-xs text-slate-500">1 Person. Outside hospital.</span></div>
                                 </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-app-input border border-app-border rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-500 transition relative overflow-hidden">
-                                    <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-500 bg-app-bg border-app-border z-10 focus:ring-blue-500 focus:ring-offset-app-input">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-white">Internal / In-Service</span><span class="block text-xs text-app-muted">Group event. Roster & QR enabled.</span></div>
+                                <label class="flex items-center cursor-pointer p-3 bg-white border border-slate-200 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 bg-slate-50 border-slate-300 z-10 focus:ring-blue-500">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-800">Internal / In-Service</span><span class="block text-xs text-slate-500">Group event. Roster & QR enabled.</span></div>
                                 </label>
                             </div>
                         </div>
@@ -257,60 +237,60 @@
                         <!-- Department Selection Logic -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
                             <div>
-                                <label class="block text-sm font-bold text-app-muted mb-1.5">Date of Application</label>
-                                <input type="date" id="req-date-app" required class="w-full bg-app-input border border-app-border rounded-md p-2.5 outline-none focus:border-app-primary transition font-medium text-white [color-scheme:dark]">
+                                <label class="block text-sm font-bold text-slate-700 mb-1.5">Date of Application</label>
+                                <input type="date" id="req-date-app" required class="w-full bg-white border border-slate-300 rounded-md p-2.5 outline-none focus:border-blue-600 transition font-medium text-slate-800">
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-app-muted mb-1.5">Department / Hosting Entity</label>
-                                <input type="text" id="req-department" readonly class="w-full border-app-border border rounded-md p-2.5 bg-app-bg text-app-muted font-medium cursor-not-allowed">
-                                <select id="req-department-select" class="hidden w-full bg-app-input border border-app-border rounded-md p-2.5 outline-none focus:border-app-primary transition font-medium text-white"></select>
+                                <label class="block text-sm font-bold text-slate-700 mb-1.5">Department / Hosting Entity</label>
+                                <input type="text" id="req-department" readonly class="w-full border-slate-200 border rounded-md p-2.5 bg-slate-50 text-slate-500 font-medium cursor-not-allowed">
+                                <select id="req-department-select" class="hidden w-full bg-white border border-slate-300 rounded-md p-2.5 outline-none focus:border-blue-600 transition font-medium text-slate-800"></select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2"><label class="block text-sm font-bold text-app-muted mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-app-input border border-app-border rounded-lg p-3 outline-none focus:border-app-primary transition text-white"></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-600 transition text-slate-800"></div>
                             
-                            <div id="field-employee-name">
-                                <label class="block text-sm font-bold text-app-muted mb-1.5">Specific Employee Name <span class="text-blue-400 ml-2 text-[10px] uppercase font-black bg-blue-900/30 px-2 py-0.5 rounded">Required for External</span></label>
-                                <input type="text" id="req-emp-name" class="w-full bg-app-input border border-app-border rounded-lg p-3 outline-none focus:border-app-primary transition text-white">
+                            <div id="field-employee-name" class="md:col-span-2">
+                                <label class="block text-sm font-bold text-slate-700 mb-1.5">Specific Employee Name <span class="text-blue-700 ml-2 text-[10px] uppercase font-black bg-blue-100 px-2 py-0.5 rounded">Required for External</span></label>
+                                <input type="text" id="req-emp-name" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-600 transition text-slate-800">
                             </div>
                             
                             <div id="field-position">
-                                <label class="block text-sm font-bold text-app-muted mb-1.5">Position / Job Title</label>
-                                <input type="text" id="req-position" class="w-full bg-app-input border border-app-border rounded-lg p-3 outline-none focus:border-app-primary transition text-white">
+                                <label class="block text-sm font-bold text-slate-700 mb-1.5">Position / Job Title</label>
+                                <input type="text" id="req-position" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-600 transition text-slate-800">
                             </div>
 
-                            <div><label class="block text-sm font-bold text-app-muted mb-1.5">Venue</label><input type="text" id="req-venue" required class="w-full bg-app-input border border-app-border rounded-lg p-3 outline-none focus:border-app-primary transition text-white"></div>
+                            <div><label class="block text-sm font-bold text-slate-700 mb-1.5">Venue</label><input type="text" id="req-venue" required class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-600 transition text-slate-800"></div>
                             
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="block text-sm font-bold text-app-muted mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g. Oct 12-14" class="w-full bg-app-input border border-app-border rounded-lg p-3 outline-none focus:border-app-primary transition text-white"></div>
-                                <div><label class="block text-sm font-bold text-app-muted mb-1.5">Total Days</label><input type="number" id="req-days" required placeholder="0" class="w-full bg-app-input border border-app-border rounded-lg p-3 outline-none focus:border-app-primary transition text-white"></div>
+                                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g. Oct 12-14" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-600 transition text-slate-800"></div>
+                                <div><label class="block text-sm font-bold text-slate-700 mb-1.5">Total Days</label><input type="number" id="req-days" required placeholder="0" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-600 transition text-slate-800"></div>
                             </div>
                         </div>
 
-                        <div id="field-roster-builder" class="hidden border border-app-border rounded-xl overflow-hidden">
-                            <div class="bg-app-bg p-4 border-b border-app-border flex justify-between items-center">
-                                <div><h3 class="font-bold text-white">Expected Roster</h3><p class="text-xs text-app-muted">Generates Official Attendance Record sheet.</p></div>
-                                <button type="button" id="btn-add-roster" class="bg-blue-900/30 text-blue-400 border border-blue-800/50 text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-900/50 transition flex items-center"><i class="fa-solid fa-user-plus mr-1"></i> Add Trainee</button>
+                        <div id="field-roster-builder" class="hidden border border-slate-200 rounded-xl overflow-hidden">
+                            <div class="bg-slate-50 p-4 border-b border-slate-200 flex justify-between items-center">
+                                <div><h3 class="font-bold text-slate-800">Expected Roster</h3><p class="text-xs text-slate-500">Generates Official Attendance Record sheet.</p></div>
+                                <button type="button" id="btn-add-roster" class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition flex items-center"><i class="fa-solid fa-user-plus mr-1"></i> Add Trainee</button>
                             </div>
-                            <div class="p-4 bg-app-card space-y-3" id="roster-container"></div>
+                            <div class="p-4 bg-white space-y-3" id="roster-container"></div>
                         </div>
 
-                        <div class="border border-app-border rounded-xl overflow-hidden">
-                            <div class="bg-app-bg p-4 border-b border-app-border"><h3 class="font-bold text-white">Budget Breakdown (₱)</h3></div>
+                        <div class="border border-slate-200 rounded-xl overflow-hidden">
+                            <div class="bg-slate-50 p-4 border-b border-slate-200"><h3 class="font-bold text-slate-800">Budget Breakdown (₱)</h3></div>
                             <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div><label class="block text-xs font-bold text-app-muted uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-app-input border border-app-border rounded p-2 text-right font-medium text-white outline-none focus:border-app-primary"></div>
-                                <div><label class="block text-xs font-bold text-app-muted uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-app-input border border-app-border rounded p-2 text-right font-medium text-white outline-none focus:border-app-primary"></div>
-                                <div><label id="label-food" class="block text-xs font-bold text-app-muted uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-app-input border border-app-border rounded p-2 text-right font-medium text-white outline-none focus:border-app-primary"></div>
-                                <div><label class="block text-xs font-bold text-app-muted uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-app-input border border-app-border rounded p-2 text-right font-medium text-white outline-none focus:border-app-primary"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-white border border-slate-300 rounded p-2 text-right font-medium text-slate-800 outline-none focus:border-blue-600"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-white border border-slate-300 rounded p-2 text-right font-medium text-slate-800 outline-none focus:border-blue-600"></div>
+                                <div><label id="label-food" class="block text-xs font-bold text-slate-500 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-white border border-slate-300 rounded p-2 text-right font-medium text-slate-800 outline-none focus:border-blue-600"></div>
+                                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-white border border-slate-300 rounded p-2 text-right font-medium text-slate-800 outline-none focus:border-blue-600"></div>
                             </div>
-                            <div class="bg-blue-900/20 p-4 border-t border-app-border flex justify-between items-center">
-                                <span class="font-black text-blue-400 uppercase tracking-widest text-sm">Total Budget Requested</span>
-                                <span class="text-2xl font-black text-white">₱<span id="total-amount">0.00</span></span>
+                            <div class="bg-blue-50/50 p-4 border-t border-slate-200 flex justify-between items-center">
+                                <span class="font-black text-blue-800 uppercase tracking-widest text-sm">Total Budget Requested</span>
+                                <span class="text-2xl font-black text-blue-700">₱<span id="total-amount">0.00</span></span>
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-submit-req" class="w-full bg-app-primary hover:bg-app-hover text-white font-bold py-4 rounded-xl shadow-md transition active:scale-[0.98] text-lg flex items-center justify-center">
+                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-700 hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-md transition active:scale-[0.98] text-lg flex items-center justify-center">
                             <i class="fa-solid fa-paper-plane mr-2"></i> Submit Training Request
                         </button>
                     </form>
@@ -318,44 +298,44 @@
 
                 <!-- ==================== SUB-VIEW: ISO REPORTS ==================== -->
                 <div id="subview-reports" class="subview-section hidden max-w-6xl mx-auto pb-20">
-                    <h2 class="text-2xl font-black text-white mb-6">ISO Analytics & Reports</h2>
+                    <h2 class="text-2xl font-black text-slate-800 mb-6">ISO Analytics & Reports</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-app-card p-5 rounded-2xl border border-app-border"><div class="text-xs font-black text-blue-400 uppercase mb-1">Total Requests</div><div id="kpi-total" class="text-4xl font-black text-white">0</div></div>
-                        <div class="bg-app-card p-5 rounded-2xl border border-app-border"><div class="text-xs font-black text-yellow-500 uppercase mb-1">Pending</div><div id="kpi-pending" class="text-4xl font-black text-white">0</div></div>
-                        <div class="bg-app-card p-5 rounded-2xl border border-app-border"><div class="text-xs font-black text-green-400 uppercase mb-1">Approved/Done</div><div id="kpi-approved" class="text-4xl font-black text-white">0</div></div>
-                        <div class="bg-app-card p-5 rounded-2xl border border-app-border"><div class="text-xs font-black text-app-muted uppercase mb-1">Total Budget (₱)</div><div id="kpi-budget" class="text-3xl md:text-4xl font-black text-white">0</div></div>
+                        <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100"><div class="text-xs font-black text-blue-600 uppercase mb-1">Total Requests</div><div id="kpi-total" class="text-4xl font-black text-blue-900">0</div></div>
+                        <div class="bg-yellow-50 p-5 rounded-2xl border border-yellow-100"><div class="text-xs font-black text-yellow-600 uppercase mb-1">Pending</div><div id="kpi-pending" class="text-4xl font-black text-yellow-900">0</div></div>
+                        <div class="bg-green-50 p-5 rounded-2xl border border-green-100"><div class="text-xs font-black text-green-600 uppercase mb-1">Approved/Done</div><div id="kpi-approved" class="text-4xl font-black text-green-900">0</div></div>
+                        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="text-xs font-black text-slate-500 uppercase mb-1">Total Budget (₱)</div><div id="kpi-budget" class="text-3xl md:text-4xl font-black text-slate-800">0</div></div>
                     </div>
-                    <div class="bg-app-card border border-app-border rounded-2xl shadow-sm p-6">
-                        <h3 class="font-bold text-white mb-4">Request Volume by Department</h3>
+                    <div class="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+                        <h3 class="font-bold text-slate-800 mb-4">Request Volume by Department</h3>
                         <div class="relative h-[300px] w-full"><canvas id="reports-chart"></canvas></div>
                     </div>
                 </div>
 
                 <!-- ==================== PART 3: QR ATTENDANCE STATION ==================== -->
-                <div id="subview-qr-station" class="subview-section hidden absolute inset-0 bg-app-bg z-40 flex flex-col md:flex-row overflow-hidden text-white">
-                    <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-app-border relative">
-                        <button onclick="closeQRStation()" class="absolute top-6 left-6 text-app-muted hover:text-white font-bold bg-app-card border border-app-border px-4 py-2 rounded-lg transition"><i class="fa-solid fa-arrow-left mr-2"></i> Stop Event</button>
+                <div id="subview-qr-station" class="subview-section hidden absolute inset-0 bg-slate-900 z-40 flex flex-col md:flex-row overflow-hidden text-white">
+                    <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-700 relative">
+                        <button onclick="closeQRStation()" class="absolute top-6 left-6 text-slate-400 hover:text-white font-bold bg-slate-800 border border-slate-700 px-4 py-2 rounded-lg transition"><i class="fa-solid fa-arrow-left mr-2"></i> Stop Event</button>
                         <h2 class="text-3xl font-black text-blue-400 mb-2 text-center uppercase tracking-widest mt-10 md:mt-0">Scan to Sign-in</h2>
-                        <p id="qr-title-display" class="text-app-muted font-medium mb-8 text-center max-w-sm"></p>
+                        <p id="qr-title-display" class="text-slate-400 font-medium mb-8 text-center max-w-sm"></p>
                         <div class="bg-white p-6 rounded-3xl shadow-[0_0_50px_rgba(59,130,246,0.15)] mb-8"><div id="qr-container"></div></div>
                     </div>
                     
-                    <div class="w-full md:w-1/2 bg-app-card p-8 flex flex-col relative h-full">
+                    <div class="w-full md:w-1/2 bg-slate-800 p-8 flex flex-col relative h-full">
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-xl font-bold flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> Live Feed</h3>
                             <div class="flex gap-4">
-                                <div class="bg-app-input px-4 py-2 rounded-lg text-center hidden md:block border border-app-border">
-                                    <span class="block text-[10px] text-app-muted uppercase font-black tracking-widest">Elapsed Time</span>
+                                <div class="bg-slate-900 px-4 py-2 rounded-lg text-center hidden md:block border border-slate-700">
+                                    <span class="block text-[10px] text-slate-500 uppercase font-black tracking-widest">Elapsed Time</span>
                                     <span id="qr-stopwatch" class="block text-xl font-black text-white leading-none tabular-nums">00:00:00</span>
                                 </div>
-                                <div class="bg-app-primary px-4 py-2 rounded-lg text-center shadow-md">
+                                <div class="bg-blue-600 px-4 py-2 rounded-lg text-center shadow-md">
                                     <span class="block text-[10px] text-blue-200 uppercase font-black tracking-widest">Headcount</span>
                                     <span id="qr-headcount" class="block text-2xl font-black text-white leading-none">0</span>
                                 </div>
                             </div>
                         </div>
-                        <div id="qr-live-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                            <div class="text-app-muted text-center mt-10 italic font-medium">Waiting for attendees to scan...</div>
+                        <div id="qr-live-list" class="flex-grow overflow-y-auto space-y-3 pr-2">
+                            <div class="text-slate-400 text-center mt-10 italic font-medium">Waiting for attendees to scan...</div>
                         </div>
                     </div>
                 </div>
@@ -416,52 +396,52 @@
     <!-- ==================== PART 3: MODALS ==================== -->
     
     <!-- DETAILS & APPROVAL MODAL -->
-    <div id="modal-details" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print">
-        <div class="bg-app-card p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col border border-app-border transform scale-95 transition-transform duration-300">
+    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col border border-slate-200 transform scale-95 transition-transform duration-300">
             
-            <div class="flex justify-between items-center mb-6 border-b border-app-border pb-4 flex-shrink-0">
+            <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4 flex-shrink-0">
                 <div>
-                    <h3 class="text-xl font-black text-white">Training Dossier & Clearances</h3>
-                    <p id="modal-req-id" class="text-xs font-bold text-app-muted uppercase tracking-widest mt-1">REQ-XXXXXX</p>
+                    <h3 class="text-xl font-black text-slate-900">Training Dossier & Clearances</h3>
+                    <p id="modal-req-id" class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">REQ-XXXXXX</p>
                 </div>
-                <button onclick="closeDetailsModal()" class="text-app-muted hover:text-white p-2 bg-app-input rounded-full transition"><i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i></button>
+                <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-slate-600 p-2 bg-slate-50 hover:bg-slate-100 rounded-full transition"><i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i></button>
             </div>
             
-            <div class="overflow-y-auto pr-2 flex-grow custom-scrollbar">
+            <div class="overflow-y-auto pr-2 flex-grow">
                 <!-- Data Display -->
-                <div id="modal-body-data" class="bg-app-input p-5 rounded-xl border border-app-border grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                <div id="modal-body-data" class="bg-slate-50 p-5 rounded-xl border border-slate-200 grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                     <!-- Injected via JS -->
                 </div>
 
                 <!-- Admin Signatures Section -->
                 <div class="mb-8">
-                    <h4 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-nib text-blue-500"></i> Official Signatures</h4>
+                    <h4 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-nib text-blue-500"></i> Official Signatures</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="bg-app-input p-4 rounded-xl border border-app-border">
-                            <label class="block text-[10px] font-black text-app-muted uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
-                            <input type="text" id="sig-admin-name" class="w-full bg-app-card border border-app-border text-white rounded-lg p-2.5 text-sm font-medium outline-none focus:border-app-primary disabled:opacity-50" placeholder="Admin Signature">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
+                            <input type="text" id="sig-admin-name" class="w-full bg-white border border-slate-300 text-slate-800 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-blue-600 disabled:opacity-50" placeholder="Admin Signature">
                         </div>
                     </div>
                 </div>
 
-                <!-- Clearance Upload Section (For Requesters to Liquidate) -->
-                <div id="clearance-section" class="hidden bg-green-900/10 border border-green-800/30 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center">
+                <!-- Clearance Upload Section -->
+                <div id="clearance-section" class="hidden bg-green-50 border border-green-200 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center">
                     <i class="fa-solid fa-cloud-arrow-up text-green-500 text-3xl mb-3"></i>
-                    <h4 class="font-bold text-green-400 mb-1">Post-Training Clearance</h4>
+                    <h4 class="font-bold text-green-800 mb-1">Post-Training Clearance</h4>
                     <p class="text-xs text-green-600 mb-4">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
                     
                     <input type="file" id="clearance-input" accept="image/*,.pdf" class="hidden">
-                    <label for="clearance-input" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-sm flex items-center gap-2">
+                    <label for="clearance-input" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-folder-open"></i> Select File
                     </label>
-                    <div id="clearance-status" class="hidden mt-3 text-sm font-bold text-green-400 flex items-center gap-2"></div>
+                    <div id="clearance-status" class="hidden mt-3 text-sm font-bold text-green-700 flex items-center gap-2"></div>
                 </div>
             </div>
 
-            <div class="flex justify-end space-x-3 pt-5 border-t border-app-border flex-shrink-0 mt-4">
-                <button onclick="closeDetailsModal()" class="bg-app-input text-white border border-app-border font-bold px-5 py-2.5 rounded-lg hover:bg-app-bg transition">Close</button>
-                <button id="btn-save-details" class="hidden bg-app-primary text-white font-bold px-6 py-2.5 rounded-lg hover:bg-app-hover transition shadow-md">Save Updates</button>
-                <button id="btn-upload-clearance" class="hidden bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-500 transition shadow-md">Upload & Liquidate</button>
+            <div class="flex justify-end space-x-3 pt-5 border-t border-slate-100 flex-shrink-0 mt-4">
+                <button onclick="closeDetailsModal()" class="bg-slate-100 text-slate-700 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-200 transition">Close</button>
+                <button id="btn-save-details" class="hidden bg-blue-700 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-800 transition shadow-md">Save Updates</button>
+                <button id="btn-upload-clearance" class="hidden bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-700 transition shadow-md">Upload & Liquidate</button>
             </div>
         </div>
     </div>
@@ -474,13 +454,13 @@
             <div id="image-modal-error" class="hidden text-center text-white mb-6">
                 <i class="fa-solid fa-shield-halved text-5xl mb-4 text-blue-400"></i>
                 <h3 class="text-2xl font-bold mb-2">Browser Security Block</h3>
-                <p class="text-gray-300 max-w-md mx-auto">Google Drive prevents this file from being displayed inside another website for security reasons.</p>
+                <p class="text-slate-300 max-w-md mx-auto">Google Drive prevents this file from being displayed inside another website for security reasons.</p>
             </div>
 
             <img id="preview-img" src="" class="hidden max-w-full max-h-full rounded-xl shadow-2xl object-contain bg-white">
             <iframe id="preview-iframe" src="" class="hidden w-full h-full bg-white rounded-xl shadow-2xl border-0"></iframe>
             
-            <a id="preview-fallback" href="" target="_blank" class="mt-6 px-8 py-3 bg-app-primary text-white rounded-full hover:bg-app-hover transition font-bold shadow-lg flex items-center text-lg">
+            <a id="preview-fallback" href="" target="_blank" class="mt-6 px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition font-bold shadow-lg flex items-center text-lg">
                 <i class="fa-solid fa-arrow-up-right-from-square mr-3"></i> Open File Externally
             </a>
         </div>
@@ -492,15 +472,6 @@
         // MUST MATCH DEPLOYED WEB APP URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec';
         
-        let systemDepts = [
-            "CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", 
-            "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", 
-            "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", 
-            "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", 
-            "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", 
-            "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"
-        ];
-        
         let currentUserRole = null;
         let currentUserName = null;
         let currentDeptName = null;
@@ -510,6 +481,16 @@
         let liveAttendanceInterval = null;
         let stopwatchInterval = null;
         let eventStartTime = null;
+
+        // --- HARDCODED DEPARTMENTS FOR INSTANT LOAD ---
+        let systemDepts = [
+            "CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", 
+            "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", 
+            "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", 
+            "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", 
+            "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", 
+            "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"
+        ];
 
         // --- GLOBAL ESCAPE KEY LISTENER ---
         document.addEventListener('keydown', (e) => {
@@ -539,13 +520,13 @@
         function showNotification(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            let bgClass = 'bg-app-card border border-app-border text-white';
-            let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
-            if (type === 'success') { bgClass = 'bg-green-900/90 border border-green-700 text-green-100'; icon = '<i class="fa-solid fa-circle-check"></i>'; }
-            if (type === 'error') { bgClass = 'bg-red-900/90 border border-red-700 text-red-100'; icon = '<i class="fa-solid fa-triangle-exclamation"></i>'; }
-            if (type === 'warning') { bgClass = 'bg-orange-900/90 border border-orange-700 text-orange-100'; icon = '<i class="fa-solid fa-bolt"></i>'; }
+            let bgClass = 'bg-white border border-slate-200 text-slate-800';
+            let icon = '<i class="fa-solid fa-circle-info text-blue-500"></i>';
+            if (type === 'success') { bgClass = 'bg-green-50 border border-green-200 text-green-800'; icon = '<i class="fa-solid fa-circle-check text-green-600"></i>'; }
+            if (type === 'error') { bgClass = 'bg-red-50 border border-red-200 text-red-800'; icon = '<i class="fa-solid fa-triangle-exclamation text-red-600"></i>'; }
+            if (type === 'warning') { bgClass = 'bg-orange-50 border border-orange-200 text-orange-800'; icon = '<i class="fa-solid fa-bolt text-orange-500"></i>'; }
 
-            toast.className = `${bgClass} px-5 py-3.5 rounded-xl shadow-2xl flex items-center gap-3 toast-enter font-bold text-sm z-[99]`;
+            toast.className = `${bgClass} px-5 py-3.5 rounded-xl shadow-lg flex items-center gap-3 toast-enter font-bold text-sm z-[99]`;
             toast.innerHTML = `${icon} <span>${msg}</span>`;
             container.appendChild(toast);
             setTimeout(() => { toast.classList.replace('toast-enter', 'toast-exit'); setTimeout(() => toast.remove(), 400); }, 4000);
@@ -585,7 +566,7 @@
             updateTotal();
             toggleTrainingType();
 
-            // Populate Admin Dropdown
+            // Populate Admin Dropdown instantly
             const select = document.getElementById('req-department-select');
             const loginSelect = document.getElementById('login-dept');
             const publicSelect = document.getElementById('public-dept');
@@ -625,7 +606,7 @@
             window.addEventListener('resize', () => setTimeout(resizeCanvas, 100));
             function getPos(e) { const r = canvas.getBoundingClientRect(); return e.touches ? { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top } : { x: e.clientX - r.left, y: e.clientY - r.top }; }
             function start(e) { isDrawing = true; hasSigned = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
-            function draw(e) { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); e.preventDefault(); }
+            function draw(e) { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); e.preventDefault(); }
             function stop() { isDrawing = false; }
             canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stop); canvas.addEventListener('mouseout', stop);
             canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', stop);
@@ -679,7 +660,7 @@
                     currentDeptName = loginUser;
                     currentUserName = loginUser;
 
-                    document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-400 mr-1">${currentDeptName}</span> | ${currentUserRole}`;
+                    document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-600 mr-1">${currentDeptName}</span> | ${currentUserRole}`;
                     
                     // Populate Form Dropdown if Admin
                     const deptSelect = document.getElementById('req-department-select');
@@ -717,16 +698,16 @@
             document.querySelectorAll('.subview-section').forEach(view => view.classList.add('hidden'));
             
             document.querySelectorAll('.nav-tab').forEach(btn => {
-                btn.classList.remove('bg-blue-900/20', 'text-app-primary', 'border-app-primary'); 
-                btn.classList.add('text-app-muted', 'border-transparent');
+                btn.classList.remove('bg-blue-50', 'text-blue-700', 'border-blue-700'); 
+                btn.classList.add('text-slate-600', 'border-transparent');
             });
             
             const targetView = document.getElementById(`subview-${tabId}`);
             if(targetView) targetView.classList.remove('hidden');
             
             document.querySelectorAll(`.nav-tab[data-tab="${tabId}"]`).forEach(btn => {
-                btn.classList.add('bg-blue-900/20', 'text-app-primary', 'border-app-primary'); 
-                btn.classList.remove('text-app-muted', 'border-transparent');
+                btn.classList.add('bg-blue-50', 'text-blue-700', 'border-blue-700'); 
+                btn.classList.remove('text-slate-600', 'border-transparent');
             });
 
             if(tabId === 'dashboard') fetchDashboardData();
@@ -752,13 +733,16 @@
 
         document.getElementById('btn-add-roster').addEventListener('click', () => {
             const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now();
-            const deptOptions = systemDepts.map(d => `<option value="${d}">${d}</option>`).join('');
+            
+            // Generate options from the select box directly to avoid maintaining an array
+            const deptOptions = document.getElementById('login-dept').innerHTML;
+            
             container.insertAdjacentHTML('beforeend', `
                 <div id="${rowId}" class="flex gap-3 roster-row animate-[slideInRight_0.2s_ease-out]">
-                    <input type="text" placeholder="Attendee Name" class="w-[40%] bg-app-input border border-app-border text-white rounded p-2 text-sm roster-name outline-none focus:border-app-primary" required>
-                    <input type="text" placeholder="Position" class="w-[20%] bg-app-input border border-app-border text-white rounded p-2 text-sm roster-pos outline-none focus:border-app-primary">
-                    <select class="w-[30%] bg-app-input border border-app-border text-white rounded p-2 text-sm roster-dept outline-none focus:border-app-primary" required><option value="" disabled selected>Dept...</option>${deptOptions}</select>
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-400 bg-red-900/20 hover:bg-red-900/40 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
+                    <input type="text" placeholder="Attendee Name" class="w-[40%] bg-white border border-slate-300 text-slate-800 rounded p-2 text-sm roster-name outline-none focus:border-blue-600" required>
+                    <input type="text" placeholder="Position" class="w-[20%] bg-white border border-slate-300 text-slate-800 rounded p-2 text-sm roster-pos outline-none focus:border-blue-600">
+                    <select class="w-[30%] bg-white border border-slate-300 text-slate-800 rounded p-2 text-sm roster-dept outline-none focus:border-blue-600" required>${deptOptions}</select>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-500 bg-red-50 hover:bg-red-100 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `);
         });
@@ -826,36 +810,36 @@
             const tbody = document.getElementById('dashboard-tbody'); tbody.innerHTML = '';
             const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
 
-            if(visibleReqs.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-app-muted italic">No training requests found.</td></tr>`; return; }
+            if(visibleReqs.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">No training requests found.</td></tr>`; return; }
 
             visibleReqs.reverse().forEach(req => {
                 let statusBadge = '';
-                if(req.status === 'Pending') statusBadge = '<span class="bg-yellow-900/30 text-yellow-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-yellow-700/50"><i class="fa-regular fa-clock mr-1"></i> Pending</span>';
-                if(req.status === 'Approved') statusBadge = '<span class="bg-blue-900/30 text-blue-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-blue-700/50"><i class="fa-solid fa-thumbs-up mr-1"></i> Approved</span>';
-                if(req.status === 'Liquidated') statusBadge = '<span class="bg-green-900/30 text-green-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-green-700/50"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>';
-                if(req.status === 'Rejected') statusBadge = '<span class="bg-red-900/30 text-red-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-700/50"><i class="fa-solid fa-xmark mr-1"></i> Rejected</span>';
+                if(req.status === 'Pending') statusBadge = '<span class="bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-yellow-200"><i class="fa-regular fa-clock mr-1"></i> Pending</span>';
+                if(req.status === 'Approved') statusBadge = '<span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-blue-200"><i class="fa-solid fa-thumbs-up mr-1"></i> Approved</span>';
+                if(req.status === 'Liquidated') statusBadge = '<span class="bg-green-50 text-green-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-green-200"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>';
+                if(req.status === 'Rejected') statusBadge = '<span class="bg-red-50 text-red-700 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-200"><i class="fa-solid fa-xmark mr-1"></i> Rejected</span>';
                 
-                let typeBadge = req.type === 'Internal' ? '<span class="text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-800/50">Internal</span>' : '<span class="text-gray-400 bg-gray-800 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-700">External</span>';
+                let typeBadge = req.type === 'Internal' ? '<span class="text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-200">Internal</span>' : '<span class="text-gray-600 bg-gray-100 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-200">External</span>';
 
                 let actionHtml = `<div class="flex items-center justify-end gap-2">`;
                 
                 if(currentUserRole === 'Admin' && req.status === 'Pending') {
-                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Approved')" class="text-[11px] bg-blue-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-blue-500 transition">Approve</button>`;
-                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Rejected')" class="text-[11px] bg-red-900/50 text-red-400 font-bold px-3 py-1.5 rounded hover:bg-red-800/50 transition">Reject</button>`;
+                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Approved')" class="text-[11px] bg-blue-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-blue-700 transition">Approve</button>`;
+                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Rejected')" class="text-[11px] bg-red-100 text-red-600 font-bold px-3 py-1.5 rounded hover:bg-red-200 transition">Reject</button>`;
                 }
                 
                 if(req.status === 'Approved' && req.type === 'Internal') {
-                    actionHtml += `<button onclick="generatePrintableRoster('${req.id}')" class="text-[11px] bg-gray-700 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-gray-600 transition" title="Print Official Manual Roster"><i class="fa-solid fa-print"></i></button>`;
-                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="text-[11px] bg-indigo-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-indigo-500 transition animate-pulse" title="Start Live QR Event"><i class="fa-solid fa-qrcode"></i></button>`;
+                    actionHtml += `<button onclick="generatePrintableRoster('${req.id}')" class="text-[11px] bg-gray-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-gray-700 transition" title="Print Official Manual Roster"><i class="fa-solid fa-print"></i></button>`;
+                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="text-[11px] bg-indigo-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-indigo-700 transition animate-pulse" title="Start Live QR Event"><i class="fa-solid fa-qrcode"></i></button>`;
                 }
 
-                actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-app-muted hover:text-blue-400 p-2 transition" title="View Details / Liquidate"><i class="fa-solid fa-eye"></i></button></div>`;
+                actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-slate-400 hover:text-blue-600 p-2 transition" title="View Details / Liquidate"><i class="fa-solid fa-eye"></i></button></div>`;
 
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-app-input transition">
-                        <td class="px-6 py-4 font-black text-white">${req.id}</td>
-                        <td class="px-6 py-4 font-semibold text-app-muted">${req.department}</td>
-                        <td class="px-6 py-4"><div class="font-bold text-white">${req.title}</div><div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-gray-500">${req.dates}</span></div></td>
+                    <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+                        <td class="px-6 py-4 font-black text-slate-800">${req.id}</td>
+                        <td class="px-6 py-4 font-semibold text-slate-500">${req.department}</td>
+                        <td class="px-6 py-4"><div class="font-bold text-slate-900">${req.title}</div><div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-slate-500">${req.dates}</span></div></td>
                         <td class="px-6 py-4">${statusBadge}</td>
                         <td class="px-6 py-4">${actionHtml}</td>
                     </tr>
@@ -952,9 +936,9 @@
                     const list = document.getElementById('qr-live-list');
                     if(attendees.length > 0) {
                         list.innerHTML = attendees.map((a, i) => `
-                            <div class="bg-app-input border border-app-border p-3 rounded-xl flex items-center animate-[slideInRight_0.3s_ease-out]">
+                            <div class="bg-slate-800 border border-slate-700 p-3 rounded-xl flex items-center animate-[slideInRight_0.3s_ease-out]">
                                 <span class="font-black text-blue-400 w-6">${i+1}.</span>
-                                <div><div class="font-bold text-white leading-tight">${a.name}</div><div class="text-[10px] text-app-muted font-bold uppercase tracking-wider">${a.dept}</div></div>
+                                <div><div class="font-bold text-white leading-tight">${a.name}</div><div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">${a.dept}</div></div>
                             </div>`).join('');
                         list.scrollTop = list.scrollHeight;
                     }
@@ -973,22 +957,22 @@
             
             document.getElementById('modal-req-id').textContent = req.id;
             
-            let attachHtml = req.clearanceUrl ? `<button onclick="showAttachment('${req.clearanceUrl}')" class="mt-2 bg-green-900/30 text-green-400 border border-green-800/50 px-4 py-2 rounded-lg font-bold hover:bg-green-800/50 transition shadow-sm flex items-center w-fit text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> View Uploaded Clearance / Receipts</button>` : '';
+            let attachHtml = req.clearanceUrl ? `<button onclick="showAttachment('${req.clearanceUrl}')" class="mt-2 bg-green-50 text-green-700 border border-green-200 px-4 py-2 rounded-lg font-bold hover:bg-green-100 transition shadow-sm flex items-center w-fit text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> View Uploaded Clearance / Receipts</button>` : '';
 
             // Handle roster name display
             let parsedNames = req.expectedRoster;
             try {
                 let rosterObj = JSON.parse(req.expectedRoster);
-                parsedNames = rosterObj.map(p => `${p.name} <span class="text-app-muted text-xs">(${p.position || 'N/A'})</span>`).join('<br>');
+                parsedNames = rosterObj.map(p => `${p.name} <span class="text-slate-400 text-xs font-normal">(${p.position || 'N/A'})</span>`).join('<br>');
             } catch(e) { parsedNames = req.expectedRoster.replace(/,/g, '<br>'); }
 
             document.getElementById('modal-body-data').innerHTML = `
-                <div><span class="text-app-muted text-[10px] font-black uppercase mb-1 block">Title / Venue</span> <span class="font-bold text-white">${req.title}</span><br><span class="text-xs text-gray-500">${req.venue}</span></div>
-                <div><span class="text-app-muted text-[10px] font-black uppercase mb-1 block">Total Budget Approved</span> <span class="font-black text-blue-400 text-xl">₱${req.totalCost}</span></div>
-                <div><span class="text-app-muted text-[10px] font-black uppercase mb-1 block">Department</span> <span class="font-bold text-white">${req.department}</span></div>
-                <div><span class="text-app-muted text-[10px] font-black uppercase mb-1 block">Status</span> <span class="font-bold text-white">${req.status}</span></div>
-                <div class="md:col-span-2"><span class="text-app-muted text-[10px] font-black uppercase mb-1 block">Trainee(s)</span> <span class="font-medium text-white break-words leading-tight block mt-1 bg-app-card p-3 rounded border border-app-border">${parsedNames}</span></div>
-                <div class="md:col-span-2 border-t border-app-border pt-3">${attachHtml}</div>
+                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Title / Venue</span> <span class="font-bold text-slate-900">${req.title}</span><br><span class="text-xs text-slate-500">${req.venue}</span></div>
+                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Total Budget Approved</span> <span class="font-black text-blue-700 text-xl">₱${req.totalCost}</span></div>
+                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Department</span> <span class="font-bold text-slate-900">${req.department}</span></div>
+                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Status</span> <span class="font-bold text-slate-900">${req.status}</span></div>
+                <div class="md:col-span-2"><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Trainee(s)</span> <span class="font-medium text-slate-800 break-words leading-tight block mt-1 bg-white p-3 rounded border border-slate-200">${parsedNames}</span></div>
+                <div class="md:col-span-2 border-t border-slate-200 pt-3">${attachHtml}</div>
             `;
 
             document.getElementById('sig-admin-name').value = req.signatures ? req.signatures.appName : '';
@@ -1051,7 +1035,7 @@
                 statusEl.classList.remove('hidden');
                 optimizeFile(file, (base64) => {
                     pendingClearanceBase64 = base64;
-                    statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-green-500"></i> Attached: ${file.name}`;
+                    statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-green-600"></i> Attached: ${file.name}`;
                 });
             }
         });
@@ -1121,16 +1105,16 @@
             const deptCounts = {}; requestsData.forEach(r => { deptCounts[r.department] = (deptCounts[r.department] || 0) + 1; });
             const ctx = document.getElementById('reports-chart').getContext('2d');
             
-            // Format Chart.js to fit the Dark Theme
-            Chart.defaults.color = '#9ca3af';
-            Chart.defaults.borderColor = '#374151';
+            // Format Chart.js to fit the light Theme
+            Chart.defaults.color = '#64748b';
+            Chart.defaults.borderColor = '#e2e8f0';
 
             if (reportsChartInstance) reportsChartInstance.destroy();
             reportsChartInstance = new Chart(ctx, { 
                 type: 'bar', 
                 data: { 
                     labels: Object.keys(deptCounts), 
-                    datasets: [{ label: 'Total Requests', data: Object.values(deptCounts), backgroundColor: '#3b82f6', borderRadius: 4 }] 
+                    datasets: [{ label: 'Total Requests', data: Object.values(deptCounts), backgroundColor: '#2563eb', borderRadius: 4 }] 
                 }, 
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } }, x: { grid: { display: false } } } } 
             });
