@@ -541,6 +541,9 @@
                         document.getElementById('view-login').classList.add('hidden');
                         document.getElementById('view-public-signin').classList.remove('hidden');
                         initSignaturePad();
+                    } else {
+                        document.getElementById('view-public-signin').classList.add('hidden');
+                        document.getElementById('view-login').classList.remove('hidden');
                     }
                 }
             } catch(e) { showNotification("Initialization failed. Check network connection.", "error"); }
