@@ -18,7 +18,7 @@
                 extend: {
                     colors: { 
                         tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' },
-                        surface: '#eef2f6' // Soft, eye-pleasing clinical background
+                        surface: '#eef2f6'
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -43,7 +43,7 @@
         .loader-blue { border-color: rgba(37,99,235,0.2); border-top-color: #2563eb; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Print Styles for Official Attendance Roster */
+        /* Print Styles */
         @media print { 
             body * { visibility: hidden; }
             #print-roster-container, #print-roster-container * { visibility: visible; }
@@ -108,7 +108,8 @@
 
 
     <!-- ==================== VIEW 2: PROFESSIONAL LOGIN ==================== -->
-    <div id="view-login" class="hidden flex-grow flex items-center justify-center p-4">
+    <!-- Removed 'hidden' by default so it never stays blank if connection is slow -->
+    <div id="view-login" class="flex-grow flex items-center justify-center p-4">
         <div class="bg-white p-10 md:p-12 rounded-2xl shadow-xl max-w-sm w-full border border-gray-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-tdmh-blue"></div>
             
@@ -527,6 +528,19 @@
             updateTotal();
             toggleTrainingType();
 
+            // Always show the correct UI right away
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('reqId')) {
+                document.getElementById('public-title-display').textContent = urlParams.get('title') || 'Official Training';
+                document.getElementById('view-login').classList.add('hidden');
+                document.getElementById('view-public-signin').classList.remove('hidden');
+                initSignaturePad();
+            } else {
+                document.getElementById('view-public-signin').classList.add('hidden');
+                document.getElementById('view-login').classList.remove('hidden');
+            }
+
+            // Fetch in background
             try {
                 const res = await fetch(GAS_URL + '?action=getDepartments');
                 const json = await res.json();
@@ -534,19 +548,13 @@
                     systemDepts = json.departments;
                     populateDropdown('public-dept', false);
                     populateDropdown('login-dept', false);
-                    
-                    const urlParams = new URLSearchParams(window.location.search);
-                    if (urlParams.has('reqId')) {
-                        document.getElementById('public-title-display').textContent = urlParams.get('title') || 'Official Training';
-                        document.getElementById('view-login').classList.add('hidden');
-                        document.getElementById('view-public-signin').classList.remove('hidden');
-                        initSignaturePad();
-                    } else {
-                        document.getElementById('view-public-signin').classList.add('hidden');
-                        document.getElementById('view-login').classList.remove('hidden');
-                    }
+                } else {
+                    document.getElementById('login-dept').innerHTML = '<option value="" disabled selected>System requires Setup...</option>';
                 }
-            } catch(e) { showNotification("Initialization failed. Check network connection.", "error"); }
+            } catch(e) { 
+                showNotification("Could not connect to database.", "error"); 
+                document.getElementById('login-dept').innerHTML = '<option value="" disabled selected>Connection error...</option>';
+            }
         }
 
         function populateDropdown(id, isAdminIncluded) {
