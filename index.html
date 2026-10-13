@@ -17,8 +17,7 @@
             theme: {
                 extend: {
                     colors: { 
-                        tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' },
-                        surface: '#eef2f6'
+                        tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' }
                     },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
@@ -29,7 +28,8 @@
     
     <!-- Custom CSS -->
     <style>
-        body { background-color: #eef2f6; overflow-x: hidden; }
+        /* Forced Clinical Slate Background */
+        body { background-color: #eef2f6 !important; overflow-x: hidden; }
         
         #signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #ffffff; touch-action: none; cursor: crosshair; transition: border-color 0.3s; }
         #signature-pad:focus-within, #signature-pad:hover { border-color: #3b82f6; }
@@ -43,7 +43,7 @@
         .loader-blue { border-color: rgba(37,99,235,0.2); border-top-color: #2563eb; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Print Styles */
+        /* Print Styles for Official Attendance Roster */
         @media print { 
             body * { visibility: hidden; }
             #print-roster-container, #print-roster-container * { visibility: visible; }
@@ -79,7 +79,34 @@
                 <div>
                     <label class="block text-sm font-bold text-gray-700 mb-1.5">Department <span class="text-red-500">*</span></label>
                     <select id="public-dept" required class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 transition font-medium">
-                        <option value="" disabled selected>Loading departments...</option>
+                        <option value="" disabled selected>Select Department...</option>
+                        <option value="CQI">CQI</option>
+                        <option value="Training & Development">Training & Development</option>
+                        <option value="Hospital Admin">Hospital Admin</option>
+                        <option value="HR">HR</option>
+                        <option value="Admitting">Admitting</option>
+                        <option value="Emergency Room">Emergency Room</option>
+                        <option value="NSO">NSO</option>
+                        <option value="Operating Room">Operating Room</option>
+                        <option value="Laboratory">Laboratory</option>
+                        <option value="Pharmacy">Pharmacy</option>
+                        <option value="Dietary">Dietary</option>
+                        <option value="Cashier">Cashier</option>
+                        <option value="Billing">Billing</option>
+                        <option value="Philhealth">Philhealth</option>
+                        <option value="GSD Housekeeping">GSD Housekeeping</option>
+                        <option value="GSD Linens">GSD Linens</option>
+                        <option value="GSD Room Facilities & Utilities (Maintenance & Elevator)">GSD Room Facilities & Utilities (Maintenance & Elevator)</option>
+                        <option value="GSD Security">GSD Security</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Heart Station">Heart Station</option>
+                        <option value="NICU">NICU</option>
+                        <option value="Hemodialysis">Hemodialysis</option>
+                        <option value="HOMES">HOMES</option>
+                        <option value="GSD Parking">GSD Parking</option>
+                        <option value="IT">IT</option>
+                        <option value="Medical Records">Medical Records</option>
                     </select>
                 </div>
                 <div class="pt-2">
@@ -108,14 +135,13 @@
 
 
     <!-- ==================== VIEW 2: PROFESSIONAL LOGIN ==================== -->
-    <!-- Removed 'hidden' by default so it never stays blank if connection is slow -->
     <div id="view-login" class="flex-grow flex items-center justify-center p-4">
         <div class="bg-white p-10 md:p-12 rounded-2xl shadow-xl max-w-sm w-full border border-gray-200 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-tdmh-blue"></div>
             
             <div class="text-center mb-8 mt-2">
                 <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-tdmh-blue shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
-                <h1 class="text-2xl font-black text-gray-900 tracking-tight">TDO Portal</h1>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">TDMH Portal</h1>
                 <p class="text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-widest">Training & Development</p>
             </div>
 
@@ -123,7 +149,35 @@
                 <div>
                     <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Department</label>
                     <select id="login-dept" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500 font-semibold text-gray-700">
-                        <option value="" disabled selected>Loading...</option>
+                        <option value="" disabled selected>Select Department...</option>
+                        <option value="CQI">CQI</option>
+                        <option value="Training & Development">Training & Development</option>
+                        <option value="Hospital Admin">Hospital Admin</option>
+                        <option value="HR">HR</option>
+                        <option value="Admitting">Admitting</option>
+                        <option value="Emergency Room">Emergency Room</option>
+                        <option value="NSO">NSO</option>
+                        <option value="Operating Room">Operating Room</option>
+                        <option value="Laboratory">Laboratory</option>
+                        <option value="Pharmacy">Pharmacy</option>
+                        <option value="Dietary">Dietary</option>
+                        <option value="Cashier">Cashier</option>
+                        <option value="Billing">Billing</option>
+                        <option value="Philhealth">Philhealth</option>
+                        <option value="GSD Housekeeping">GSD Housekeeping</option>
+                        <option value="GSD Linens">GSD Linens</option>
+                        <option value="GSD Room Facilities & Utilities (Maintenance & Elevator)">GSD Room Facilities & Utilities (Maintenance & Elevator)</option>
+                        <option value="GSD Security">GSD Security</option>
+                        <option value="Radiology">Radiology</option>
+                        <option value="Pathology">Pathology</option>
+                        <option value="Heart Station">Heart Station</option>
+                        <option value="NICU">NICU</option>
+                        <option value="Hemodialysis">Hemodialysis</option>
+                        <option value="HOMES">HOMES</option>
+                        <option value="GSD Parking">GSD Parking</option>
+                        <option value="IT">IT</option>
+                        <option value="Medical Records">Medical Records</option>
+                        <option value="admin" class="font-black text-blue-700">⭐ Administrator</option>
                     </select>
                 </div>
                 <div>
@@ -456,7 +510,15 @@
         // MUST MATCH DEPLOYED WEB APP URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec';
         
-        let systemDepts = [];
+        let systemDepts = [
+            "CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", 
+            "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", 
+            "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", 
+            "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", 
+            "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", 
+            "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"
+        ];
+        
         let currentUserRole = null;
         let currentUserName = null;
         let currentDeptName = null;
@@ -523,10 +585,14 @@
         window.addEventListener('online', () => { document.getElementById('offline-banner').classList.add('hidden'); syncOfflineData(); });
 
         // --- Init & Public Signin ---
-        async function init() {
+        function init() {
             document.getElementById('req-date-app').valueAsDate = new Date();
             updateTotal();
             toggleTrainingType();
+
+            // Populate Admin Dropdown
+            const select = document.getElementById('req-department-select');
+            systemDepts.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; });
 
             // Always show the correct UI right away
             const urlParams = new URLSearchParams(window.location.search);
@@ -539,29 +605,6 @@
                 document.getElementById('view-public-signin').classList.add('hidden');
                 document.getElementById('view-login').classList.remove('hidden');
             }
-
-            // Fetch in background
-            try {
-                const res = await fetch(GAS_URL + '?action=getDepartments');
-                const json = await res.json();
-                if (json.success) {
-                    systemDepts = json.departments;
-                    populateDropdown('public-dept', false);
-                    populateDropdown('login-dept', false);
-                } else {
-                    document.getElementById('login-dept').innerHTML = '<option value="" disabled selected>System requires Setup...</option>';
-                }
-            } catch(e) { 
-                showNotification("Could not connect to database.", "error"); 
-                document.getElementById('login-dept').innerHTML = '<option value="" disabled selected>Connection error...</option>';
-            }
-        }
-
-        function populateDropdown(id, isAdminIncluded) {
-            const select = document.getElementById(id);
-            select.innerHTML = '<option value="" disabled selected>Select Department...</option>';
-            systemDepts.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; });
-            if (isAdminIncluded) select.innerHTML = `<option value="admin" class="font-black text-tdmh-blue">⭐ Administrator</option>` + select.innerHTML;
         }
 
         let canvas, ctx, isDrawing = false, hasSigned = false, currentCanvasWidth = 0;
@@ -651,7 +694,6 @@
                     if (currentUserRole === 'Admin') {
                         deptInput.classList.add('hidden');
                         deptSelect.classList.remove('hidden');
-                        deptSelect.innerHTML = json.allDepartments.filter(d => d.toLowerCase() !== 'admin').map(d => `<option value="${d}">${d}</option>`).join('');
                         if(currentDeptName !== 'admin') deptSelect.value = currentDeptName;
                     } else {
                         deptSelect.classList.add('hidden');
