@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TDMH Super App - Operations Portal</title>
+    <title>TDMH Training & Development System</title>
     
     <!-- Dependencies -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -14,10 +14,12 @@
     <!-- Tailwind Config -->
     <script>
         tailwind.config = {
-            darkMode: 'class',
             theme: {
                 extend: {
-                    colors: { tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' } },
+                    colors: { 
+                        tdmh: { blue: '#1e3a8a', light: '#e0e7ff', accent: '#2563eb' },
+                        surface: '#eef2f6' // Soft, eye-pleasing clinical background
+                    },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
@@ -25,20 +27,12 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS & Animations -->
+    <!-- Custom CSS -->
     <style>
-        body { transition: background-color 0.3s ease, color 0.3s ease; overflow-x: hidden; background-color: #f8fafc; }
-        .dark body { background-color: #0f172a; color: #f1f5f9; }
+        body { background-color: #eef2f6; overflow-x: hidden; }
         
         #signature-pad { border: 2px dashed #cbd5e1; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #ffffff; touch-action: none; cursor: crosshair; transition: border-color 0.3s; }
-        .dark #signature-pad { background-color: #1e293b; border-color: #475569; }
         #signature-pad:focus-within, #signature-pad:hover { border-color: #3b82f6; }
-
-        .theme-overlay { position: fixed; top: 0; bottom: 0; left: 0; width: 100vw; z-index: 9999; pointer-events: none; transform: translateX(-100%); will-change: transform; box-shadow: 0 0 100px rgba(0,0,0,0.4); }
-        .sweep-active { animation: themeSweep 1.5s forwards; }
-        @keyframes themeSweep { 0% { transform: translateX(-100%); animation-timing-function: cubic-bezier(0.7, 0, 0.2, 1); } 35% { transform: translateX(0%); animation-timing-function: linear; } 65% { transform: translateX(0%); animation-timing-function: cubic-bezier(0.8, 0, 0.3, 1); } 100% { transform: translateX(100%); } }
-        .sweep-active #theme-overlay-text-bg { animation: textPop 1.5s forwards; }
-        @keyframes textPop { 0% { transform: scale(0.8); opacity: 0; filter: blur(4px); } 35% { transform: scale(1.05); opacity: 1; filter: blur(0px); } 65% { transform: scale(1.15); opacity: 1; filter: blur(0px); } 100% { transform: scale(0.9); opacity: 0; filter: blur(4px); } }
 
         @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
         @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
@@ -59,7 +53,7 @@
         }
     </style>
 </head>
-<body class="text-slate-800 dark:text-slate-200 min-h-screen flex flex-col">
+<body class="text-slate-800 min-h-screen flex flex-col">
 
     <!-- GLOBAL UI ELEMENTS -->
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 no-print"></div>
@@ -68,88 +62,76 @@
         ⚠️ Working Offline - Signatures queued in vault. Will sync automatically when Wi-Fi returns.
     </div>
 
-    <div id="theme-overlay" class="theme-overlay no-print flex items-center justify-center">
-        <div id="theme-overlay-text-bg" class="px-8 py-5 rounded-[2rem] transition-all duration-300 flex items-center justify-center">
-            <span class="text-5xl md:text-7xl font-black tracking-widest flex gap-2 md:gap-3 drop-shadow-sm"><span class="text-[#059669]">T</span><span class="text-[#1e3a8a]">D</span><span class="text-[#d97706]">M</span><span class="text-[#dc2626]">H</span></span>
-        </div>
-    </div>
-
-    <button id="theme-toggle" class="fixed bottom-6 left-6 z-50 p-3 rounded-full bg-white dark:bg-slate-800 shadow-lg border border-gray-200 dark:border-slate-700 hover:shadow-xl transition-all text-gray-500 hover:text-tdmh-blue dark:text-gray-400 dark:hover:text-blue-400 no-print">
-        <i id="moon-icon" class="fa-solid fa-moon text-lg hidden dark:block"></i>
-        <i id="sun-icon" class="fa-solid fa-sun text-lg block dark:hidden"></i>
-    </button>
-
-
     <!-- ==================== VIEW 1: PUBLIC SIGN-IN (VIA QR CODE) ==================== -->
     <div id="view-public-signin" class="hidden flex-grow flex flex-col items-center justify-center p-4 py-12">
-        <div class="bg-white dark:bg-slate-800 p-8 md:p-10 rounded-[2rem] shadow-2xl max-w-lg w-full border border-gray-100 dark:border-slate-700">
+        <div class="bg-white p-8 md:p-10 rounded-2xl shadow-xl max-w-lg w-full border border-gray-200">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-blue-100 dark:bg-slate-700 text-blue-700 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner"><i class="fa-solid fa-clipboard-user"></i></div>
-                <h1 class="text-2xl font-black text-tdmh-blue dark:text-blue-300 uppercase tracking-wide">Training Sign-In</h1>
-                <p id="public-title-display" class="text-gray-500 dark:text-gray-400 font-bold mt-2 bg-gray-50 dark:bg-slate-900 py-2 px-4 rounded-lg inline-block">Loading training details...</p>
+                <div class="w-16 h-16 bg-blue-50 text-blue-700 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner"><i class="fa-solid fa-clipboard-user"></i></div>
+                <h1 class="text-2xl font-black text-tdmh-blue uppercase tracking-wide">Training Sign-In</h1>
+                <p id="public-title-display" class="text-gray-500 font-bold mt-2 bg-gray-50 py-2 px-4 rounded-lg inline-block">Loading training details...</p>
             </div>
 
             <form id="public-signin-form" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Full Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 transition font-medium" placeholder="e.g., Juan Dela Cruz">
+                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Full Name <span class="text-red-500">*</span></label>
+                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 transition font-medium" placeholder="e.g., Juan Dela Cruz">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Department <span class="text-red-500">*</span></label>
-                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 transition font-medium">
+                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Department <span class="text-red-500">*</span></label>
+                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl outline-none focus:border-blue-500 transition font-medium">
                         <option value="" disabled selected>Loading departments...</option>
                     </select>
                 </div>
                 <div class="pt-2">
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 flex justify-between items-center">
+                    <label class="block text-sm font-bold text-gray-700 mb-2 flex justify-between items-center">
                         <span>Digital Signature <span class="text-red-500">*</span></span>
-                        <button type="button" id="btn-clear-sig" class="text-xs bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 px-3 py-1.5 rounded-lg font-bold hover:bg-red-100 transition">Clear Canvas</button>
+                        <button type="button" id="btn-clear-sig" class="text-xs bg-red-50 text-red-600 border border-red-200 px-3 py-1.5 rounded-lg font-bold hover:bg-red-100 transition">Clear Canvas</button>
                     </label>
                     <canvas id="signature-pad" class="shadow-inner"></canvas>
                     <p class="text-[10px] text-gray-400 mt-2 text-center uppercase font-semibold">Please sign within the dotted box</p>
                 </div>
-                <button type="submit" id="btn-public-submit" class="w-full bg-tdmh-blue hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-xl transition active:scale-[0.98] flex items-center justify-center text-lg">
+                <button type="submit" id="btn-public-submit" class="w-full bg-tdmh-blue hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] flex items-center justify-center text-lg">
                     Submit Secure Attendance
                 </button>
             </form>
 
             <div id="public-success" class="hidden text-center py-10 transform scale-95 transition-transform duration-300">
                 <div class="w-24 h-24 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-500"></i></div>
-                <h2 class="text-3xl font-black text-gray-900 dark:text-white mb-3">Recorded!</h2>
-                <div class="bg-blue-50 dark:bg-slate-700/50 p-4 rounded-xl border border-blue-100 dark:border-slate-600 mt-6">
-                    <p class="text-xs font-black text-tdmh-blue dark:text-blue-400 uppercase tracking-widest leading-relaxed">Thank you for your participation.</p>
-                    <p class="text-sm font-bold text-gray-800 dark:text-gray-200 mt-1">You may now close this browser tab.</p>
+                <h2 class="text-3xl font-black text-gray-900 mb-3">Recorded!</h2>
+                <div class="bg-blue-50 p-4 rounded-xl border border-blue-100 mt-6">
+                    <p class="text-xs font-black text-tdmh-blue uppercase tracking-widest leading-relaxed">Thank you for your participation.</p>
+                    <p class="text-sm font-bold text-gray-800 mt-1">You may now close this browser tab.</p>
                 </div>
             </div>
         </div>
     </div>
 
 
-    <!-- ==================== VIEW 2: TDO SYSTEM LOGIN ==================== -->
+    <!-- ==================== VIEW 2: PROFESSIONAL LOGIN ==================== -->
     <div id="view-login" class="hidden flex-grow flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 p-10 md:p-12 rounded-[2rem] shadow-xl max-w-sm w-full border border-gray-100 dark:border-slate-700 relative overflow-hidden">
-            <div class="absolute top-0 left-0 w-full h-24 bg-gradient-to-b from-blue-50 to-white dark:from-slate-700/50 dark:to-slate-800 z-0"></div>
+        <div class="bg-white p-10 md:p-12 rounded-2xl shadow-xl max-w-sm w-full border border-gray-200 relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-2 bg-tdmh-blue"></div>
             
-            <div class="text-center mb-8 relative z-10">
-                <div class="w-16 h-16 bg-tdmh-light dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-tdmh-blue dark:text-blue-400 shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
-                <h1 class="text-3xl font-black text-gray-900 dark:text-white tracking-tight">TDMH Portal</h1>
-                <p class="text-xs font-bold text-gray-400 mt-1 uppercase tracking-widest">TDO & Attendance Database</p>
+            <div class="text-center mb-8 mt-2">
+                <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4 text-tdmh-blue shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight">TDMH Portal</h1>
+                <p class="text-[10px] font-bold text-gray-400 mt-1.5 uppercase tracking-widest">Training & Development</p>
             </div>
 
-            <form id="login-form" class="space-y-6 relative z-10">
+            <form id="login-form" class="space-y-5">
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 text-center">Select Department</label>
-                    <select id="login-dept" required class="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 font-bold text-center appearance-none">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Department</label>
+                    <select id="login-dept" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500 font-semibold text-gray-700">
                         <option value="" disabled selected>Loading...</option>
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2 text-center">Password</label>
-                    <input type="password" id="login-password" required class="w-full px-4 py-3.5 bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-center tracking-widest font-medium">
+                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">Password</label>
+                    <input type="password" id="login-password" required class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg outline-none focus:border-blue-500 font-medium tracking-widest text-gray-800">
                 </div>
-                <div id="login-error" class="hidden text-red-500 text-xs font-bold text-center bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 py-3 rounded-xl"></div>
-                <button type="submit" id="btn-login" class="w-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 font-black py-4 rounded-xl hover:bg-tdmh-blue dark:hover:bg-blue-100 transition-all shadow-lg flex items-center justify-center mt-4 active:scale-[0.98]">
-                    Authorize Access
+                <div id="login-error" class="hidden text-red-600 text-xs font-bold text-center bg-red-50 border border-red-100 py-3 rounded-lg"></div>
+                <button type="submit" id="btn-login" class="w-full bg-tdmh-blue text-white font-bold py-3.5 rounded-lg hover:bg-blue-900 transition-all shadow-md flex items-center justify-center mt-2 active:scale-[0.98]">
+                    Secure Login
                 </button>
             </form>
         </div>
@@ -164,14 +146,14 @@
             <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center shadow-inner"><i class="fa-solid fa-hospital text-blue-100 text-lg"></i></div>
-                        <span class="font-black text-lg tracking-wide hidden sm:block">TDMH Super App</span>
+                        <div class="w-9 h-9 bg-white/10 rounded-lg flex items-center justify-center shadow-inner"><i class="fa-solid fa-hospital-user text-blue-100"></i></div>
+                        <span class="font-black text-lg tracking-wide hidden sm:block">TDMH Operations</span>
                     </div>
                     
                     <div class="flex items-center space-x-3 md:space-x-4">
-                        <button id="nav-sync" class="text-xs md:text-sm bg-blue-800 hover:bg-blue-700 px-3 md:px-4 py-1.5 md:py-2 rounded-lg transition font-bold flex items-center shadow-inner border border-blue-700"><i class="fa-solid fa-rotate mr-2"></i> <span class="hidden md:inline">Sync Data</span></button>
-                        <div class="text-xs md:text-sm bg-white/10 px-3 md:px-4 py-1.5 md:py-2 rounded-lg font-bold border border-white/20 flex items-center gap-2"><i class="fa-solid fa-user-shield opacity-70"></i> <span id="user-badge" class="tracking-wide">User</span></div>
-                        <button id="nav-logout" class="text-sm bg-red-500/20 hover:bg-red-500 text-red-100 hover:text-white px-3 py-1.5 md:py-2 rounded-lg transition font-bold border border-red-500/30"><i class="fa-solid fa-power-off"></i></button>
+                        <button id="nav-sync" class="text-xs md:text-sm bg-blue-800 hover:bg-blue-700 px-3 md:px-4 py-1.5 rounded-md transition font-bold flex items-center shadow-inner border border-blue-700"><i class="fa-solid fa-rotate mr-2"></i> <span class="hidden md:inline">Sync Data</span></button>
+                        <div class="text-xs md:text-sm bg-white/10 px-3 md:px-4 py-1.5 rounded-md font-bold border border-white/20 flex items-center gap-2"><i class="fa-solid fa-user-shield opacity-70"></i> <span id="user-badge" class="tracking-wide">User</span></div>
+                        <button id="nav-logout" class="text-sm bg-red-500/20 hover:bg-red-500 text-red-100 hover:text-white px-3 py-1.5 rounded-md transition font-bold border border-red-500/30" title="Logout"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 </div>
             </div>
@@ -180,11 +162,11 @@
         <div class="flex-grow flex overflow-hidden max-w-[1400px] w-full mx-auto relative no-print">
             
             <!-- Sidebar Navigation -->
-            <div class="w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex-shrink-0 flex flex-col py-6 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 hidden md:flex">
-                <div class="px-6 mb-3 text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-widest">Workspace Menu</div>
-                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex items-center w-full px-6 py-3.5 text-left font-bold text-tdmh-blue dark:text-blue-400 bg-blue-50 dark:bg-slate-700/50 border-r-4 border-tdmh-blue transition group"><i class="fa-solid fa-table-columns w-7 opacity-80 group-hover:opacity-100 transition-opacity"></i> Dashboard</button>
-                <button onclick="switchTab('new-request')" id="tab-new-request" class="flex items-center w-full px-6 py-3.5 text-left font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/30 hover:text-tdmh-blue dark:hover:text-blue-300 transition group border-r-4 border-transparent"><i class="fa-solid fa-file-circle-plus w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> New Request</button>
-                <button onclick="switchTab('reports')" id="tab-reports" class="hidden flex items-center w-full px-6 py-3.5 text-left font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-slate-700/30 hover:text-tdmh-blue dark:hover:text-blue-300 transition group border-r-4 border-transparent"><i class="fa-solid fa-chart-pie w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> ISO Reports</button>
+            <div class="w-64 bg-white border-r border-gray-200 flex-shrink-0 flex flex-col py-6 shadow-sm z-10 hidden md:flex">
+                <div class="px-6 mb-3 text-[10px] font-black text-gray-400 uppercase tracking-widest">Workspace Menu</div>
+                <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex items-center w-full px-6 py-3.5 text-left font-bold text-tdmh-blue bg-blue-50 border-r-4 border-tdmh-blue transition group"><i class="fa-solid fa-table-columns w-7 opacity-80 group-hover:opacity-100 transition-opacity"></i> Dashboard</button>
+                <button onclick="switchTab('new-request')" id="tab-new-request" class="flex items-center w-full px-6 py-3.5 text-left font-bold text-gray-600 hover:bg-gray-50 hover:text-tdmh-blue transition group border-r-4 border-transparent"><i class="fa-solid fa-file-circle-plus w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> New Request</button>
+                <button onclick="switchTab('reports')" id="tab-reports" class="hidden flex items-center w-full px-6 py-3.5 text-left font-bold text-gray-600 hover:bg-gray-50 hover:text-tdmh-blue transition group border-r-4 border-transparent"><i class="fa-solid fa-chart-pie w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> ISO Reports</button>
             </div>
 
             <!-- Mobile Menu Toggle -->
@@ -194,26 +176,26 @@
             </div>
 
             <!-- MAIN CONTENT AREA -->
-            <div class="flex-grow overflow-y-auto bg-slate-50 dark:bg-slate-900 relative p-4 md:p-8" id="main-content-area">
+            <div class="flex-grow overflow-y-auto bg-transparent relative p-4 md:p-8" id="main-content-area">
                 
                 <!-- GLOBAL APP LOADER -->
-                <div id="global-loader" class="absolute inset-0 bg-slate-50/80 dark:bg-slate-900/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
+                <div id="global-loader" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
                     <div class="loader !border-blue-600 !border-t-transparent !w-12 !h-12 border-4 mb-4"></div>
-                    <p class="text-blue-900 dark:text-blue-400 font-bold tracking-widest animate-pulse">SYNCING CLOUD DATABASE...</p>
+                    <p class="text-blue-900 font-bold tracking-widest animate-pulse">SYNCING DATABASE...</p>
                 </div>
 
                 <!-- ==================== SUB-VIEW: DASHBOARD ==================== -->
                 <div id="subview-dashboard" class="max-w-6xl mx-auto pb-20">
                     <div class="flex justify-between items-end mb-6">
                         <div>
-                            <h2 class="text-2xl font-black text-gray-900 dark:text-white">Training Operations</h2>
-                            <p class="text-gray-500 dark:text-gray-400 text-sm font-medium mt-1">Manage requests, approvals, and event attendance.</p>
+                            <h2 class="text-2xl font-black text-gray-900">Training Operations</h2>
+                            <p class="text-gray-500 text-sm font-medium mt-1">Manage requests, approvals, and event attendance.</p>
                         </div>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-x-auto">
+                    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-x-auto">
                         <table class="w-full text-left text-sm whitespace-nowrap">
-                            <thead class="bg-gray-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700 text-gray-500 dark:text-gray-400 uppercase text-[11px] font-black tracking-wider">
+                            <thead class="bg-gray-50 border-b border-gray-200 text-gray-500 uppercase text-[11px] font-black tracking-wider">
                                 <tr>
                                     <th class="px-6 py-4">Request ID</th>
                                     <th class="px-6 py-4">Department</th>
@@ -222,7 +204,7 @@
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="dashboard-tbody" class="divide-y divide-gray-100 dark:divide-slate-700/50 text-gray-800 dark:text-gray-200">
+                            <tbody id="dashboard-tbody" class="divide-y divide-gray-100 text-gray-800">
                                 <!-- Dashboard Requests Injected Here -->
                             </tbody>
                         </table>
@@ -230,20 +212,20 @@
                 </div>
 
                 <!-- ==================== SUB-VIEW: NEW REQUEST FORM ==================== -->
-                <div id="subview-new-request" class="hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 mb-20">
-                    <h2 class="text-2xl font-black text-gray-900 dark:text-white mb-8 border-b border-gray-200 dark:border-slate-700 pb-4">Create Training Request</h2>
+                <div id="subview-new-request" class="hidden max-w-4xl mx-auto bg-white p-8 rounded-xl shadow-sm border border-gray-200 mb-20">
+                    <h2 class="text-2xl font-black text-gray-900 mb-8 border-b border-gray-100 pb-4">Create Training Request</h2>
                     <form id="request-form" class="space-y-8">
                         
-                        <div class="bg-blue-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 p-5 rounded-xl">
-                            <label class="block text-sm font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest mb-3">Training Type</label>
+                        <div class="bg-blue-50/50 border border-blue-100 p-5 rounded-lg">
+                            <label class="block text-sm font-black text-blue-900 uppercase tracking-widest mb-3">Training Type</label>
                             <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-6">
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
+                                <label class="flex items-center cursor-pointer p-3 bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
                                     <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 z-10">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-gray-900 dark:text-white">External Seminar</span><span class="block text-xs text-gray-500">1 Person. Outside hospital.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-gray-900">External Seminar</span><span class="block text-xs text-gray-500">1 Person. Outside hospital.</span></div>
                                 </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
+                                <label class="flex items-center cursor-pointer p-3 bg-white border border-gray-200 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
                                     <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 z-10">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-gray-900 dark:text-white">Internal / In-Service</span><span class="block text-xs text-gray-500">Group event. Roster & QR enabled.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-gray-900">Internal / In-Service</span><span class="block text-xs text-gray-500">Group event. Roster & QR enabled.</span></div>
                                 </label>
                             </div>
                         </div>
@@ -251,51 +233,47 @@
                         <!-- Department Selection Logic -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
                             <div>
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Department / Hosting Entity</label>
-                                <!-- Standard read-only input for regular users -->
-                                <input type="text" id="req-department" readonly class="w-full border-gray-200 border rounded-md p-2.5 bg-gray-50 dark:bg-slate-900 text-gray-600 dark:text-gray-400 font-medium cursor-not-allowed">
-                                <!-- Select dropdown specifically for T&D Admin -->
-                                <select id="req-department-select" class="hidden w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition font-medium"></select>
+                                <label class="block text-sm font-bold text-gray-700 mb-1.5">Department / Hosting Entity</label>
+                                <input type="text" id="req-department" readonly class="w-full border-gray-200 border rounded-md p-2.5 bg-gray-50 text-gray-600 font-medium cursor-not-allowed">
+                                <select id="req-department-select" class="hidden w-full bg-white border border-gray-300 rounded-lg p-2.5 outline-none focus:border-blue-500 transition font-medium"></select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Title of Training</label><input type="text" id="req-title" required class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
+                            <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 mb-1.5">Title of Training</label><input type="text" id="req-title" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
                             
-                            <!-- External Only Field -->
                             <div id="field-employee-name" class="md:col-span-2">
-                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Specific Employee Name <span class="text-blue-500 ml-2 text-[10px] uppercase font-black bg-blue-50 dark:bg-slate-700 px-2 py-0.5 rounded">Required for External</span></label>
-                                <input type="text" id="req-emp-name" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition">
+                                <label class="block text-sm font-bold text-gray-700 mb-1.5">Specific Employee Name <span class="text-blue-600 ml-2 text-[10px] uppercase font-black bg-blue-50 px-2 py-0.5 rounded">Required for External</span></label>
+                                <input type="text" id="req-emp-name" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 transition">
                             </div>
 
-                            <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Venue</label><input type="text" id="req-venue" required class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
-                            <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g., Oct 12 - Oct 14" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Venue</label><input type="text" id="req-venue" required class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
+                            <div><label class="block text-sm font-bold text-gray-700 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g., Oct 12 - Oct 14" class="w-full bg-gray-50 border border-gray-200 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
                         </div>
 
-                        <!-- Internal Only Field -->
-                        <div id="field-roster-builder" class="hidden border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                            <div class="bg-gray-50 dark:bg-slate-900 p-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
-                                <div><h3 class="font-bold text-gray-800 dark:text-white">Expected Roster</h3><p class="text-xs text-gray-500">Generates Official Attendance Record sheet.</p></div>
-                                <button type="button" id="btn-add-roster" class="bg-blue-100 text-blue-700 dark:bg-slate-800 dark:text-blue-400 text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition flex items-center"><i class="fa-solid fa-user-plus mr-1"></i> Add Trainee</button>
+                        <div id="field-roster-builder" class="hidden border border-gray-200 rounded-xl overflow-hidden">
+                            <div class="bg-gray-50 p-4 border-b border-gray-200 flex justify-between items-center">
+                                <div><h3 class="font-bold text-gray-800">Expected Roster</h3><p class="text-xs text-gray-500">Generates Official Attendance Record sheet.</p></div>
+                                <button type="button" id="btn-add-roster" class="bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition flex items-center"><i class="fa-solid fa-user-plus mr-1"></i> Add Trainee</button>
                             </div>
-                            <div class="p-4 bg-white dark:bg-slate-800 space-y-3" id="roster-container"></div>
+                            <div class="p-4 bg-white space-y-3" id="roster-container"></div>
                         </div>
 
-                        <div class="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
-                            <div class="bg-gray-50 dark:bg-slate-900 p-4 border-b border-gray-200 dark:border-slate-700"><h3 class="font-bold text-gray-800 dark:text-white">Budget Breakdown (₱)</h3></div>
+                        <div class="border border-gray-200 rounded-xl overflow-hidden">
+                            <div class="bg-gray-50 p-4 border-b border-gray-200"><h3 class="font-bold text-gray-800">Budget Breakdown (₱)</h3></div>
                             <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
-                                <div><label id="label-food" class="block text-xs font-bold text-gray-500 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-gray-50 border border-gray-300 rounded p-2 text-right font-medium text-gray-900 outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-gray-50 border border-gray-300 rounded p-2 text-right font-medium text-gray-900 outline-none focus:border-blue-500"></div>
+                                <div><label id="label-food" class="block text-xs font-bold text-gray-500 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-gray-50 border border-gray-300 rounded p-2 text-right font-medium text-gray-900 outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-gray-50 border border-gray-300 rounded p-2 text-right font-medium text-gray-900 outline-none focus:border-blue-500"></div>
                             </div>
-                            <div class="bg-blue-50 dark:bg-slate-900/80 p-4 border-t border-blue-100 dark:border-slate-700 flex justify-between items-center">
-                                <span class="font-black text-tdmh-blue dark:text-blue-400 uppercase tracking-widest text-sm">Total Budget Requested</span>
-                                <span class="text-2xl font-black text-blue-700 dark:text-blue-300">₱<span id="total-amount">0.00</span></span>
+                            <div class="bg-blue-50 p-4 border-t border-blue-100 flex justify-between items-center">
+                                <span class="font-black text-tdmh-blue uppercase tracking-widest text-sm">Total Budget Requested</span>
+                                <span class="text-2xl font-black text-blue-700">₱<span id="total-amount">0.00</span></span>
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-submit-req" class="w-full bg-tdmh-blue hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] text-lg flex items-center justify-center">
+                        <button type="submit" id="btn-submit-req" class="w-full bg-tdmh-blue hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-md transition active:scale-[0.98] text-lg flex items-center justify-center">
                             <i class="fa-solid fa-paper-plane mr-2"></i> Submit Training Request
                         </button>
                     </form>
@@ -303,15 +281,15 @@
 
                 <!-- ==================== SUB-VIEW: ISO REPORTS ==================== -->
                 <div id="subview-reports" class="hidden max-w-6xl mx-auto pb-20">
-                    <h2 class="text-2xl font-black text-gray-900 dark:text-white mb-6">ISO Analytics & Reports</h2>
+                    <h2 class="text-2xl font-black text-gray-900 mb-6">ISO Analytics & Reports</h2>
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-blue-50 dark:bg-slate-800 p-5 rounded-2xl border border-blue-100 dark:border-slate-700"><div class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase mb-1">Total Requests</div><div id="kpi-total" class="text-4xl font-black text-blue-900 dark:text-white">0</div></div>
-                        <div class="bg-yellow-50 dark:bg-slate-800 p-5 rounded-2xl border border-yellow-100 dark:border-slate-700"><div class="text-xs font-black text-yellow-600 dark:text-yellow-400 uppercase mb-1">Pending</div><div id="kpi-pending" class="text-4xl font-black text-yellow-900 dark:text-white">0</div></div>
-                        <div class="bg-green-50 dark:bg-slate-800 p-5 rounded-2xl border border-green-100 dark:border-slate-700"><div class="text-xs font-black text-green-600 dark:text-green-400 uppercase mb-1">Approved/Done</div><div id="kpi-approved" class="text-4xl font-black text-green-900 dark:text-white">0</div></div>
-                        <div class="bg-gray-100 dark:bg-slate-800 p-5 rounded-2xl border border-gray-200 dark:border-slate-700"><div class="text-xs font-black text-gray-500 dark:text-gray-400 uppercase mb-1">Total Budget (₱)</div><div id="kpi-budget" class="text-3xl md:text-4xl font-black text-gray-800 dark:text-white">0</div></div>
+                        <div class="bg-blue-50 p-5 rounded-2xl border border-blue-100"><div class="text-xs font-black text-blue-600 uppercase mb-1">Total Requests</div><div id="kpi-total" class="text-4xl font-black text-blue-900">0</div></div>
+                        <div class="bg-yellow-50 p-5 rounded-2xl border border-yellow-100"><div class="text-xs font-black text-yellow-600 uppercase mb-1">Pending</div><div id="kpi-pending" class="text-4xl font-black text-yellow-900">0</div></div>
+                        <div class="bg-green-50 p-5 rounded-2xl border border-green-100"><div class="text-xs font-black text-green-600 uppercase mb-1">Approved/Done</div><div id="kpi-approved" class="text-4xl font-black text-green-900">0</div></div>
+                        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm"><div class="text-xs font-black text-gray-500 uppercase mb-1">Total Budget (₱)</div><div id="kpi-budget" class="text-3xl md:text-4xl font-black text-gray-800">0</div></div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-                        <h3 class="font-bold text-gray-800 dark:text-white mb-4">Request Volume by Department</h3>
+                    <div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6">
+                        <h3 class="font-bold text-gray-800 mb-4">Request Volume by Department</h3>
                         <div class="relative h-[300px] w-full"><canvas id="reports-chart"></canvas></div>
                     </div>
                 </div>
@@ -401,52 +379,52 @@
     <!-- ==================== PART 3: MODALS ==================== -->
     
     <!-- DETAILS & APPROVAL MODAL -->
-    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print">
-        <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col border border-gray-200 dark:border-slate-700 transform scale-95 transition-transform duration-300">
+    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col border border-gray-200 transform scale-95 transition-transform duration-300">
             
-            <div class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-slate-700 pb-4 flex-shrink-0">
+            <div class="flex justify-between items-center mb-6 border-b border-gray-100 pb-4 flex-shrink-0">
                 <div>
-                    <h3 class="text-xl font-black text-gray-900 dark:text-white">Training Dossier & Clearances</h3>
-                    <p id="modal-req-id" class="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest mt-1">REQ-XXXXXX</p>
+                    <h3 class="text-xl font-black text-gray-900">Training Dossier & Clearances</h3>
+                    <p id="modal-req-id" class="text-xs font-bold text-gray-500 uppercase tracking-widest mt-1">REQ-XXXXXX</p>
                 </div>
-                <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 dark:hover:text-white p-2 bg-gray-100 dark:bg-slate-700 rounded-full transition"><i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i></button>
+                <button onclick="closeDetailsModal()" class="text-gray-400 hover:text-gray-600 p-2 bg-gray-100 rounded-full transition"><i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i></button>
             </div>
             
             <div class="overflow-y-auto pr-2 flex-grow">
                 <!-- Data Display -->
-                <div id="modal-body-data" class="bg-gray-50 dark:bg-slate-900/50 p-5 rounded-xl border border-gray-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
+                <div id="modal-body-data" class="bg-gray-50 p-5 rounded-xl border border-gray-200 grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                     <!-- Injected via JS -->
                 </div>
 
                 <!-- Admin Signatures Section -->
                 <div class="mb-8">
-                    <h4 class="font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-nib text-blue-500"></i> Official Signatures</h4>
+                    <h4 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-nib text-blue-500"></i> Official Signatures</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="bg-gray-50 dark:bg-slate-900 p-4 rounded-xl border border-gray-200 dark:border-slate-700">
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                             <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
-                            <input type="text" id="sig-admin-name" class="w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-blue-500 disabled:opacity-50" placeholder="Admin Signature">
+                            <input type="text" id="sig-admin-name" class="w-full bg-white border border-gray-300 rounded-lg p-2.5 text-sm font-medium outline-none focus:border-blue-500 disabled:opacity-50" placeholder="Admin Signature">
                         </div>
                     </div>
                 </div>
 
                 <!-- Clearance Upload Section (For Requesters to Liquidate) -->
-                <div id="clearance-section" class="hidden bg-green-50 dark:bg-green-900/10 border border-green-200 dark:border-green-800/50 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center">
+                <div id="clearance-section" class="hidden bg-green-50 border border-green-200 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center">
                     <i class="fa-solid fa-cloud-arrow-up text-green-500 text-3xl mb-3"></i>
-                    <h4 class="font-bold text-green-900 dark:text-green-400 mb-1">Post-Training Clearance</h4>
-                    <p class="text-xs text-green-700 dark:text-green-500 mb-4">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
+                    <h4 class="font-bold text-green-900 mb-1">Post-Training Clearance</h4>
+                    <p class="text-xs text-green-700 mb-4">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
                     
                     <input type="file" id="clearance-input" accept="image/*,.pdf" class="hidden">
-                    <label for="clearance-input" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-md flex items-center gap-2">
+                    <label for="clearance-input" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-folder-open"></i> Select File
                     </label>
-                    <div id="clearance-status" class="hidden mt-3 text-sm font-bold text-green-700 dark:text-green-400 flex items-center gap-2"></div>
+                    <div id="clearance-status" class="hidden mt-3 text-sm font-bold text-green-700 flex items-center gap-2"></div>
                 </div>
             </div>
 
-            <div class="flex justify-end space-x-3 pt-5 border-t border-gray-200 dark:border-slate-700 flex-shrink-0 mt-4">
-                <button onclick="closeDetailsModal()" class="bg-gray-100 dark:bg-slate-700 text-gray-800 dark:text-white font-bold px-5 py-2.5 rounded-xl hover:bg-gray-200 dark:hover:bg-slate-600 transition">Close</button>
-                <button id="btn-save-details" class="hidden bg-tdmh-blue text-white font-bold px-6 py-2.5 rounded-xl hover:bg-blue-800 transition shadow-md">Save Updates</button>
-                <button id="btn-upload-clearance" class="hidden bg-green-600 text-white font-bold px-6 py-2.5 rounded-xl hover:bg-green-700 transition shadow-md">Upload & Liquidate</button>
+            <div class="flex justify-end space-x-3 pt-5 border-t border-gray-100 flex-shrink-0 mt-4">
+                <button onclick="closeDetailsModal()" class="bg-gray-100 text-gray-800 font-bold px-5 py-2.5 rounded-lg hover:bg-gray-200 transition">Close</button>
+                <button id="btn-save-details" class="hidden bg-tdmh-blue text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-800 transition shadow-md">Save Updates</button>
+                <button id="btn-upload-clearance" class="hidden bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-700 transition shadow-md">Upload & Liquidate</button>
             </div>
         </div>
     </div>
@@ -455,10 +433,18 @@
     <div id="modal-preview" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[90] p-4 no-print">
         <div class="relative w-full max-w-5xl h-[85vh] flex flex-col items-center justify-center">
             <button onclick="closePreviewModal()" class="absolute -top-10 right-0 text-white/70 hover:text-white transition p-2 bg-white/10 rounded-full"><i class="fa-solid fa-xmark text-2xl w-8 h-8 flex items-center justify-center"></i></button>
+            
+            <div id="image-modal-error" class="hidden text-center text-white mb-6">
+                <i class="fa-solid fa-shield-halved text-5xl mb-4 text-blue-400"></i>
+                <h3 class="text-2xl font-bold mb-2">Browser Security Block</h3>
+                <p class="text-gray-300 max-w-md mx-auto">Google Drive prevents this file from being displayed inside another website for security reasons.</p>
+            </div>
+
             <img id="preview-img" src="" class="hidden max-w-full max-h-full rounded-xl shadow-2xl object-contain bg-white">
             <iframe id="preview-iframe" src="" class="hidden w-full h-full bg-white rounded-xl shadow-2xl border-0"></iframe>
-            <a id="preview-fallback" href="" target="_blank" class="mt-6 px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition font-bold shadow-lg flex items-center gap-2">
-                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open in New Tab (If preview fails)
+            
+            <a id="preview-fallback" href="" target="_blank" class="mt-6 px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition font-bold shadow-lg flex items-center text-lg">
+                <i class="fa-solid fa-arrow-up-right-from-square mr-3"></i> Open File Externally
             </a>
         </div>
     </div>
@@ -473,7 +459,6 @@
         let currentUserRole = null;
         let currentUserName = null;
         let currentDeptName = null;
-        let isDarkMode = localStorage.getItem('theme') === 'dark';
         let requestsData = [];
         let reportsChartInstance = null;
         let activeQRRequestId = null;
@@ -492,36 +477,11 @@
             }
         });
 
-        // --- Theme & Toasts (From Part 1) ---
-        const htmlEl = document.documentElement;
-        function applyTheme(isDark) {
-            isDark ? htmlEl.classList.add('dark') : htmlEl.classList.remove('dark');
-            document.getElementById('sun-icon').classList.toggle('hidden', !isDark);
-            document.getElementById('moon-icon').classList.toggle('hidden', isDark);
-            setTimeout(resizeCanvas, 50); 
-        }
-        applyTheme(isDarkMode);
-
-        document.getElementById('theme-toggle').addEventListener('click', (e) => {
-            const overlay = document.getElementById('theme-overlay');
-            const overlayTextBg = document.getElementById('theme-overlay-text-bg');
-            const toggleBtn = e.currentTarget;
-            toggleBtn.style.pointerEvents = 'none';
-            const targetThemeIsDark = !isDarkMode;
-            
-            overlay.style.backgroundColor = targetThemeIsDark ? '#0f172a' : '#ffffff';
-            if(targetThemeIsDark) overlayTextBg.classList.add('bg-white', 'shadow-2xl');
-            else overlayTextBg.classList.remove('bg-white', 'shadow-2xl');
-            overlay.classList.add('sweep-active');
-            
-            setTimeout(() => { isDarkMode = targetThemeIsDark; localStorage.setItem('theme', isDarkMode ? 'dark' : 'light'); applyTheme(isDarkMode); }, 750);
-            setTimeout(() => { overlay.classList.remove('sweep-active'); toggleBtn.style.pointerEvents = 'all'; }, 1600); 
-        });
-
+        // --- Toasts ---
         function showNotification(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
-            let bgClass = 'bg-slate-800 dark:bg-slate-700';
+            let bgClass = 'bg-slate-800';
             let icon = '<i class="fa-solid fa-circle-info"></i>';
             if (type === 'success') { bgClass = 'bg-green-600'; icon = '<i class="fa-solid fa-circle-check"></i>'; }
             if (type === 'error') { bgClass = 'bg-red-600'; icon = '<i class="fa-solid fa-triangle-exclamation"></i>'; }
@@ -563,12 +523,17 @@
 
         // --- Init & Public Signin ---
         async function init() {
+            document.getElementById('req-date-app').valueAsDate = new Date();
+            updateTotal();
+            toggleTrainingType();
+
             try {
                 const res = await fetch(GAS_URL + '?action=getDepartments');
                 const json = await res.json();
                 if (json.success) {
                     systemDepts = json.departments;
                     populateDropdown('public-dept', false);
+                    populateDropdown('login-dept', false);
                     
                     const urlParams = new URLSearchParams(window.location.search);
                     if (urlParams.has('reqId')) {
@@ -576,9 +541,6 @@
                         document.getElementById('view-login').classList.add('hidden');
                         document.getElementById('view-public-signin').classList.remove('hidden');
                         initSignaturePad();
-                    } else {
-                        document.getElementById('view-public-signin').classList.add('hidden');
-                        document.getElementById('view-login').classList.remove('hidden');
                     }
                 }
             } catch(e) { showNotification("Initialization failed. Check network connection.", "error"); }
@@ -607,7 +569,7 @@
             window.addEventListener('resize', () => setTimeout(resizeCanvas, 100));
             function getPos(e) { const r = canvas.getBoundingClientRect(); return e.touches ? { x: e.touches[0].clientX - r.left, y: e.touches[0].clientY - r.top } : { x: e.clientX - r.left, y: e.clientY - r.top }; }
             function start(e) { isDrawing = true; hasSigned = true; const p = getPos(e); ctx.beginPath(); ctx.moveTo(p.x, p.y); e.preventDefault(); }
-            function draw(e) { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = isDarkMode ? '#f1f5f9' : '#0f172a'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); e.preventDefault(); }
+            function draw(e) { if (!isDrawing) return; const p = getPos(e); ctx.lineTo(p.x, p.y); ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2.5; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.stroke(); e.preventDefault(); }
             function stop() { isDrawing = false; }
             canvas.addEventListener('mousedown', start); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stop); canvas.addEventListener('mouseout', stop);
             canvas.addEventListener('touchstart', start, {passive: false}); canvas.addEventListener('touchmove', draw, {passive: false}); canvas.addEventListener('touchend', stop);
@@ -689,7 +651,11 @@
                     switchTab('dashboard'); 
                 } else { errorDiv.textContent = json.message; errorDiv.classList.remove('hidden'); }
             } catch(e) { errorDiv.textContent = "Connection failed."; errorDiv.classList.remove('hidden'); } 
-            finally { btn.innerHTML = 'Authorize Access'; btn.disabled = false; }
+            finally { btn.innerHTML = 'Secure Login'; btn.disabled = false; }
+        });
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            window.location.reload();
         });
 
         // --- Dashboard & Tabs ---
@@ -697,12 +663,12 @@
             document.getElementById('subview-dashboard').classList.add('hidden'); document.getElementById('subview-new-request').classList.add('hidden'); document.getElementById('subview-reports').classList.add('hidden'); document.getElementById('subview-qr-station').classList.add('hidden');
             ['dashboard', 'new-request', 'reports'].forEach(id => {
                 const btn = document.getElementById(`tab-${id}`);
-                if(btn) { btn.classList.remove('bg-blue-50', 'dark:bg-slate-700/50', 'text-tdmh-blue', 'dark:text-blue-400', 'border-tdmh-blue'); btn.classList.add('text-gray-600', 'dark:text-gray-300', 'border-transparent'); }
+                if(btn) { btn.classList.remove('bg-blue-50', 'text-tdmh-blue', 'border-tdmh-blue'); btn.classList.add('text-gray-600', 'border-transparent'); }
             });
             const targetView = document.getElementById(`subview-${tabId}`);
             if(targetView) targetView.classList.remove('hidden');
             const targetBtn = document.getElementById(`tab-${tabId}`);
-            if(targetBtn) { targetBtn.classList.add('bg-blue-50', 'dark:bg-slate-700/50', 'text-tdmh-blue', 'dark:text-blue-400', 'border-tdmh-blue'); targetBtn.classList.remove('text-gray-600', 'dark:text-gray-300', 'border-transparent'); }
+            if(targetBtn) { targetBtn.classList.add('bg-blue-50', 'text-tdmh-blue', 'border-tdmh-blue'); targetBtn.classList.remove('text-gray-600', 'border-transparent'); }
             if(tabId === 'dashboard') fetchDashboardData();
             if(tabId === 'reports') renderReports();
         }
@@ -718,13 +684,12 @@
 
         document.getElementById('btn-add-roster').addEventListener('click', () => {
             const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now();
-            // Reuse systemDepts array for the select options
             const deptOptions = systemDepts.map(d => `<option value="${d}">${d}</option>`).join('');
             container.insertAdjacentHTML('beforeend', `
                 <div id="${rowId}" class="flex gap-3 roster-row animate-[slideInRight_0.2s_ease-out]">
-                    <input type="text" placeholder="Attendee Name" class="w-[50%] bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded p-2 text-sm roster-name" required>
-                    <select class="w-[40%] bg-white dark:bg-slate-900 border border-gray-300 dark:border-slate-600 text-gray-900 dark:text-white rounded p-2 text-sm roster-dept" required><option value="" disabled selected>Dept...</option>${deptOptions}</select>
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
+                    <input type="text" placeholder="Attendee Name" class="w-[50%] bg-white border border-gray-300 text-gray-900 rounded p-2 text-sm roster-name" required>
+                    <select class="w-[40%] bg-white border border-gray-300 text-gray-900 rounded p-2 text-sm roster-dept" required><option value="" disabled selected>Dept...</option>${deptOptions}</select>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-500 bg-red-50 hover:bg-red-100 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `);
         });
@@ -744,7 +709,6 @@
             const isInternal = document.querySelector('input[name="training-type"]:checked').value === 'Internal';
             let rosterData = [];
             
-            // Use the correct department based on role
             const chosenDept = currentUserRole === 'Admin' ? document.getElementById('req-department-select').value : currentDeptName;
 
             if (isInternal) {
@@ -807,10 +771,10 @@
                 actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-gray-400 hover:text-blue-600 p-2 transition" title="View Details / Liquidate"><i class="fa-solid fa-eye"></i></button></div>`;
 
                 tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-gray-50 dark:hover:bg-slate-700/30 transition border-b border-gray-100 dark:border-slate-700">
-                        <td class="px-6 py-4 font-black text-gray-800 dark:text-gray-200">${req.id}</td>
-                        <td class="px-6 py-4 font-semibold text-gray-600 dark:text-gray-400">${req.department}</td>
-                        <td class="px-6 py-4"><div class="font-bold text-gray-900 dark:text-white">${req.title}</div><div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-gray-500">${req.dates}</span></div></td>
+                    <tr class="hover:bg-gray-50 transition border-b border-gray-100">
+                        <td class="px-6 py-4 font-black text-gray-800">${req.id}</td>
+                        <td class="px-6 py-4 font-semibold text-gray-600">${req.department}</td>
+                        <td class="px-6 py-4"><div class="font-bold text-gray-900">${req.title}</div><div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-gray-500">${req.dates}</span></div></td>
                         <td class="px-6 py-4">${statusBadge}</td>
                         <td class="px-6 py-4">${actionHtml}</td>
                     </tr>
@@ -885,7 +849,7 @@
             }, 1000);
 
             fetchLiveFeed();
-            liveAttendanceInterval = setInterval(fetchLiveFeed, 10000); // 10s checks
+            liveAttendanceInterval = setInterval(fetchLiveFeed, 10000);
         };
 
         window.closeQRStation = function() {
@@ -927,15 +891,23 @@
             
             let attachHtml = req.clearanceUrl ? `<button onclick="showAttachment('${req.clearanceUrl}')" class="mt-2 bg-green-100 text-green-800 px-4 py-2 rounded-lg font-bold hover:bg-green-200 transition shadow-sm flex items-center w-fit text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> View Uploaded Clearance / Receipts</button>` : '';
 
+            // Handle roster name display
+            let parsedNames = req.expectedRoster;
+            try {
+                let rosterObj = JSON.parse(req.expectedRoster);
+                parsedNames = rosterObj.map(p => p.name).join('<br>');
+            } catch(e) { parsedNames = req.expectedRoster.replace(/,/g, '<br>'); }
+
             document.getElementById('modal-body-data').innerHTML = `
-                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Title / Venue</span> <span class="font-bold text-gray-900 dark:text-white">${req.title}</span><br><span class="text-xs text-gray-500">${req.venue}</span></div>
-                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Total Budget Approved</span> <span class="font-black text-blue-700 dark:text-blue-400 text-xl">₱${req.totalCost}</span></div>
-                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Department</span> <span class="font-bold text-gray-900 dark:text-white">${req.department}</span></div>
-                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Status</span> <span class="font-bold text-gray-900 dark:text-white">${req.status}</span></div>
-                <div class="md:col-span-2 border-t border-gray-200 dark:border-slate-700 pt-3">${attachHtml}</div>
+                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Title / Venue</span> <span class="font-bold text-gray-900">${req.title}</span><br><span class="text-xs text-gray-500">${req.venue}</span></div>
+                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Total Budget Approved</span> <span class="font-black text-blue-700 text-xl">₱${req.totalCost}</span></div>
+                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Department</span> <span class="font-bold text-gray-900">${req.department}</span></div>
+                <div><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Status</span> <span class="font-bold text-gray-900">${req.status}</span></div>
+                <div class="md:col-span-2"><span class="text-gray-500 text-[10px] font-black uppercase mb-1 block">Trainee(s)</span> <span class="font-medium text-gray-800 break-words leading-tight block mt-1 bg-white p-2 rounded border border-blue-100">${parsedNames}</span></div>
+                <div class="md:col-span-2 border-t border-gray-200 pt-3">${attachHtml}</div>
             `;
 
-            document.getElementById('sig-admin-name').value = req.adminApprovalSig || '';
+            document.getElementById('sig-admin-name').value = req.signatures ? req.signatures.appName : '';
             
             if (currentUserRole === 'Admin') {
                 document.getElementById('sig-admin-name').disabled = false;
@@ -1012,20 +984,39 @@
             } catch(e) { showNotification("Upload failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
         });
 
+        document.getElementById('btn-save-details').addEventListener('click', async () => {
+            const btn = document.getElementById('btn-save-details');
+            const origHtml = btn.innerHTML; btn.innerHTML = '<div class="loader"></div>'; btn.disabled = true;
+            
+            const req = requestsData.find(r => String(r.id) === String(currentModalReqId));
+            req.signatures = req.signatures || {};
+            req.signatures.appName = document.getElementById('sig-admin-name').value;
+            
+            try {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateSignatures', data: req }) });
+                showNotification("Signatures updated.", "success");
+                closeDetailsModal(); fetchDashboardData();
+            } catch(e) { showNotification("Update failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
+        });
+
         // --- Iframe Preview Modal ---
         window.showAttachment = function(url) {
             if (!url) return;
             document.getElementById('modal-preview').classList.remove('hidden');
             const imgEl = document.getElementById('preview-img'); const iframeEl = document.getElementById('preview-iframe');
-            document.getElementById('preview-fallback').href = url;
-            imgEl.classList.add('hidden'); iframeEl.classList.add('hidden'); imgEl.src = ''; iframeEl.src = '';
+            const fb = document.getElementById('preview-fallback'); const errDiv = document.getElementById('image-modal-error');
+            
+            fb.href = url; imgEl.classList.add('hidden'); iframeEl.classList.add('hidden'); errDiv.classList.add('hidden');
             
             if (url.includes('drive.google.com')) {
                 let fileId = '';
                 if (url.includes('id=')) fileId = url.split('id=')[1].split('&')[0];
                 else if (url.includes('/d/')) fileId = url.split('/d/')[1].split('/')[0];
-                if (fileId) { iframeEl.src = `https://drive.google.com/file/d/${fileId}/preview`; iframeEl.classList.remove('hidden'); } 
-                else document.getElementById('preview-fallback').click();
+                if (fileId) { 
+                    errDiv.classList.remove('hidden');
+                    iframeEl.src = `https://drive.google.com/file/d/${fileId}/preview`; 
+                    iframeEl.classList.remove('hidden'); 
+                } else fb.click();
             } else { imgEl.src = url; imgEl.classList.remove('hidden'); }
         };
 
@@ -1045,7 +1036,6 @@
         }
 
         document.getElementById('nav-sync').addEventListener('click', fetchDashboardData);
-        document.getElementById('nav-logout').addEventListener('click', () => window.location.reload());
 
         init();
     </script>
