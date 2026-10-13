@@ -49,7 +49,14 @@
         .loader-blue { border-color: rgba(37,99,235,0.2); border-top-color: #2563eb; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        @media print { .no-print { display: none !important; } body, html { background-color: white !important; color: black !important; } }
+        /* Print Styles for Official Attendance Roster */
+        @media print { 
+            body * { visibility: hidden; }
+            #print-roster-container, #print-roster-container * { visibility: visible; }
+            #print-roster-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background-color: white !important; color: black !important; }
+            .no-print { display: none !important; } 
+            body, html { background-color: white !important; color: black !important; } 
+        }
     </style>
 </head>
 <body class="text-slate-800 dark:text-slate-200 min-h-screen flex flex-col">
@@ -153,7 +160,7 @@
     <div id="view-app" class="hidden flex-grow flex flex-col h-screen overflow-hidden">
         
         <!-- Top Navbar -->
-        <nav class="bg-tdmh-blue text-white shadow-md z-20 flex-shrink-0">
+        <nav class="bg-tdmh-blue text-white shadow-md z-20 flex-shrink-0 no-print">
             <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center gap-3">
@@ -170,7 +177,7 @@
             </div>
         </nav>
 
-        <div class="flex-grow flex overflow-hidden max-w-[1400px] w-full mx-auto relative">
+        <div class="flex-grow flex overflow-hidden max-w-[1400px] w-full mx-auto relative no-print">
             
             <!-- Sidebar Navigation -->
             <div class="w-64 bg-white dark:bg-slate-800 border-r border-gray-200 dark:border-slate-700 flex-shrink-0 flex flex-col py-6 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-10 hidden md:flex">
@@ -205,7 +212,7 @@
                     </div>
                     
                     <div class="bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-2xl shadow-sm overflow-x-auto">
-                        <table class="w-full text-left text-sm">
+                        <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-gray-50 dark:bg-slate-900/50 border-b border-gray-200 dark:border-slate-700 text-gray-500 dark:text-gray-400 uppercase text-[11px] font-black tracking-wider">
                                 <tr>
                                     <th class="px-6 py-4">Request ID</th>
@@ -226,31 +233,50 @@
                 <div id="subview-new-request" class="hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-sm border border-gray-200 dark:border-slate-700 mb-20">
                     <h2 class="text-2xl font-black text-gray-900 dark:text-white mb-8 border-b border-gray-200 dark:border-slate-700 pb-4">Create Training Request</h2>
                     <form id="request-form" class="space-y-8">
+                        
                         <div class="bg-blue-50 dark:bg-slate-900 border border-blue-100 dark:border-slate-700 p-5 rounded-xl">
                             <label class="block text-sm font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest mb-3">Training Type</label>
                             <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-6">
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition">
-                                    <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300">
-                                    <div class="ml-3"><span class="block font-bold text-gray-900 dark:text-white">External Seminar</span><span class="block text-xs text-gray-500">1 Person. Outside hospital.</span></div>
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 z-10">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-gray-900 dark:text-white">External Seminar</span><span class="block text-xs text-gray-500">1 Person. Outside hospital.</span></div>
                                 </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition">
-                                    <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300">
-                                    <div class="ml-3"><span class="block font-bold text-gray-900 dark:text-white">Internal / In-Service</span><span class="block text-xs text-gray-500">Group event. Generates QR.</span></div>
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-400 transition relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 bg-gray-100 border-gray-300 z-10">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-gray-900 dark:text-white">Internal / In-Service</span><span class="block text-xs text-gray-500">Group event. Roster & QR enabled.</span></div>
                                 </label>
+                            </div>
+                        </div>
+
+                        <!-- Department Selection Logic -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+                            <div>
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Department / Hosting Entity</label>
+                                <!-- Standard read-only input for regular users -->
+                                <input type="text" id="req-department" readonly class="w-full border-gray-200 border rounded-md p-2.5 bg-gray-50 dark:bg-slate-900 text-gray-600 dark:text-gray-400 font-medium cursor-not-allowed">
+                                <!-- Select dropdown specifically for T&D Admin -->
+                                <select id="req-department-select" class="hidden w-full bg-white dark:bg-slate-800 border border-gray-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition font-medium"></select>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Title of Training</label><input type="text" id="req-title" required class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
-                            <div id="field-employee-name" class="md:col-span-2"><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Specific Employee Name <span class="text-blue-500 ml-2 text-[10px] uppercase font-black bg-blue-50 dark:bg-slate-700 px-2 py-0.5 rounded">Required for External</span></label><input type="text" id="req-emp-name" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
+                            
+                            <!-- External Only Field -->
+                            <div id="field-employee-name" class="md:col-span-2">
+                                <label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Specific Employee Name <span class="text-blue-500 ml-2 text-[10px] uppercase font-black bg-blue-50 dark:bg-slate-700 px-2 py-0.5 rounded">Required for External</span></label>
+                                <input type="text" id="req-emp-name" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition">
+                            </div>
+
                             <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Venue</label><input type="text" id="req-venue" required class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
                             <div><label class="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g., Oct 12 - Oct 14" class="w-full bg-gray-50 dark:bg-slate-900 border border-gray-200 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition"></div>
                         </div>
 
+                        <!-- Internal Only Field -->
                         <div id="field-roster-builder" class="hidden border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
                             <div class="bg-gray-50 dark:bg-slate-900 p-4 border-b border-gray-200 dark:border-slate-700 flex justify-between items-center">
-                                <div><h3 class="font-bold text-gray-800 dark:text-white">Expected Roster</h3><p class="text-xs text-gray-500">Cross-checked during QR attendance.</p></div>
-                                <button type="button" id="btn-add-roster" class="bg-blue-100 text-blue-700 dark:bg-slate-800 dark:text-blue-400 text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition"><i class="fa-solid fa-plus mr-1"></i> Add Row</button>
+                                <div><h3 class="font-bold text-gray-800 dark:text-white">Expected Roster</h3><p class="text-xs text-gray-500">Generates Official Attendance Record sheet.</p></div>
+                                <button type="button" id="btn-add-roster" class="bg-blue-100 text-blue-700 dark:bg-slate-800 dark:text-blue-400 text-xs font-bold px-3 py-1.5 rounded hover:bg-blue-200 transition flex items-center"><i class="fa-solid fa-user-plus mr-1"></i> Add Trainee</button>
                             </div>
                             <div class="p-4 bg-white dark:bg-slate-800 space-y-3" id="roster-container"></div>
                         </div>
@@ -258,18 +284,20 @@
                         <div class="border border-gray-200 dark:border-slate-700 rounded-xl overflow-hidden">
                             <div class="bg-gray-50 dark:bg-slate-900 p-4 border-b border-gray-200 dark:border-slate-700"><h3 class="font-bold text-gray-800 dark:text-white">Budget Breakdown (₱)</h3></div>
                             <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white"></div>
-                                <div><label id="label-food" class="block text-xs font-bold text-gray-500 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white"></div>
-                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
+                                <div><label id="label-food" class="block text-xs font-bold text-gray-500 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
+                                <div><label class="block text-xs font-bold text-gray-500 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-gray-50 dark:bg-slate-900 border border-gray-300 dark:border-slate-600 rounded p-2 text-right font-medium text-gray-900 dark:text-white outline-none focus:border-blue-500"></div>
                             </div>
                             <div class="bg-blue-50 dark:bg-slate-900/80 p-4 border-t border-blue-100 dark:border-slate-700 flex justify-between items-center">
-                                <span class="font-black text-tdmh-blue dark:text-blue-400 uppercase">Total Estimated Cost</span>
+                                <span class="font-black text-tdmh-blue dark:text-blue-400 uppercase tracking-widest text-sm">Total Budget Requested</span>
                                 <span class="text-2xl font-black text-blue-700 dark:text-blue-300">₱<span id="total-amount">0.00</span></span>
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-submit-req" class="w-full bg-tdmh-blue hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] text-lg">Submit Training Request</button>
+                        <button type="submit" id="btn-submit-req" class="w-full bg-tdmh-blue hover:bg-blue-800 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] text-lg flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane mr-2"></i> Submit Training Request
+                        </button>
                     </form>
                 </div>
 
@@ -321,11 +349,59 @@
         </div>
     </div>
 
+    <!-- PRINTABLE ROSTER (Hidden until print is triggered) -->
+    <div id="print-roster-container" class="hidden bg-white w-full max-w-4xl mx-auto text-black">
+        <div class="text-center mb-8 border-b-2 border-black pb-4 mt-8">
+            <h1 class="text-2xl font-bold uppercase tracking-wider text-blue-900">Taytay Doctors Multispecialty Hospital</h1>
+            <h2 class="text-xl font-bold mt-2 text-gray-800">OFFICIAL ATTENDANCE RECORD</h2>
+        </div>
+        <div class="grid grid-cols-2 gap-y-6 gap-x-12 border-b-2 border-black pb-6 mb-6 text-sm">
+            <div>
+                <span class="font-bold text-gray-600 text-xs">SUBJECT:</span><br>
+                <span id="print-subject" class="font-bold text-lg">Training Title</span>
+            </div>
+            <div>
+                <span class="font-bold text-gray-600 text-xs">DATE:</span><br>
+                <span id="print-date" class="font-medium text-base">Date</span>
+            </div>
+            <div>
+                <span class="font-bold text-gray-600 text-xs">VENUE:</span><br>
+                <span id="print-venue" class="font-medium text-base">Venue</span>
+            </div>
+            <div>
+                <span class="font-bold text-gray-600 text-xs">HOSTING ENTITY / MODERATOR:</span><br>
+                <span id="print-host" class="font-medium text-base">Department</span>
+            </div>
+        </div>
+        <div class="flex justify-between font-bold mb-2 items-end">
+            <span class="text-lg">ATTENDEE ROSTER</span>
+            <span id="print-count" class="text-sm bg-gray-100 px-3 py-1 rounded">X ATTENDEES</span>
+        </div>
+        <table class="w-full text-left border-collapse border border-black text-sm">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="border border-black p-3 w-12 text-center">#</th>
+                    <th class="border border-black p-3 w-2/5">PARTICIPANT NAME</th>
+                    <th class="border border-black p-3 w-1/4">DEPARTMENT</th>
+                    <th class="border border-black p-3 w-1/3">SIGNATURE</th>
+                </tr>
+            </thead>
+            <tbody id="print-tbody">
+                <!-- Rows populated by JS -->
+            </tbody>
+        </table>
+        
+        <div class="mt-12 no-print flex justify-center space-x-4 pb-20">
+            <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow"><i class="fa-solid fa-print mr-2"></i> Print Document</button>
+            <button onclick="closePrintRoster()" class="bg-gray-200 text-gray-800 px-6 py-2 rounded font-bold hover:bg-gray-300 shadow">Close Preview</button>
+        </div>
+    </div>
+
 
     <!-- ==================== PART 3: MODALS ==================== -->
     
     <!-- DETAILS & APPROVAL MODAL -->
-    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4">
+    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print">
         <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col border border-gray-200 dark:border-slate-700 transform scale-95 transition-transform duration-300">
             
             <div class="flex justify-between items-center mb-6 border-b border-gray-200 dark:border-slate-700 pb-4 flex-shrink-0">
@@ -376,7 +452,7 @@
     </div>
 
     <!-- PREVIEW MODAL (IFRAME FOR DRIVE/IMAGES) -->
-    <div id="modal-preview" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[90] p-4">
+    <div id="modal-preview" class="hidden fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-[90] p-4 no-print">
         <div class="relative w-full max-w-5xl h-[85vh] flex flex-col items-center justify-center">
             <button onclick="closePreviewModal()" class="absolute -top-10 right-0 text-white/70 hover:text-white transition p-2 bg-white/10 rounded-full"><i class="fa-solid fa-xmark text-2xl w-8 h-8 flex items-center justify-center"></i></button>
             <img id="preview-img" src="" class="hidden max-w-full max-h-full rounded-xl shadow-2xl object-contain bg-white">
@@ -395,6 +471,7 @@
         
         let systemDepts = [];
         let currentUserRole = null;
+        let currentUserName = null;
         let currentDeptName = null;
         let isDarkMode = localStorage.getItem('theme') === 'dark';
         let requestsData = [];
@@ -403,6 +480,17 @@
         let liveAttendanceInterval = null;
         let stopwatchInterval = null;
         let eventStartTime = null;
+
+        // --- GLOBAL ESCAPE KEY LISTENER ---
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.getElementById('modal-preview').classList.add('hidden');
+                document.getElementById('modal-details').classList.add('hidden');
+                if(!document.getElementById('print-roster-container').classList.contains('hidden')){
+                    closePrintRoster();
+                }
+            }
+        });
 
         // --- Theme & Toasts (From Part 1) ---
         const htmlEl = document.documentElement;
@@ -480,7 +568,6 @@
                 const json = await res.json();
                 if (json.success) {
                     systemDepts = json.departments;
-                    populateDropdown('login-dept', true);
                     populateDropdown('public-dept', false);
                     
                     const urlParams = new URLSearchParams(window.location.search);
@@ -562,16 +649,43 @@
             btn.innerHTML = '<div class="loader mx-auto"></div>'; btn.disabled = true;
             const errorDiv = document.getElementById('login-error'); errorDiv.classList.add('hidden');
 
+            const loginUser = document.getElementById('login-dept').value.trim();
+            const loginPass = document.getElementById('login-password').value;
+
             try {
-                const res = await fetch(GAS_URL + `?action=login&user=${encodeURIComponent(document.getElementById('login-dept').value)}&pass=${encodeURIComponent(document.getElementById('login-password').value)}`);
+                const res = await fetch(GAS_URL + `?action=login&user=${encodeURIComponent(loginUser)}&pass=${encodeURIComponent(loginPass)}`);
                 const json = await res.json();
                 
                 if (json.success) {
-                    currentUserRole = json.role; currentDeptName = document.getElementById('login-dept').value;
+                    currentUserRole = json.role; 
+                    currentDeptName = loginUser;
+                    currentUserName = loginUser;
+
+                    // Re-apply admin rights strictly
+                    if (currentDeptName === 'CQI' || currentDeptName === 'Training & Development' || currentDeptName === 'admin') {
+                        currentUserRole = 'Admin';
+                    }
+
                     document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-200 mr-1">${currentDeptName}</span> | ${currentUserRole}`;
                     if (currentUserRole === 'Admin') { document.getElementById('tab-reports').classList.remove('hidden'); document.getElementById('tab-reports').classList.add('flex'); }
                     document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-app').classList.remove('hidden');
                     showNotification(`Welcome back, ${currentDeptName}!`, "success");
+                    
+                    // Populate Form Dropdown if Admin
+                    const deptSelect = document.getElementById('req-department-select');
+                    const deptInput = document.getElementById('req-department');
+                    
+                    if (currentUserRole === 'Admin') {
+                        deptInput.classList.add('hidden');
+                        deptSelect.classList.remove('hidden');
+                        deptSelect.innerHTML = json.allDepartments.filter(d => d.toLowerCase() !== 'admin').map(d => `<option value="${d}">${d}</option>`).join('');
+                        if(currentDeptName !== 'admin') deptSelect.value = currentDeptName;
+                    } else {
+                        deptSelect.classList.add('hidden');
+                        deptInput.classList.remove('hidden');
+                        deptInput.value = currentDeptName;
+                    }
+
                     switchTab('dashboard'); 
                 } else { errorDiv.textContent = json.message; errorDiv.classList.remove('hidden'); }
             } catch(e) { errorDiv.textContent = "Connection failed."; errorDiv.classList.remove('hidden'); } 
@@ -604,6 +718,7 @@
 
         document.getElementById('btn-add-roster').addEventListener('click', () => {
             const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now();
+            // Reuse systemDepts array for the select options
             const deptOptions = systemDepts.map(d => `<option value="${d}">${d}</option>`).join('');
             container.insertAdjacentHTML('beforeend', `
                 <div id="${rowId}" class="flex gap-3 roster-row animate-[slideInRight_0.2s_ease-out]">
@@ -629,18 +744,21 @@
             const isInternal = document.querySelector('input[name="training-type"]:checked').value === 'Internal';
             let rosterData = [];
             
+            // Use the correct department based on role
+            const chosenDept = currentUserRole === 'Admin' ? document.getElementById('req-department-select').value : currentDeptName;
+
             if (isInternal) {
                 document.querySelectorAll('.roster-row').forEach(row => { rosterData.push({ name: row.querySelector('.roster-name').value, dept: row.querySelector('.roster-dept').value }); });
                 if (rosterData.length === 0) { showNotification("Please add at least one person to the Expected Roster.", "warning"); btn.innerHTML = origHtml; btn.disabled = false; return; }
-            } else { rosterData.push({ name: document.getElementById('req-emp-name').value, dept: currentDeptName }); }
+            } else { rosterData.push({ name: document.getElementById('req-emp-name').value, dept: chosenDept }); }
 
             const payload = {
                 action: 'addRequest',
                 data: {
-                    id: 'REQ-' + Date.now().toString().slice(-6), department: currentDeptName, type: isInternal ? 'Internal' : 'External',
+                    id: 'REQ-' + Date.now().toString().slice(-6), department: chosenDept, type: isInternal ? 'Internal' : 'External',
                     title: document.getElementById('req-title').value, venue: document.getElementById('req-venue').value, dates: document.getElementById('req-dates').value,
                     totalDays: 1, totalCost: parseFloat(document.getElementById('total-amount').textContent.replace(/,/g, '')),
-                    expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: currentDeptName + " Head" 
+                    expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: chosenDept + " Head" 
                 }
             };
 
@@ -682,7 +800,8 @@
                 }
                 
                 if(req.status === 'Approved' && req.type === 'Internal') {
-                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="text-[11px] bg-indigo-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-indigo-700 transition animate-pulse"><i class="fa-solid fa-qrcode mr-1"></i> Start Event</button>`;
+                    actionHtml += `<button onclick="generatePrintableRoster('${req.id}')" class="text-[11px] bg-gray-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-gray-700 transition" title="Print Official Manual Roster"><i class="fa-solid fa-print"></i></button>`;
+                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="text-[11px] bg-indigo-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-indigo-700 transition animate-pulse" title="Start Live QR Event"><i class="fa-solid fa-qrcode"></i></button>`;
                 }
 
                 actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-gray-400 hover:text-blue-600 p-2 transition" title="View Details / Liquidate"><i class="fa-solid fa-eye"></i></button></div>`;
@@ -706,6 +825,43 @@
                 showNotification(`Request marked as ${status}`, "success"); fetchDashboardData();
             } catch(e) { showNotification("Failed to update status", "error"); document.getElementById('global-loader').classList.add('hidden'); }
         };
+
+        // --- PRINTABLE OFFICIAL ATTENDANCE ROSTER LOGIC ---
+        window.generatePrintableRoster = function(id) {
+            const req = requestsData.find(r => String(r.id) === String(id)); if(!req) return;
+            
+            document.getElementById('print-subject').textContent = req.title;
+            document.getElementById('print-date').textContent = req.dates;
+            document.getElementById('print-venue').textContent = req.venue;
+            document.getElementById('print-host').textContent = req.department;
+
+            let rosterList = [];
+            try { rosterList = JSON.parse(req.expectedRoster); } catch(e) {}
+            
+            document.getElementById('print-count').textContent = `${rosterList.length} ATTENDEES`;
+            const tbody = document.getElementById('print-tbody'); tbody.innerHTML = '';
+
+            rosterList.forEach((person, i) => {
+                if(person.name) {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="border border-black p-3 text-center font-bold">${i + 1}</td>
+                        <td class="border border-black p-3"><div class="font-bold text-base">${person.name}</div></td>
+                        <td class="border border-black p-3 font-medium uppercase text-xs tracking-wide">${person.dept}</td>
+                        <td class="border border-black p-3"></td>
+                    `;
+                    tbody.appendChild(tr);
+                }
+            });
+
+            document.getElementById('view-app').classList.add('hidden');
+            document.getElementById('print-roster-container').classList.remove('hidden');
+        };
+
+        window.closePrintRoster = function() {
+            document.getElementById('print-roster-container').classList.add('hidden');
+            document.getElementById('view-app').classList.remove('hidden');
+        }
 
         // ==================== PART 3: QR STATION ====================
         window.openQRStation = function(id, title) {
@@ -781,7 +937,6 @@
 
             document.getElementById('sig-admin-name').value = req.adminApprovalSig || '';
             
-            // Admin editing capabilities
             if (currentUserRole === 'Admin') {
                 document.getElementById('sig-admin-name').disabled = false;
                 document.getElementById('btn-save-details').classList.remove('hidden');
@@ -790,7 +945,6 @@
                 document.getElementById('btn-save-details').classList.add('hidden');
             }
 
-            // Clearance Upload (Available to requester if approved, or Admin anytime)
             const clearanceSec = document.getElementById('clearance-section');
             const uploadBtn = document.getElementById('btn-upload-clearance');
             if (req.status === 'Approved' || req.status === 'Liquidated') {
