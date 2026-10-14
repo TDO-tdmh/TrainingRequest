@@ -10,15 +10,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <!-- Tailwind Config - "Dim Slate" Theme -->
     <script>
         tailwind.config = {
             theme: {
                 extend: {
-                    colors: { 
-                        tdmh: { blue: '#2563eb', light: '#3b82f6', accent: '#60a5fa' }
-                    },
+                    colors: { tdmh: { blue: '#2563eb', light: '#3b82f6', accent: '#60a5fa' } },
                     fontFamily: { sans: ['Inter', 'sans-serif'] }
                 }
             }
@@ -28,16 +28,12 @@
     
     <!-- Custom CSS -->
     <style>
-        /* Forced Dim Slate Background to bypass cache */
         body { background-color: #0f172a !important; overflow-x: hidden; color: #f1f5f9; }
-        
-        /* Custom Scrollbar for a premium feel */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0f172a; }
         ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #475569; }
         
-        /* Canvas */
         #signature-pad { border: 2px dashed #475569; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #1e293b; touch-action: none; cursor: crosshair; transition: border-color 0.3s; }
         #signature-pad:focus-within, #signature-pad:hover { border-color: #3b82f6; }
 
@@ -49,7 +45,6 @@
         .loader { border: 3px solid rgba(59, 130, 246, 0.2); border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* Print Styles for Official Attendance Roster */
         @media print { 
             body * { visibility: hidden; }
             #print-roster-container, #print-roster-container * { visibility: visible; }
@@ -59,154 +54,80 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased bg-slate-900 text-slate-200" style="background-color: #0f172a !important;">
+<body class="min-h-screen flex flex-col antialiased bg-slate-900 text-slate-200">
 
-    <!-- GLOBAL UI ELEMENTS -->
     <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 no-print"></div>
 
     <div id="offline-banner" class="fixed top-0 left-0 w-full bg-orange-600 text-white text-center py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-widest z-[100] hidden no-print shadow-md">
         ⚠️ Working Offline - Signatures queued in vault. Will sync automatically when Wi-Fi returns.
     </div>
 
-    <!-- ==================== VIEW 1: PUBLIC SIGN-IN (VIA QR CODE) ==================== -->
+    <!-- VIEW 1: PUBLIC SIGN-IN -->
     <div id="view-public-signin" class="hidden flex-grow flex flex-col items-center justify-center p-4 py-12">
         <div class="bg-slate-800 p-8 md:p-10 rounded-2xl shadow-2xl max-w-lg w-full border border-slate-700">
             <div class="text-center mb-8">
                 <div class="w-16 h-16 bg-slate-700 text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-slate-600"><i class="fa-solid fa-clipboard-user"></i></div>
                 <h1 class="text-2xl font-black text-white uppercase tracking-wide">Training Sign-In</h1>
-                <p id="public-title-display" class="text-slate-400 font-bold mt-2 bg-slate-900 py-2 px-4 rounded-lg inline-block">Loading training details...</p>
+                <p id="public-title-display" class="text-slate-400 font-bold mt-2 bg-slate-900 py-2 px-4 rounded-lg inline-block">Loading details...</p>
             </div>
 
             <form id="public-signin-form" class="space-y-6">
                 <div>
-                    <label class="block text-sm font-bold text-slate-400 mb-1.5">Full Name <span class="text-red-500">*</span></label>
-                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-slate-700 border border-slate-600 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-medium text-white" placeholder="e.g., Juan Dela Cruz">
+                    <label class="block text-sm font-bold text-slate-400 mb-1.5">Full Name</label>
+                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-slate-700 border border-slate-600 rounded-xl outline-none focus:border-blue-500 text-white">
                 </div>
                 <div>
-                    <label class="block text-sm font-bold text-slate-400 mb-1.5">Department <span class="text-red-500">*</span></label>
-                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-slate-700 border border-slate-600 rounded-xl outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 transition font-medium text-white">
-                        <option value="" disabled selected>Select Department...</option>
-                        <option value="CQI">CQI</option>
-                        <option value="Training & Development">Training & Development</option>
-                        <option value="Hospital Admin">Hospital Admin</option>
-                        <option value="HR">HR</option>
-                        <option value="Admitting">Admitting</option>
-                        <option value="Emergency Room">Emergency Room</option>
-                        <option value="NSO">NSO</option>
-                        <option value="Operating Room">Operating Room</option>
-                        <option value="Laboratory">Laboratory</option>
-                        <option value="Pharmacy">Pharmacy</option>
-                        <option value="Dietary">Dietary</option>
-                        <option value="Cashier">Cashier</option>
-                        <option value="Billing">Billing</option>
-                        <option value="Philhealth">Philhealth</option>
-                        <option value="GSD Housekeeping">GSD Housekeeping</option>
-                        <option value="GSD Linens">GSD Linens</option>
-                        <option value="GSD Room Facilities & Utilities (Maintenance & Elevator)">GSD Room Facilities & Utilities (Maintenance & Elevator)</option>
-                        <option value="GSD Security">GSD Security</option>
-                        <option value="Radiology">Radiology</option>
-                        <option value="Pathology">Pathology</option>
-                        <option value="Heart Station">Heart Station</option>
-                        <option value="NICU">NICU</option>
-                        <option value="Hemodialysis">Hemodialysis</option>
-                        <option value="HOMES">HOMES</option>
-                        <option value="GSD Parking">GSD Parking</option>
-                        <option value="IT">IT</option>
-                        <option value="Medical Records">Medical Records</option>
-                    </select>
+                    <label class="block text-sm font-bold text-slate-400 mb-1.5">Department</label>
+                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-slate-700 border border-slate-600 rounded-xl outline-none focus:border-blue-500 text-white"></select>
                 </div>
                 <div class="pt-2">
                     <label class="block text-sm font-bold text-slate-400 mb-2 flex justify-between items-center">
-                        <span>Digital Signature <span class="text-red-500">*</span></span>
-                        <button type="button" id="btn-clear-sig" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-500 px-3 py-1.5 rounded-lg font-bold transition">Clear Canvas</button>
+                        <span>Digital Signature</span>
+                        <button type="button" id="btn-clear-sig" class="text-xs bg-slate-700 hover:bg-slate-600 text-slate-300 border border-slate-500 px-3 py-1.5 rounded-lg transition">Clear Canvas</button>
                     </label>
                     <canvas id="signature-pad" class="shadow-inner"></canvas>
-                    <p class="text-[10px] text-slate-500 mt-2 text-center uppercase font-semibold">Please sign within the dotted box</p>
                 </div>
-                <button type="submit" id="btn-public-submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-lg transition active:scale-[0.98] flex items-center justify-center text-lg">
-                    Submit Secure Attendance
-                </button>
+                <button type="submit" id="btn-public-submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition">Submit Attendance</button>
             </form>
 
             <div id="public-success" class="hidden text-center py-10 transform scale-95 transition-transform duration-300">
                 <div class="w-24 h-24 bg-green-900/30 border border-green-700 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-400"></i></div>
                 <h2 class="text-3xl font-black text-white mb-3">Recorded!</h2>
-                <div class="bg-slate-700 p-4 rounded-xl border border-slate-600 mt-6">
-                    <p class="text-xs font-black text-blue-400 uppercase tracking-widest leading-relaxed">Thank you for your participation.</p>
-                    <p class="text-sm font-medium text-slate-300 mt-1">You may now close this browser tab.</p>
-                </div>
+                <div class="bg-slate-700 p-4 rounded-xl border border-slate-600 mt-6"><p class="text-sm font-medium text-slate-300">You may now close this tab.</p></div>
             </div>
         </div>
     </div>
 
-
-    <!-- ==================== VIEW 2: PROFESSIONAL LOGIN ==================== -->
+    <!-- VIEW 2: PROFESSIONAL LOGIN -->
     <div id="view-login" class="flex-grow flex items-center justify-center p-4">
         <div class="bg-slate-800 p-10 md:p-12 rounded-2xl shadow-2xl max-w-sm w-full border border-slate-700 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
-            
             <div class="text-center mb-8 mt-2">
                 <div class="w-16 h-16 bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-400 border border-slate-600 shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
                 <h1 class="text-2xl font-black text-white tracking-tight">TDMH Portal</h1>
                 <p class="text-[10px] font-bold text-slate-400 mt-1.5 uppercase tracking-widest">Training & Development</p>
             </div>
-
             <form id="login-form" class="space-y-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Department</label>
-                    <select id="login-dept" required class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-semibold text-slate-100">
-                        <option value="" disabled selected>Select Department...</option>
-                        <option value="CQI">CQI</option>
-                        <option value="Training & Development">Training & Development</option>
-                        <option value="Hospital Admin">Hospital Admin</option>
-                        <option value="HR">HR</option>
-                        <option value="Admitting">Admitting</option>
-                        <option value="Emergency Room">Emergency Room</option>
-                        <option value="NSO">NSO</option>
-                        <option value="Operating Room">Operating Room</option>
-                        <option value="Laboratory">Laboratory</option>
-                        <option value="Pharmacy">Pharmacy</option>
-                        <option value="Dietary">Dietary</option>
-                        <option value="Cashier">Cashier</option>
-                        <option value="Billing">Billing</option>
-                        <option value="Philhealth">Philhealth</option>
-                        <option value="GSD Housekeeping">GSD Housekeeping</option>
-                        <option value="GSD Linens">GSD Linens</option>
-                        <option value="GSD Room Facilities & Utilities (Maintenance & Elevator)">GSD Room Facilities & Utilities (Maintenance & Elevator)</option>
-                        <option value="GSD Security">GSD Security</option>
-                        <option value="Radiology">Radiology</option>
-                        <option value="Pathology">Pathology</option>
-                        <option value="Heart Station">Heart Station</option>
-                        <option value="NICU">NICU</option>
-                        <option value="Hemodialysis">Hemodialysis</option>
-                        <option value="HOMES">HOMES</option>
-                        <option value="GSD Parking">GSD Parking</option>
-                        <option value="IT">IT</option>
-                        <option value="Medical Records">Medical Records</option>
-                    </select>
+                    <select id="login-dept" required class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg outline-none focus:border-blue-500 font-semibold text-slate-100"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
                     <div class="relative">
-                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 font-medium tracking-widest text-slate-100 pr-12">
-                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 transition cursor-pointer">
-                            <i class="fa-solid fa-eye text-lg"></i>
-                        </button>
+                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-slate-700 border border-slate-600 rounded-lg outline-none focus:border-blue-500 font-medium tracking-widest text-slate-100 pr-12">
+                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-200 transition"><i class="fa-solid fa-eye text-lg"></i></button>
                     </div>
                 </div>
                 <div id="login-error" class="hidden text-red-300 text-xs font-bold text-center bg-red-900/30 border border-red-800 py-3 rounded-lg"></div>
-                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-500 transition-all shadow-md flex items-center justify-center mt-4 active:scale-[0.98]">
-                    Secure Login
-                </button>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-500 transition-all shadow-md mt-4">Secure Login</button>
             </form>
         </div>
     </div>
 
-
-    <!-- ==================== VIEW 3: MAIN APP SHELL ==================== -->
+    <!-- VIEW 3: MAIN APP SHELL -->
     <div id="view-app" class="hidden flex-grow flex flex-col h-screen overflow-hidden">
         
-        <!-- Top Navbar -->
         <nav class="bg-slate-800 border-b border-slate-700 shadow-sm z-20 flex-shrink-0 no-print">
             <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16">
@@ -214,11 +135,10 @@
                         <div class="w-9 h-9 bg-slate-700 border border-slate-600 rounded-lg flex items-center justify-center shadow-sm"><i class="fa-solid fa-hospital-user text-blue-400"></i></div>
                         <span class="font-black text-lg tracking-wide hidden sm:block text-slate-100">TDMH Operations</span>
                     </div>
-                    
                     <div class="flex items-center space-x-3 md:space-x-4">
                         <button id="nav-sync" class="text-xs md:text-sm bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 md:px-4 py-1.5 rounded-md transition font-bold flex items-center border border-slate-600 shadow-sm"><i class="fa-solid fa-rotate mr-2 text-blue-400"></i> <span class="hidden md:inline">Sync Data</span></button>
                         <div class="text-xs md:text-sm bg-slate-900 px-3 md:px-4 py-1.5 rounded-md font-bold border border-slate-700 flex items-center gap-2 text-slate-300"><i class="fa-solid fa-user-shield text-slate-500"></i> <span id="user-badge" class="tracking-wide">User</span></div>
-                        <button id="nav-logout" class="text-sm bg-slate-700 hover:bg-red-900/40 hover:border-red-800 text-red-400 px-3 py-1.5 rounded-md transition font-bold border border-slate-600 shadow-sm" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+                        <button id="nav-logout" class="text-sm bg-slate-700 hover:bg-red-900/40 text-red-400 px-3 py-1.5 rounded-md transition font-bold border border-slate-600" title="Logout"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 </div>
             </div>
@@ -226,15 +146,13 @@
 
         <div class="flex-grow flex overflow-hidden max-w-[1400px] w-full mx-auto relative no-print">
             
-            <!-- Sidebar Navigation -->
             <div class="w-64 bg-slate-800 border-r border-slate-700 flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex">
                 <div class="px-6 mb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Workspace Menu</div>
                 <button data-tab="dashboard" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold bg-slate-900 text-blue-400 border-r-4 border-blue-500 transition group"><i class="fa-solid fa-table-columns w-7 opacity-80 group-hover:opacity-100 transition-opacity"></i> Dashboard</button>
                 <button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition group border-r-4 border-transparent"><i class="fa-solid fa-file-circle-plus w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> New Request</button>
-                <button data-tab="reports" id="tab-reports-btn" class="nav-tab hidden items-center w-full px-6 py-3.5 text-left font-bold text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition group border-r-4 border-transparent"><i class="fa-solid fa-chart-pie w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> ISO Reports</button>
+                <button data-tab="reports" id="tab-reports-btn" class="nav-tab hidden items-center w-full px-6 py-3.5 text-left font-bold text-slate-400 hover:bg-slate-700/50 hover:text-slate-200 transition group border-r-4 border-transparent"><i class="fa-solid fa-folder-tree w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> System Overview</button>
             </div>
 
-            <!-- Mobile Menu Toggle -->
             <div class="absolute bottom-4 right-4 z-50 md:hidden flex flex-col gap-2">
                  <button data-tab="dashboard" class="nav-tab w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center"><i class="fa-solid fa-table-columns"></i></button>
                  <button data-tab="new-request" class="nav-tab w-12 h-12 bg-blue-600 text-white rounded-full shadow-lg flex items-center justify-center"><i class="fa-solid fa-plus"></i></button>
@@ -242,14 +160,12 @@
 
             <!-- MAIN CONTENT AREA -->
             <div class="flex-grow overflow-y-auto bg-slate-900 relative p-4 md:p-8" id="main-content-area">
-                
-                <!-- GLOBAL APP LOADER -->
                 <div id="global-loader" class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
                     <div class="loader mb-4"></div>
                     <p class="text-blue-400 font-bold tracking-widest animate-pulse">SYNCING DATABASE...</p>
                 </div>
 
-                <!-- ==================== SUB-VIEW: DASHBOARD ==================== -->
+                <!-- SUB-VIEW: DASHBOARD -->
                 <div id="subview-dashboard" class="subview-section max-w-6xl mx-auto pb-20">
                     <div class="flex justify-between items-end mb-6">
                         <div>
@@ -257,7 +173,6 @@
                             <p class="text-slate-400 text-sm font-medium mt-1">Manage requests, approvals, and event attendance.</p>
                         </div>
                     </div>
-                    
                     <div class="bg-slate-800 border border-slate-700 rounded-xl shadow-sm overflow-x-auto">
                         <table class="w-full text-left text-sm whitespace-nowrap">
                             <thead class="bg-slate-700 border-b border-slate-600 text-slate-300 uppercase text-[11px] font-black tracking-wider">
@@ -269,33 +184,40 @@
                                     <th class="px-6 py-4 text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="dashboard-tbody" class="divide-y divide-slate-700 text-slate-200">
-                                <!-- Dashboard Requests Injected Here -->
-                            </tbody>
+                            <tbody id="dashboard-tbody" class="divide-y divide-slate-700 text-slate-200"></tbody>
                         </table>
                     </div>
                 </div>
 
-                <!-- ==================== SUB-VIEW: NEW REQUEST FORM ==================== -->
+                <!-- SUB-VIEW: NEW REQUEST FORM -->
                 <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-700 mb-20">
-                    <h2 class="text-2xl font-black text-slate-100 mb-8 border-b border-slate-700 pb-4">Create Training Request</h2>
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+                        <h2 id="form-header-title" class="text-2xl font-black text-slate-100">Create Training Request</h2>
+                        <button type="button" id="btn-cancel-edit" class="hidden text-sm bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded-lg transition font-bold"><i class="fa-solid fa-xmark mr-1"></i> Cancel Edit</button>
+                    </div>
+                    
                     <form id="request-form" class="space-y-8">
+                        <input type="hidden" id="edit-req-id" value="">
                         
+                        <!-- 3 Options Now! -->
                         <div class="bg-slate-900 border border-slate-700 p-5 rounded-lg">
                             <label class="block text-sm font-black text-slate-400 uppercase tracking-widest mb-3">Training Type</label>
-                            <div class="flex flex-col md:flex-row space-y-3 md:space-y-0 md:space-x-6">
-                                <label class="flex items-center cursor-pointer p-3 bg-slate-800 border border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-500 transition relative overflow-hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <label class="flex items-center cursor-pointer p-3 bg-slate-800 border border-slate-600 rounded-lg shadow-sm hover:border-blue-500 transition relative overflow-hidden">
                                     <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-500 bg-slate-700 border-slate-500 z-10 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-100">External Seminar</span><span class="block text-xs text-slate-400">1 Person. Outside hospital.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-100">External Seminar</span><span class="block text-xs text-slate-400">1 Person. Short course.</span></div>
                                 </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-slate-800 border border-slate-600 rounded-lg shadow-sm w-full md:w-1/2 hover:border-blue-500 transition relative overflow-hidden">
+                                <label class="flex items-center cursor-pointer p-3 bg-slate-800 border border-slate-600 rounded-lg shadow-sm hover:border-blue-500 transition relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="Masteral" class="w-5 h-5 text-blue-500 bg-slate-700 border-slate-500 z-10 focus:ring-blue-500">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-100">Masteral / Degree</span><span class="block text-xs text-slate-400">1 Person. Long term.</span></div>
+                                </label>
+                                <label class="flex items-center cursor-pointer p-3 bg-slate-800 border border-slate-600 rounded-lg shadow-sm hover:border-blue-500 transition relative overflow-hidden">
                                     <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-500 bg-slate-700 border-slate-500 z-10 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-100">Internal / In-Service</span><span class="block text-xs text-slate-400">Group event. Roster & QR enabled.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-100">Internal / In-Service</span><span class="block text-xs text-slate-400">Group event. Generates Roster.</span></div>
                                 </label>
                             </div>
                         </div>
 
-                        <!-- Department Selection Logic -->
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
                             <div>
                                 <label class="block text-sm font-bold text-slate-300 mb-1.5">Date of Application</label>
@@ -304,35 +226,7 @@
                             <div>
                                 <label class="block text-sm font-bold text-slate-300 mb-1.5">Department / Hosting Entity</label>
                                 <input type="text" id="req-department" readonly class="w-full border-slate-600 border rounded-md p-2.5 bg-slate-900 text-slate-500 font-medium cursor-not-allowed">
-                                <select id="req-department-select" class="hidden w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 transition font-medium text-slate-100">
-                                    <option value="CQI">CQI</option>
-                                    <option value="Training & Development">Training & Development</option>
-                                    <option value="Hospital Admin">Hospital Admin</option>
-                                    <option value="HR">HR</option>
-                                    <option value="Admitting">Admitting</option>
-                                    <option value="Emergency Room">Emergency Room</option>
-                                    <option value="NSO">NSO</option>
-                                    <option value="Operating Room">Operating Room</option>
-                                    <option value="Laboratory">Laboratory</option>
-                                    <option value="Pharmacy">Pharmacy</option>
-                                    <option value="Dietary">Dietary</option>
-                                    <option value="Cashier">Cashier</option>
-                                    <option value="Billing">Billing</option>
-                                    <option value="Philhealth">Philhealth</option>
-                                    <option value="GSD Housekeeping">GSD Housekeeping</option>
-                                    <option value="GSD Linens">GSD Linens</option>
-                                    <option value="GSD Room Facilities & Utilities (Maintenance & Elevator)">GSD Room Facilities & Utilities (Maintenance & Elevator)</option>
-                                    <option value="GSD Security">GSD Security</option>
-                                    <option value="Radiology">Radiology</option>
-                                    <option value="Pathology">Pathology</option>
-                                    <option value="Heart Station">Heart Station</option>
-                                    <option value="NICU">NICU</option>
-                                    <option value="Hemodialysis">Hemodialysis</option>
-                                    <option value="HOMES">HOMES</option>
-                                    <option value="GSD Parking">GSD Parking</option>
-                                    <option value="IT">IT</option>
-                                    <option value="Medical Records">Medical Records</option>
-                                </select>
+                                <select id="req-department-select" class="hidden w-full bg-slate-700 border border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 transition font-medium text-slate-100"></select>
                             </div>
                         </div>
 
@@ -340,16 +234,15 @@
                             <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-300 mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-100"></div>
                             
                             <div id="field-employee-name" class="md:col-span-2">
-                                <label class="block text-sm font-bold text-slate-300 mb-1.5">Specific Employee Name <span class="text-blue-400 ml-2 text-[10px] uppercase font-black bg-blue-900/30 px-2 py-0.5 rounded border border-blue-800">Required for External</span></label>
+                                <label class="block text-sm font-bold text-slate-300 mb-1.5">Specific Employee Name</label>
                                 <input type="text" id="req-emp-name" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-100">
                             </div>
-                            
                             <div id="field-position">
                                 <label class="block text-sm font-bold text-slate-300 mb-1.5">Position / Job Title</label>
                                 <input type="text" id="req-position" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-100">
                             </div>
 
-                            <div><label class="block text-sm font-bold text-slate-300 mb-1.5">Venue</label><input type="text" id="req-venue" required class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-100"></div>
+                            <div><label class="block text-sm font-bold text-slate-300 mb-1.5">Venue / Modality</label><input type="text" id="req-venue" required class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-100"></div>
                             
                             <div class="grid grid-cols-2 gap-4">
                                 <div><label class="block text-sm font-bold text-slate-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g. Oct 12-14" class="w-full bg-slate-700 border border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-100"></div>
@@ -366,12 +259,15 @@
                         </div>
 
                         <div class="border border-slate-700 rounded-xl overflow-hidden">
-                            <div class="bg-slate-900 p-4 border-b border-slate-700"><h3 class="font-bold text-slate-100">Budget Breakdown (₱)</h3></div>
+                            <div class="bg-slate-900 p-4 border-b border-slate-700 flex justify-between items-center">
+                                <h3 class="font-bold text-slate-100">Budget Breakdown (₱)</h3>
+                                <span id="budget-masteral-badge" class="hidden bg-purple-900/50 text-purple-400 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-700/50">Masteral Mode</span>
+                            </div>
                             <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
-                                <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
-                                <div><label id="label-food" class="block text-xs font-bold text-slate-400 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
-                                <div><label class="block text-xs font-bold text-slate-400 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-reg" class="block text-xs font-bold text-slate-400 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-travel" class="block text-xs font-bold text-slate-400 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-food" class="block text-xs font-bold text-slate-400 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-acc" class="block text-xs font-bold text-slate-400 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-slate-700 border border-slate-600 rounded p-2 text-right font-medium text-slate-100 outline-none focus:border-blue-500"></div>
                             </div>
                             <div class="bg-slate-900 p-4 border-t border-slate-700 flex justify-between items-center">
                                 <span class="font-black text-slate-400 uppercase tracking-widest text-sm">Total Budget Requested</span>
@@ -380,18 +276,27 @@
                         </div>
 
                         <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-md transition active:scale-[0.98] text-lg flex items-center justify-center">
-                            <i class="fa-solid fa-paper-plane mr-2"></i> Submit Training Request
+                            <i class="fa-solid fa-paper-plane mr-2"></i> <span id="btn-submit-text">Submit Training Request</span>
                         </button>
                     </form>
                 </div>
 
-                <!-- ==================== SUB-VIEW: ISO REPORTS ==================== -->
+                <!-- ==================== SUB-VIEW: SYSTEM OVERVIEW / EXPORT ==================== -->
                 <div id="subview-reports" class="subview-section hidden max-w-6xl mx-auto pb-20">
-                    <h2 class="text-2xl font-black text-slate-100 mb-6">ISO Analytics & Reports</h2>
+                    <div class="flex justify-between items-end mb-6">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-100">System Overview</h2>
+                            <p class="text-slate-400 text-sm font-medium mt-1">Hospital-wide Masterfile Compilation & Analytics.</p>
+                        </div>
+                        <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2 px-5 rounded-lg shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-excel"></i> Export Masterfile
+                        </button>
+                    </div>
+
                     <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                         <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700"><div class="text-xs font-black text-blue-400 uppercase mb-1">Total Requests</div><div id="kpi-total" class="text-4xl font-black text-white">0</div></div>
                         <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700"><div class="text-xs font-black text-yellow-500 uppercase mb-1">Pending</div><div id="kpi-pending" class="text-4xl font-black text-white">0</div></div>
-                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700"><div class="text-xs font-black text-green-400 uppercase mb-1">Approved/Done</div><div id="kpi-approved" class="text-4xl font-black text-white">0</div></div>
+                        <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700"><div class="text-xs font-black text-green-400 uppercase mb-1">Liquidated</div><div id="kpi-approved" class="text-4xl font-black text-white">0</div></div>
                         <div class="bg-slate-800 p-5 rounded-2xl border border-slate-700"><div class="text-xs font-black text-slate-400 uppercase mb-1">Total Budget (₱)</div><div id="kpi-budget" class="text-3xl md:text-4xl font-black text-white">0</div></div>
                     </div>
                     <div class="bg-slate-800 border border-slate-700 rounded-2xl shadow-sm p-6">
@@ -474,7 +379,6 @@
                 <!-- Rows populated by JS -->
             </tbody>
         </table>
-        
         <div class="mt-12 no-print flex justify-center space-x-4 pb-20">
             <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow"><i class="fa-solid fa-print mr-2"></i> Print Document</button>
             <button onclick="closePrintRoster()" class="bg-gray-200 text-gray-800 px-6 py-2 rounded font-bold hover:bg-gray-300 shadow">Close Preview</button>
@@ -483,44 +387,78 @@
 
 
     <!-- ==================== PART 3: MODALS ==================== -->
-    
-    <!-- DETAILS & APPROVAL MODAL -->
     <div id="modal-details" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print">
-        <div class="bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[90vh] flex flex-col border border-slate-700 transform scale-95 transition-transform duration-300">
+        <div class="bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[95vh] flex flex-col border border-slate-700 transform scale-95 transition-transform duration-300">
             
-            <div class="flex justify-between items-center mb-6 border-b border-slate-700 pb-4 flex-shrink-0">
+            <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-4 flex-shrink-0">
                 <div>
                     <h3 class="text-xl font-black text-white">Training Dossier & Clearances</h3>
-                    <p id="modal-req-id" class="text-xs font-bold text-slate-500 uppercase tracking-widest mt-1">REQ-XXXXXX</p>
+                    <div class="flex items-center gap-3 mt-1">
+                        <p id="modal-req-id" class="text-xs font-bold text-slate-500 uppercase tracking-widest">REQ-XXXXXX</p>
+                        <button id="btn-edit-draft" class="hidden text-[10px] bg-blue-900/50 text-blue-400 border border-blue-800 px-2 py-0.5 rounded font-bold hover:bg-blue-800 transition"><i class="fa-solid fa-pen mr-1"></i> Edit Request Draft</button>
+                    </div>
                 </div>
                 <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-white p-2 bg-slate-700 rounded-full transition"><i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i></button>
             </div>
             
             <div class="overflow-y-auto pr-2 flex-grow custom-scrollbar">
+                
+                <!-- Admin Feedback Display -->
+                <div id="admin-feedback-box" class="hidden bg-red-900/20 border border-red-800/50 p-4 rounded-xl mb-4">
+                    <h4 class="text-xs font-black text-red-400 uppercase tracking-widest mb-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> Admin Remarks</h4>
+                    <p id="admin-feedback-text" class="text-sm text-red-200 font-medium"></p>
+                </div>
+
                 <!-- Data Display -->
                 <div id="modal-body-data" class="bg-slate-900 p-5 rounded-xl border border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-5 mb-8">
                     <!-- Injected via JS -->
                 </div>
 
-                <!-- Admin Signatures Section -->
-                <div class="mb-8">
-                    <h4 class="font-bold text-white mb-4 flex items-center gap-2"><i class="fa-solid fa-pen-nib text-blue-500"></i> Official Signatures</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
-                            <input type="text" id="sig-admin-name" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 text-sm font-medium outline-none focus:border-blue-500 disabled:opacity-50" placeholder="Admin Signature">
+                <!-- RSA Tracking (For Admins) -->
+                <div id="rsa-section" class="hidden mb-6 bg-slate-900 p-5 rounded-xl border border-slate-700">
+                    <h4 class="font-bold text-white mb-3 text-sm"><i class="fa-solid fa-file-contract text-yellow-500 mr-2"></i> Return Service Agreement (RSA)</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Quick Select Duration</label>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="setRSA(0)" class="text-xs bg-slate-800 border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:bg-slate-700 font-bold transition">None</button>
+                                <button type="button" onclick="setRSA(6)" class="text-xs bg-slate-800 border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:bg-slate-700 font-bold transition">6 Mos</button>
+                                <button type="button" onclick="setRSA(12)" class="text-xs bg-slate-800 border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:bg-slate-700 font-bold transition">1 Year</button>
+                                <button type="button" onclick="setRSA(24)" class="text-xs bg-slate-800 border border-slate-600 text-slate-300 px-3 py-1.5 rounded hover:bg-slate-700 font-bold transition">2 Years</button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Lock-in End Date</label>
+                            <input type="date" id="rsa-end-date" class="w-full bg-slate-800 border border-slate-600 text-white rounded p-1.5 text-sm font-medium outline-none focus:border-blue-500 [color-scheme:dark]">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Admin Action Log -->
+                <div id="admin-actions-section" class="mb-8 hidden">
+                    <h4 class="font-bold text-white mb-4 text-sm"><i class="fa-solid fa-clipboard-check text-blue-500 mr-2"></i> Admin Actions & Feedback</h4>
+                    <textarea id="input-admin-remarks" rows="2" placeholder="Optional: Type reasons for rejection/revert here so the requester can fix it..." class="w-full bg-slate-900 border border-slate-700 text-white rounded-lg p-3 text-sm font-medium outline-none focus:border-blue-500 mb-3 custom-scrollbar"></textarea>
+                    
+                    <div class="bg-slate-900 p-4 rounded-xl border border-slate-700">
+                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
+                        <div class="flex gap-3">
+                            <input type="text" id="sig-admin-name" class="w-full bg-slate-800 border border-slate-600 text-white rounded-lg p-2.5 text-sm font-medium outline-none focus:border-blue-500" placeholder="Type name to sign">
+                            <button type="button" id="btn-auto-sign" class="bg-blue-900/50 text-blue-400 border border-blue-800 px-4 py-2 rounded-lg font-bold hover:bg-blue-800 transition whitespace-nowrap text-xs flex items-center"><i class="fa-solid fa-stamp mr-1.5"></i> Auto-Sign</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Clearance Upload Section -->
-                <div id="clearance-section" class="hidden bg-green-900/20 border border-green-800/50 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center">
+                <div id="clearance-section" class="hidden bg-green-900/20 border border-green-800/50 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center relative">
+                    <!-- Button to remove clearance if it already exists -->
+                    <button id="btn-remove-clearance" class="hidden absolute top-4 right-4 bg-red-900/50 text-red-400 border border-red-800 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-800 transition" title="Remove & Replace File"><i class="fa-solid fa-trash-can"></i></button>
+
                     <i class="fa-solid fa-cloud-arrow-up text-green-500 text-3xl mb-3"></i>
                     <h4 class="font-bold text-green-400 mb-1">Post-Training Clearance</h4>
-                    <p class="text-xs text-green-600 mb-4">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
+                    <p class="text-xs text-green-600 mb-4" id="clearance-instruction">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
                     
                     <input type="file" id="clearance-input" accept="image/*,.pdf" class="hidden">
-                    <label for="clearance-input" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-sm flex items-center gap-2">
+                    <label id="clearance-label" for="clearance-input" class="bg-green-600 hover:bg-green-500 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-sm flex items-center gap-2">
                         <i class="fa-solid fa-folder-open"></i> Select File
                     </label>
                     <div id="clearance-status" class="hidden mt-3 text-sm font-bold text-green-400 flex items-center gap-2"></div>
@@ -529,7 +467,7 @@
 
             <div class="flex justify-end space-x-3 pt-5 border-t border-slate-700 flex-shrink-0 mt-4">
                 <button onclick="closeDetailsModal()" class="bg-slate-700 text-slate-300 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-600 transition">Close</button>
-                <button id="btn-save-details" class="hidden bg-blue-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-500 transition shadow-md">Save Updates</button>
+                <button id="btn-save-details" class="hidden bg-blue-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-500 transition shadow-md">Save Admin Updates</button>
                 <button id="btn-upload-clearance" class="hidden bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-500 transition shadow-md">Upload & Liquidate</button>
             </div>
         </div>
@@ -559,7 +497,16 @@
     <!-- ==================== SCRIPT ENGINE ==================== -->
     <script>
         // MUST MATCH DEPLOYED WEB APP URL
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec';
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbwxN4E4K4v6d6dK172L_h3B5aXj0y6F8eS0P_1XzD3N3Q28oJ3cR1yYI-b8Qh906q1W2Q/exec';
+        
+        let systemDepts = [
+            "CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", 
+            "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", 
+            "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", 
+            "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", 
+            "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", 
+            "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"
+        ];
         
         let currentUserRole = null;
         let currentUserName = null;
@@ -582,20 +529,16 @@
             }
         });
 
-        // --- PASSWORD TOGGLE ---
         document.getElementById('toggle-password').addEventListener('click', function() {
             const input = document.getElementById('login-password');
             const icon = this.querySelector('i');
             if (input.type === 'password') {
-                input.type = 'text';
-                icon.classList.replace('fa-eye', 'fa-eye-slash');
+                input.type = 'text'; icon.classList.replace('fa-eye', 'fa-eye-slash');
             } else {
-                input.type = 'password';
-                icon.classList.replace('fa-eye-slash', 'fa-eye');
+                input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye');
             }
         });
 
-        // --- Toasts ---
         function showNotification(msg, type = 'info') {
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
@@ -645,7 +588,16 @@
             updateTotal();
             toggleTrainingType();
 
-            // Always show the correct UI right away
+            const select = document.getElementById('req-department-select');
+            const loginSelect = document.getElementById('login-dept');
+            const publicSelect = document.getElementById('public-dept');
+            
+            systemDepts.forEach(d => { 
+                select.innerHTML += `<option value="${d}">${d}</option>`; 
+                loginSelect.innerHTML += `<option value="${d}">${d}</option>`;
+                publicSelect.innerHTML += `<option value="${d}">${d}</option>`;
+            });
+
             const urlParams = new URLSearchParams(window.location.search);
             if (urlParams.has('reqId')) {
                 document.getElementById('public-title-display').textContent = urlParams.get('title') || 'Official Training';
@@ -730,7 +682,6 @@
 
                     document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-400 mr-1">${currentDeptName}</span> | ${currentUserRole}`;
                     
-                    // Populate Form Dropdown if Admin
                     const deptSelect = document.getElementById('req-department-select');
                     const deptInput = document.getElementById('req-department');
                     const btnReports = document.getElementById('tab-reports-btn');
@@ -738,11 +689,7 @@
                     if (currentUserRole === 'Admin') {
                         deptInput.classList.add('hidden');
                         deptSelect.classList.remove('hidden');
-                        
-                        // Populate from the hardcoded login list to save API calls
-                        deptSelect.innerHTML = document.getElementById('login-dept').innerHTML;
                         deptSelect.value = currentDeptName;
-
                         btnReports.classList.remove('hidden'); btnReports.classList.add('flex');
                     } else {
                         deptSelect.classList.add('hidden');
@@ -786,26 +733,43 @@
             if(tabId === 'reports') renderReports();
         }
 
-        // Attach listeners to tabs robustly
         document.querySelectorAll('.nav-tab').forEach(tab => {
             tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab));
         });
 
         // --- Forms ---
+        function toggleTrainingType() {
+            const val = document.querySelector('input[name="training-type"]:checked').value;
+            const isInternal = val === 'Internal';
+            const isMasteral = val === 'Masteral';
+            
+            document.getElementById('field-employee-name').classList.toggle('hidden', isInternal); 
+            document.getElementById('field-position').classList.toggle('hidden', isInternal); 
+            document.getElementById('field-roster-builder').classList.toggle('hidden', !isInternal);
+            document.getElementById('req-emp-name').required = !isInternal;
+
+            // Masteral UI tweaks
+            if (isMasteral) {
+                document.getElementById('lbl-cost-reg').textContent = "Downpayment";
+                document.getElementById('lbl-cost-travel').textContent = "Full Payment";
+                document.getElementById('lbl-cost-food').textContent = "Misc 1";
+                document.getElementById('lbl-cost-acc').textContent = "Misc 2";
+                document.getElementById('budget-masteral-badge').classList.remove('hidden');
+            } else {
+                document.getElementById('lbl-cost-reg').textContent = "Registration";
+                document.getElementById('lbl-cost-travel').textContent = "Travel";
+                document.getElementById('lbl-cost-food').textContent = isInternal ? "Total Food Budget" : "Food";
+                document.getElementById('lbl-cost-acc').textContent = "Accommodation";
+                document.getElementById('budget-masteral-badge').classList.add('hidden');
+            }
+        }
+        
         document.querySelectorAll('input[name="training-type"]').forEach(radio => {
-            radio.addEventListener('change', (e) => {
-                const isInternal = e.target.value === 'Internal';
-                document.getElementById('field-employee-name').classList.toggle('hidden', isInternal); 
-                document.getElementById('field-position').classList.toggle('hidden', isInternal); 
-                document.getElementById('field-roster-builder').classList.toggle('hidden', !isInternal);
-                document.getElementById('label-food').textContent = isInternal ? "Total Food Budget" : "Food"; 
-                document.getElementById('req-emp-name').required = !isInternal;
-            });
+            radio.addEventListener('change', toggleTrainingType);
         });
 
         document.getElementById('btn-add-roster').addEventListener('click', () => {
             const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now();
-            
             const deptOptions = document.getElementById('login-dept').innerHTML;
             
             container.insertAdjacentHTML('beforeend', `
@@ -819,11 +783,24 @@
         });
 
         document.querySelectorAll('.cost-input').forEach(input => {
-            input.addEventListener('input', () => {
-                const reg = parseFloat(document.getElementById('cost-reg').value) || 0; const travel = parseFloat(document.getElementById('cost-travel').value) || 0;
-                const food = parseFloat(document.getElementById('cost-food').value) || 0; const acc = parseFloat(document.getElementById('cost-acc').value) || 0;
-                document.getElementById('total-amount').textContent = (reg+travel+food+acc).toLocaleString('en-US', {minimumFractionDigits: 2});
-            });
+            input.addEventListener('input', updateTotal);
+        });
+
+        function updateTotal() {
+            const reg = parseFloat(document.getElementById('cost-reg').value) || 0; const travel = parseFloat(document.getElementById('cost-travel').value) || 0;
+            const food = parseFloat(document.getElementById('cost-food').value) || 0; const acc = parseFloat(document.getElementById('cost-acc').value) || 0;
+            document.getElementById('total-amount').textContent = (reg+travel+food+acc).toLocaleString('en-US', {minimumFractionDigits: 2});
+        }
+
+        // Edit Draft Logic
+        document.getElementById('btn-cancel-edit').addEventListener('click', () => {
+            document.getElementById('request-form').reset();
+            document.getElementById('roster-container').innerHTML = '';
+            document.getElementById('edit-req-id').value = '';
+            document.getElementById('btn-submit-text').textContent = 'Submit Training Request';
+            document.getElementById('form-header-title').textContent = 'Create Training Request';
+            document.getElementById('btn-cancel-edit').classList.add('hidden');
+            updateTotal(); toggleTrainingType();
         });
 
         document.getElementById('request-form').addEventListener('submit', async (e) => {
@@ -832,7 +809,6 @@
 
             const isInternal = document.querySelector('input[name="training-type"]:checked').value === 'Internal';
             let rosterData = [];
-            
             const chosenDept = currentUserRole === 'Admin' ? document.getElementById('req-department-select').value : currentDeptName;
 
             if (isInternal) {
@@ -852,10 +828,14 @@
                 }); 
             }
 
+            const isEditing = document.getElementById('edit-req-id').value !== '';
+            const actionTarget = isEditing ? 'updateRequest' : 'addRequest';
+            const targetId = isEditing ? document.getElementById('edit-req-id').value : 'REQ-' + Date.now().toString().slice(-6);
+
             const payload = {
-                action: 'addRequest',
+                action: actionTarget,
                 data: {
-                    id: 'REQ-' + Date.now().toString().slice(-6), department: chosenDept, type: isInternal ? 'Internal' : 'External',
+                    id: targetId, department: chosenDept, type: document.querySelector('input[name="training-type"]:checked').value,
                     title: document.getElementById('req-title').value, venue: document.getElementById('req-venue').value, dates: document.getElementById('req-dates').value,
                     totalDays: document.getElementById('req-days').value, totalCost: parseFloat(document.getElementById('total-amount').textContent.replace(/,/g, '')),
                     expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: chosenDept + " Head" 
@@ -864,8 +844,11 @@
 
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json();
-                if (json.success) { showNotification("Request submitted successfully to TDO!", "success"); document.getElementById('request-form').reset(); document.getElementById('roster-container').innerHTML = ''; document.getElementById('total-amount').textContent = '0.00'; switchTab('dashboard'); } 
-                else { throw new Error(json.message); }
+                if (json.success) { 
+                    showNotification(isEditing ? "Draft updated successfully!" : "Request submitted successfully to TDO!", "success"); 
+                    document.getElementById('btn-cancel-edit').click(); // trigger reset
+                    switchTab('dashboard'); 
+                } else { throw new Error(json.message); }
             } catch(e) { showNotification("Submission failed. Check network.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
         });
 
@@ -879,6 +862,7 @@
 
         function renderDashboard() {
             const tbody = document.getElementById('dashboard-tbody'); tbody.innerHTML = '';
+            // If admin, show all (except raw legacy imports without status to avoid clutter, though legacy handles status now)
             const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
 
             if(visibleReqs.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">No training requests found.</td></tr>`; return; }
@@ -890,7 +874,10 @@
                 if(req.status === 'Liquidated') statusBadge = '<span class="bg-green-900/30 text-green-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-green-700/50"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>';
                 if(req.status === 'Rejected') statusBadge = '<span class="bg-red-900/30 text-red-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-700/50"><i class="fa-solid fa-xmark mr-1"></i> Rejected</span>';
                 
-                let typeBadge = req.type === 'Internal' ? '<span class="text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-800/50">Internal</span>' : '<span class="text-gray-400 bg-gray-800 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-700">External</span>';
+                let typeBadge = '';
+                if(req.type === 'Internal') typeBadge = '<span class="text-indigo-400 bg-indigo-900/30 px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-800/50">Internal</span>';
+                else if(req.type === 'Masteral') typeBadge = '<span class="text-purple-400 bg-purple-900/30 px-2 py-0.5 rounded text-[10px] font-bold border border-purple-800/50">Masteral</span>';
+                else typeBadge = '<span class="text-gray-400 bg-gray-800 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-700">External</span>';
 
                 let actionHtml = `<div class="flex items-center justify-end gap-2">`;
                 
@@ -904,13 +891,16 @@
                     actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="text-[11px] bg-indigo-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-indigo-500 transition animate-pulse" title="Start Live QR Event"><i class="fa-solid fa-qrcode"></i></button>`;
                 }
 
-                actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-slate-400 hover:text-blue-400 p-2 transition" title="View Details / Liquidate"><i class="fa-solid fa-eye"></i></button></div>`;
+                actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-slate-400 hover:text-blue-400 p-2 transition" title="View Details / Action Log"><i class="fa-solid fa-eye"></i></button></div>`;
 
                 tbody.insertAdjacentHTML('beforeend', `
                     <tr class="hover:bg-slate-800 transition border-b border-slate-700">
                         <td class="px-6 py-4 font-black text-white">${req.id}</td>
                         <td class="px-6 py-4 font-semibold text-slate-400">${req.department}</td>
-                        <td class="px-6 py-4"><div class="font-bold text-white">${req.title}</div><div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-slate-500">${req.dates}</span></div></td>
+                        <td class="px-6 py-4">
+                            <div class="font-bold text-white flex items-center gap-2">${req.title} ${req.adminRemarks && req.status==='Pending' ? '<i class="fa-solid fa-circle-exclamation text-red-500 text-xs animate-pulse" title="Admin Feedback Attached"></i>' : ''}</div>
+                            <div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-slate-500">${req.dates}</span></div>
+                        </td>
                         <td class="px-6 py-4">${statusBadge}</td>
                         <td class="px-6 py-4">${actionHtml}</td>
                     </tr>
@@ -1046,24 +1036,63 @@
                 <div class="md:col-span-2 border-t border-slate-700 pt-3">${attachHtml}</div>
             `;
 
+            // Admin Actions Setup
+            const rsaSec = document.getElementById('rsa-section');
+            const adminActions = document.getElementById('admin-actions-section');
+            
             document.getElementById('sig-admin-name').value = req.signatures ? req.signatures.appName : '';
+            document.getElementById('rsa-end-date').value = req.rsaEndDate ? new Date(req.rsaEndDate).toISOString().split('T')[0] : '';
+            document.getElementById('input-admin-remarks').value = req.adminRemarks || '';
             
             if (currentUserRole === 'Admin') {
-                document.getElementById('sig-admin-name').disabled = false;
                 document.getElementById('btn-save-details').classList.remove('hidden');
+                adminActions.classList.remove('hidden');
+                rsaSec.classList.remove('hidden');
             } else {
-                document.getElementById('sig-admin-name').disabled = true;
                 document.getElementById('btn-save-details').classList.add('hidden');
+                adminActions.classList.add('hidden');
+                rsaSec.classList.add('hidden');
             }
 
+            // Show feedback box if requester and remarks exist
+            const feedbackBox = document.getElementById('admin-feedback-box');
+            if(req.adminRemarks && req.adminRemarks.trim() !== '' && currentUserRole !== 'Admin') {
+                feedbackBox.classList.remove('hidden');
+                document.getElementById('admin-feedback-text').textContent = req.adminRemarks;
+            } else {
+                feedbackBox.classList.add('hidden');
+            }
+
+            // Editable Drafts Button
+            const editBtn = document.getElementById('btn-edit-draft');
+            if (req.status === 'Pending' && (currentUserRole === 'Admin' || req.department === currentDeptName)) {
+                editBtn.classList.remove('hidden');
+            } else {
+                editBtn.classList.add('hidden');
+            }
+
+            // Clearance Upload Section
             const clearanceSec = document.getElementById('clearance-section');
             const uploadBtn = document.getElementById('btn-upload-clearance');
+            const removeClearanceBtn = document.getElementById('btn-remove-clearance');
+            
             if (req.status === 'Approved' || req.status === 'Liquidated') {
                 clearanceSec.classList.remove('hidden');
-                uploadBtn.classList.remove('hidden');
                 document.getElementById('clearance-status').classList.add('hidden');
                 document.getElementById('clearance-input').value = '';
                 pendingClearanceBase64 = null;
+                
+                if (req.status === 'Liquidated' && (currentUserRole === 'Admin' || req.department === currentDeptName)) {
+                    removeClearanceBtn.classList.remove('hidden');
+                    uploadBtn.classList.add('hidden');
+                    document.getElementById('clearance-instruction').innerHTML = "<span class='text-green-500'>Clearance successfully uploaded. Click the trash icon to replace it.</span>";
+                    document.getElementById('clearance-label').classList.add('hidden');
+                } else {
+                    removeClearanceBtn.classList.add('hidden');
+                    uploadBtn.classList.remove('hidden');
+                    document.getElementById('clearance-instruction').textContent = "Upload your Certificate of Attendance or Receipts to liquidate this request.";
+                    document.getElementById('clearance-label').classList.remove('hidden');
+                }
             } else {
                 clearanceSec.classList.add('hidden');
                 uploadBtn.classList.add('hidden');
@@ -1077,6 +1106,73 @@
             document.getElementById('modal-details').children[0].classList.replace('scale-100', 'scale-95');
             setTimeout(() => document.getElementById('modal-details').classList.add('hidden'), 300);
         };
+
+        // --- RSA Quick Select Logic ---
+        window.setRSA = function(months) {
+            if(months === 0) { document.getElementById('rsa-end-date').value = ''; return; }
+            let d = new Date();
+            d.setMonth(d.getMonth() + months);
+            document.getElementById('rsa-end-date').value = d.toISOString().split('T')[0];
+        }
+
+        // --- Edit Draft Button ---
+        document.getElementById('btn-edit-draft').addEventListener('click', () => {
+            closeDetailsModal();
+            const req = requestsData.find(r => String(r.id) === String(currentModalReqId));
+            
+            // Populate form
+            document.querySelector(`input[name="training-type"][value="${req.type}"]`).checked = true;
+            toggleTrainingType();
+            
+            document.getElementById('req-title').value = req.title;
+            document.getElementById('req-venue').value = req.venue;
+            document.getElementById('req-dates').value = req.dates;
+            document.getElementById('req-days').value = req.totalDays;
+
+            let rosterObj = [];
+            try { rosterObj = JSON.parse(req.expectedRoster); } catch(e){}
+            
+            if(req.type === 'Internal') {
+                const container = document.getElementById('roster-container'); container.innerHTML = '';
+                const deptOptions = document.getElementById('login-dept').innerHTML;
+                rosterObj.forEach(p => {
+                    const rowId = 'r' + Math.random().toString(36).substr(2, 9);
+                    container.insertAdjacentHTML('beforeend', `
+                        <div id="${rowId}" class="flex gap-3 roster-row">
+                            <input type="text" value="${p.name}" class="w-[40%] bg-slate-700 border border-slate-600 text-white rounded p-2 text-sm roster-name outline-none focus:border-blue-500" required>
+                            <input type="text" value="${p.position||''}" class="w-[20%] bg-slate-700 border border-slate-600 text-white rounded p-2 text-sm roster-pos outline-none focus:border-blue-500">
+                            <select class="w-[30%] bg-slate-700 border border-slate-600 text-white rounded p-2 text-sm roster-dept outline-none focus:border-blue-500" required>${deptOptions}</select>
+                            <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-400 bg-red-900/20 hover:bg-red-900/40 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
+                    `);
+                    document.querySelector(`#${rowId} .roster-dept`).value = p.dept;
+                });
+            } else {
+                if(rosterObj.length > 0) {
+                    document.getElementById('req-emp-name').value = rosterObj[0].name;
+                    document.getElementById('req-position').value = rosterObj[0].position || '';
+                }
+            }
+
+            // In our system total cost is a single field, to edit properly user must type breakdown again.
+            // For simplicity we just set the total in a random field or let them type.
+            document.getElementById('cost-reg').value = req.totalCost;
+            document.getElementById('cost-travel').value = 0; document.getElementById('cost-food').value = 0; document.getElementById('cost-acc').value = 0;
+            updateTotal();
+
+            document.getElementById('edit-req-id').value = req.id;
+            document.getElementById('form-header-title').textContent = `Editing Draft: ${req.id}`;
+            document.getElementById('btn-submit-text').textContent = 'Update Request Draft';
+            document.getElementById('btn-cancel-edit').classList.remove('hidden');
+
+            switchTab('new-request');
+            showNotification("Draft loaded. You can now make corrections.", "info");
+        });
+
+        // --- Auto-Sign Admin ---
+        document.getElementById('btn-auto-sign').addEventListener('click', () => {
+            document.getElementById('sig-admin-name').value = "MPTD / CQI Approved (" + currentUserName + ")";
+        });
 
         // File Optimization logic
         function optimizeFile(file, callback) {
@@ -1123,6 +1219,15 @@
             } catch(e) { showNotification("Upload failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
         });
 
+        document.getElementById('btn-remove-clearance').addEventListener('click', async () => {
+            if(!confirm("Are you sure you want to remove the uploaded clearance? The status will revert to Approved.")) return;
+            closeDetailsModal(); document.getElementById('global-loader').classList.remove('hidden');
+            try {
+                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'removeClearance', id: currentModalReqId }) });
+                showNotification("Clearance removed successfully.", "success"); fetchDashboardData();
+            } catch(e) { showNotification("Removal failed.", "error"); document.getElementById('global-loader').classList.add('hidden'); }
+        });
+
         document.getElementById('btn-save-details').addEventListener('click', async () => {
             const btn = document.getElementById('btn-save-details');
             const origHtml = btn.innerHTML; btn.innerHTML = '<div class="loader"></div>'; btn.disabled = true;
@@ -1130,15 +1235,16 @@
             const req = requestsData.find(r => String(r.id) === String(currentModalReqId));
             req.signatures = req.signatures || {};
             req.signatures.appName = document.getElementById('sig-admin-name').value;
+            req.rsaEndDate = document.getElementById('rsa-end-date').value;
+            req.adminRemarks = document.getElementById('input-admin-remarks').value;
             
             try {
                 await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateSignatures', data: req }) });
-                showNotification("Signatures updated.", "success");
+                showNotification("Admin dossier updated.", "success");
                 closeDetailsModal(); fetchDashboardData();
             } catch(e) { showNotification("Update failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
         });
 
-        // --- Iframe Preview Modal ---
         window.showAttachment = function(url) {
             if (!url) return;
             document.getElementById('modal-preview').classList.remove('hidden');
@@ -1164,8 +1270,45 @@
             document.getElementById('preview-img').src = ''; document.getElementById('preview-iframe').src = '';
         };
 
+        // --- EXPORT TO EXCEL SYSTEM ---
+        window.exportToExcel = function() {
+            showNotification("Generating Masterfile...", "info");
+            
+            const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
+            let flatData = [];
+
+            visibleReqs.forEach(req => {
+                let rosterObj = [];
+                try { rosterObj = JSON.parse(req.expectedRoster); } catch(e){}
+                
+                if (rosterObj.length === 0) {
+                    flatData.push({
+                        "Request ID": req.id, "Type": req.type, "Employee Name": "N/A", "Position": "N/A", "Department": req.department,
+                        "Title of Seminar": req.title, "Venue": req.venue, "Dates": req.dates,
+                        "Total Cost (₱)": req.totalCost, "Status": req.status, "Remarks": req.adminRemarks || ""
+                    });
+                } else {
+                    // Explode the roster and divide the cost automatically
+                    const splitCost = (req.totalCost / rosterObj.length).toFixed(2);
+                    rosterObj.forEach(p => {
+                        flatData.push({
+                            "Request ID": req.id, "Type": req.type, "Employee Name": p.name, "Position": p.position || "N/A", "Department": p.dept,
+                            "Title of Seminar": req.title, "Venue": req.venue, "Dates": req.dates,
+                            "Total Cost (₱)": splitCost, "Status": req.status, "Remarks": req.adminRemarks || ""
+                        });
+                    });
+                }
+            });
+
+            const ws = XLSX.utils.json_to_sheet(flatData);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "TDMH_Masterfile");
+            XLSX.writeFile(wb, `TDMH_Training_Masterfile_${new Date().toISOString().split('T')[0]}.xlsx`);
+            showNotification("Export Complete!", "success");
+        }
+
         function renderReports() {
-            const total = requestsData.length; const pending = requestsData.filter(r => r.status === 'Pending').length; const approved = requestsData.filter(r => r.status === 'Approved' || r.status === 'Liquidated').length;
+            const total = requestsData.length; const pending = requestsData.filter(r => r.status === 'Pending').length; const approved = requestsData.filter(r => r.status === 'Liquidated').length;
             const totalBudget = requestsData.filter(r => r.status === 'Approved' || r.status === 'Liquidated').reduce((sum, req) => sum + parseFloat(req.totalCost || 0), 0);
             
             document.getElementById('kpi-total').textContent = total; 
@@ -1191,7 +1334,6 @@
         }
 
         document.getElementById('nav-sync').addEventListener('click', fetchDashboardData);
-
         init();
     </script>
 </body>
