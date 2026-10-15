@@ -1,18 +1,19 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TDMH Training & Development System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TDMH Training & Development</title>
     
-    <!-- Dependencies -->
+    <!-- Training Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             darkMode: 'class',
@@ -21,47 +22,38 @@
     </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
-    <!-- Custom CSS & PS Vita Peel Effect -->
     <style>
-        body { overflow-x: hidden; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
-        .dark ::-webkit-scrollbar-thumb { background: #334155; }
-        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+        /* Smooth Global Transition */
+        *, *::before, *::after { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
         
-        #signature-pad { border: 2px dashed #94a3b8; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #f8fafc; touch-action: none; cursor: crosshair; transition: border-color 0.3s; }
+        body { overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .dark ::-webkit-scrollbar-thumb { background: #475569; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        #signature-pad { border: 2px dashed #94a3b8; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #f8fafc; touch-action: none; cursor: crosshair; }
         .dark #signature-pad { border-color: #475569; background-color: #1e293b; }
         #signature-pad:focus-within, #signature-pad:hover { border-color: #3b82f6; }
 
-        @keyframes slideInRight { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
-        .toast-enter { animation: slideInRight 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        .toast-exit { animation: fadeOut 0.3s ease-in forwards; }
+        @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .anim-slide-in { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
         
         .loader { border: 3px solid rgba(59, 130, 246, 0.2); border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        /* Custom PS Vita Peel Transition Overlay */
-        #theme-transition-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999; pointer-events: none;
-            border-radius: 50%; transform: scale(0); opacity: 0; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease-out;
-        }
-        #theme-transition-overlay.active { transform: scale(3); opacity: 1; transition: transform 0.6s cubic-bezier(0.25, 1, 0.5, 1); }
 
         @media print { 
             body * { visibility: hidden; }
             #print-roster-container, #print-roster-container * { visibility: visible; }
             #print-roster-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background-color: white !important; color: black !important; }
             .no-print { display: none !important; } 
-            body, html { background-color: white !important; color: black !important; } 
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200 transition-colors duration-200">
+<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200">
 
-    <div id="theme-transition-overlay"></div>
-    <div id="toast-container" class="fixed top-4 right-4 z-[100] flex flex-col gap-2 no-print"></div>
+    <div id="toast-container" class="fixed bottom-20 md:top-4 md:bottom-auto right-4 left-4 md:left-auto z-[100] flex flex-col gap-2 no-print pointer-events-none"></div>
 
     <div id="offline-banner" class="fixed top-0 left-0 w-full bg-orange-600 text-white text-center py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-widest z-[100] hidden no-print shadow-md">
         ⚠️ Working Offline - Signatures queued in vault. Will sync automatically when Wi-Fi returns.
@@ -69,9 +61,9 @@
 
     <!-- VIEW 1: PUBLIC SIGN-IN -->
     <div id="view-public-signin" class="hidden flex-grow flex flex-col items-center justify-center p-4 py-12">
-        <div class="bg-white dark:bg-slate-800 p-8 md:p-10 rounded-2xl shadow-xl dark:shadow-2xl max-w-lg w-full border border-slate-200 dark:border-slate-700">
+        <div class="bg-white dark:bg-slate-800 p-8 md:p-10 rounded-2xl shadow-xl max-w-lg w-full border border-slate-200 dark:border-slate-700">
             <div class="text-center mb-8">
-                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 text-blue-500 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-clipboard-user"></i></div>
+                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 text-blue-600 dark:text-blue-400 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl"><i class="fa-solid fa-clipboard-user"></i></div>
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-wide">Training Sign-In</h1>
                 <p id="public-title-display" class="text-slate-600 dark:text-slate-400 font-bold mt-2 bg-slate-100 dark:bg-slate-900 py-2 px-4 rounded-lg inline-block">Loading details...</p>
             </div>
@@ -79,59 +71,58 @@
             <form id="public-signin-form" class="space-y-6">
                 <div>
                     <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-1.5">Full Name</label>
-                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white transition">
+                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white">
                 </div>
                 <div>
                     <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-1.5">Department</label>
-                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white transition"></select>
+                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white"></select>
                 </div>
                 <div class="pt-2">
                     <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 flex justify-between items-center">
                         <span>Digital Signature</span>
-                        <button type="button" id="btn-clear-sig" class="text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-500 px-3 py-1.5 rounded-lg transition">Clear Canvas</button>
+                        <button type="button" id="btn-clear-sig" class="text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg">Clear Canvas</button>
                     </label>
                     <canvas id="signature-pad" class="shadow-inner"></canvas>
                 </div>
-                <button type="submit" id="btn-public-submit" class="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white font-bold py-4 rounded-xl transition shadow-md">Submit Attendance</button>
+                <button type="submit" id="btn-public-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md">Submit Attendance</button>
             </form>
 
-            <div id="public-success" class="hidden text-center py-10 transform scale-95 transition-transform duration-300">
-                <div class="w-24 h-24 bg-green-100 dark:bg-green-900/30 border border-green-300 dark:border-green-700 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-500 dark:text-green-400"></i></div>
+            <div id="public-success" class="hidden text-center py-10">
+                <div class="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-600 dark:text-green-400"></i></div>
                 <h2 class="text-3xl font-black text-slate-900 dark:text-white mb-3">Recorded!</h2>
-                <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded-xl border border-slate-200 dark:border-slate-600 mt-6"><p class="text-sm font-medium text-slate-600 dark:text-slate-300">You may now close this tab.</p></div>
+                <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded-xl mt-6"><p class="text-sm font-medium text-slate-600 dark:text-slate-300">You may now close this tab.</p></div>
             </div>
         </div>
     </div>
 
     <!-- VIEW 2: PROFESSIONAL LOGIN -->
     <div id="view-login" class="flex-grow flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-slate-800 p-10 md:p-12 rounded-2xl shadow-xl dark:shadow-2xl max-w-sm w-full border border-slate-200 dark:border-slate-700 relative overflow-hidden">
+        <div class="bg-white dark:bg-slate-800 p-10 md:p-12 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 dark:border-slate-700 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
             
-            <button onclick="toggleTheme(event)" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition p-2 bg-slate-100 dark:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center">
-                <i class="fa-solid fa-moon dark:hidden"></i>
-                <i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
+            <button onclick="toggleTheme()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 bg-slate-100 dark:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center">
+                <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
             </button>
 
             <div class="text-center mb-8 mt-2">
-                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400 border border-slate-200 dark:border-slate-600 shadow-sm"><i class="fa-solid fa-hospital text-2xl"></i></div>
+                <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400"><i class="fa-solid fa-hospital text-2xl"></i></div>
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">TDMH Portal</h1>
                 <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-widest">Training & Development</p>
             </div>
             <form id="login-form" class="space-y-5">
                 <div>
                     <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Department</label>
-                    <select id="login-dept" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-semibold text-slate-900 dark:text-slate-100 transition"></select>
+                    <select id="login-dept" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-semibold text-slate-900 dark:text-slate-100"></select>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
                     <div class="relative">
-                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-medium tracking-widest text-slate-900 dark:text-slate-100 pr-12 transition">
-                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition"><i class="fa-solid fa-eye text-lg"></i></button>
+                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-medium tracking-widest text-slate-900 dark:text-slate-100 pr-12">
+                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400"><i class="fa-solid fa-eye text-lg"></i></button>
                     </div>
                 </div>
-                <div id="login-error" class="hidden text-red-600 dark:text-red-300 text-xs font-bold text-center bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 py-3 rounded-lg"></div>
-                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition-all shadow-md mt-4">Secure Login</button>
+                <div id="login-error" class="hidden text-red-600 dark:text-red-300 text-xs font-bold text-center bg-red-50 dark:bg-red-900/30 py-3 rounded-lg border border-red-200 dark:border-red-800"></div>
+                <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 shadow-md mt-4">Secure Login</button>
             </form>
         </div>
     </div>
@@ -139,453 +130,470 @@
     <!-- VIEW 3: MAIN APP SHELL -->
     <div id="view-app" class="hidden flex-grow flex flex-col h-screen overflow-hidden">
         
-        <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm z-20 flex-shrink-0 no-print transition-colors duration-200">
-            <div class="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- TOP NAV -->
+        <nav class="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm z-20 flex-shrink-0 no-print">
+            <div class="max-w-[1600px] mx-auto px-4 sm:px-6">
                 <div class="flex justify-between h-16">
                     <div class="flex items-center gap-3">
-                        <div class="w-9 h-9 bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600 rounded-lg flex items-center justify-center shadow-sm"><i class="fa-solid fa-hospital-user text-blue-600 dark:text-blue-400"></i></div>
+                        <div class="w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-hospital-user text-blue-600 dark:text-blue-400"></i></div>
                         <span class="font-black text-lg tracking-wide hidden sm:block text-slate-900 dark:text-slate-100">TDMH Operations</span>
                     </div>
-                    <div class="flex items-center space-x-3 md:space-x-4">
-                        <button onclick="toggleTheme(event)" class="text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-700 p-2 rounded-full w-8 h-8 flex items-center justify-center transition border border-slate-200 dark:border-slate-600" title="Toggle Theme">
-                            <i class="fa-solid fa-moon dark:hidden"></i>
-                            <i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
+                    <div class="flex items-center space-x-2 md:space-x-4">
+                        <button onclick="toggleTheme()" class="text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-700 p-2 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200 dark:border-slate-600">
+                            <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
                         </button>
-                        <button id="nav-sync" class="text-xs md:text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 md:px-4 py-1.5 rounded-md transition font-bold flex items-center border border-slate-200 dark:border-slate-600 shadow-sm"><i class="fa-solid fa-rotate mr-2 text-blue-600 dark:text-blue-400"></i> <span class="hidden md:inline">Sync Data</span></button>
-                        <div class="text-xs md:text-sm bg-slate-50 dark:bg-slate-900 px-3 md:px-4 py-1.5 rounded-md font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300"><i class="fa-solid fa-user-shield text-slate-400 dark:text-slate-500"></i> <span id="user-badge" class="tracking-wide">User</span></div>
-                        <button id="nav-logout" class="text-sm bg-red-50 hover:bg-red-100 dark:bg-slate-700 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-md transition font-bold border border-red-100 dark:border-slate-600" title="Logout"><i class="fa-solid fa-power-off"></i></button>
+                        <button id="nav-sync" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-md font-bold flex items-center border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-rotate md:mr-2 text-blue-600 dark:text-blue-400"></i> <span class="hidden md:inline">Sync Data</span></button>
+                        <div class="text-[10px] md:text-sm bg-slate-50 dark:bg-slate-900 px-2 md:px-4 py-1.5 rounded-md font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300"><i class="fa-solid fa-user-shield text-slate-400"></i> <span id="user-badge" class="truncate max-w-[100px] md:max-w-none">User</span></div>
+                        <button id="nav-logout" class="text-sm bg-red-50 hover:bg-red-100 dark:bg-slate-700 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-md font-bold border border-red-100 dark:border-slate-600"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 </div>
             </div>
         </nav>
 
-        <div class="flex-grow flex overflow-hidden max-w-[1400px] w-full mx-auto relative no-print">
+        <div class="flex-grow flex overflow-hidden max-w-[1600px] w-full mx-auto relative no-print">
             
-            <!-- SIDEBAR -->
-            <div class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex transition-colors duration-200">
+            <!-- DESKTOP SIDEBAR -->
+            <div class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex">
                 <div class="px-6 mb-3 text-[10px] font-black text-slate-500 uppercase tracking-widest">Workspace Menu</div>
-                <button data-tab="dashboard" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold bg-blue-50 text-blue-600 dark:bg-slate-900 dark:text-blue-400 border-r-4 border-blue-600 dark:border-blue-500 transition group"><i class="fa-solid fa-table-columns w-7 opacity-80 group-hover:opacity-100 transition-opacity"></i> Dashboard</button>
-                <button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200 transition group border-r-4 border-transparent"><i class="fa-solid fa-file-circle-plus w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> New Request</button>
-                <button data-tab="attendance" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200 transition group border-r-4 border-transparent"><i class="fa-solid fa-users-viewfinder w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> Attendance Logs</button>
-                <button data-tab="reports" id="tab-reports-btn" class="nav-tab hidden items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200 transition group border-r-4 border-transparent"><i class="fa-solid fa-folder-tree w-7 opacity-70 group-hover:opacity-100 transition-opacity"></i> System Overview</button>
+                <button data-tab="dashboard" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold bg-blue-50 text-blue-600 dark:bg-slate-900 dark:text-blue-400 border-r-4 border-blue-600 dark:border-blue-500 group"><i class="fa-solid fa-folder-tree w-7 opacity-80"></i> Training Directory</button>
+                <button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200 border-r-4 border-transparent group"><i class="fa-solid fa-file-circle-plus w-7 opacity-70"></i> New Request</button>
+                <button data-tab="attendance" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200 border-r-4 border-transparent group"><i class="fa-solid fa-users-viewfinder w-7 opacity-70"></i> Attendance Logs</button>
+                <button data-tab="reports" id="tab-reports-btn" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-700/50 dark:hover:text-slate-200 border-r-4 border-transparent group"><i class="fa-solid fa-chart-pie w-7 opacity-70"></i> Analytics & Reports</button>
+            </div>
+
+            <!-- MOBILE BOTTOM NAV -->
+            <div class="md:hidden fixed bottom-0 left-0 w-full bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex justify-around z-[60] pb-safe shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]">
+                <button data-tab="dashboard" class="nav-tab flex flex-col items-center p-3 text-blue-600 dark:text-blue-400 w-1/4">
+                    <i class="fa-solid fa-folder-tree text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Directory</span>
+                </button>
+                <button data-tab="new-request" class="nav-tab flex flex-col items-center p-3 text-slate-500 dark:text-slate-400 w-1/4">
+                    <i class="fa-solid fa-plus text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">New</span>
+                </button>
+                <button data-tab="attendance" class="nav-tab flex flex-col items-center p-3 text-slate-500 dark:text-slate-400 w-1/4">
+                    <i class="fa-solid fa-users-viewfinder text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Logs</span>
+                </button>
+                <button data-tab="reports" id="mobile-reports-btn" class="nav-tab flex flex-col items-center p-3 text-slate-500 dark:text-slate-400 w-1/4">
+                    <i class="fa-solid fa-chart-pie text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Reports</span>
+                </button>
             </div>
 
             <!-- MAIN CONTENT AREA -->
-            <div class="flex-grow overflow-y-auto bg-slate-50 dark:bg-slate-900 relative p-4 md:p-8 transition-colors duration-200" id="main-content-area">
+            <div class="flex-grow overflow-y-auto bg-slate-50 dark:bg-slate-900 relative p-4 md:p-8 pb-24 md:pb-8" id="main-content-area">
+                
                 <div id="global-loader" class="absolute inset-0 bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm z-50 flex flex-col items-center justify-center hidden">
                     <div class="loader mb-4"></div>
                     <p class="text-blue-600 dark:text-blue-400 font-bold tracking-widest animate-pulse">SYNCING DATABASE...</p>
                 </div>
 
-                <!-- SUB-VIEW: DASHBOARD -->
-                <div id="subview-dashboard" class="subview-section max-w-6xl mx-auto pb-20">
+                <!-- ==================== SUB-VIEW: FOLDER DIRECTORY ==================== -->
+                <div id="subview-dashboard" class="subview-section max-w-7xl mx-auto pb-20">
+                    
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100">Training Operations</h2>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Manage requests, approvals, and event attendance.</p>
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100">Training Directory</h2>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Organized folders for requests, approvals, and attendance.</p>
                         </div>
                         
-                        <!-- Search & Filter Controls -->
                         <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
-                            <div class="relative">
+                            <div class="relative w-full md:w-64">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                                <input type="text" id="search-input" placeholder="Search ID, Title, Dept..." class="w-full md:w-64 pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-blue-500 dark:text-white transition">
+                                <input type="text" id="search-input" placeholder="Search ID, Title, Dept..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-blue-500 text-slate-900 dark:text-white">
                             </div>
                             <div class="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg border border-slate-300 dark:border-slate-700">
-                                <button onclick="setDashboardFilter('active')" id="filter-btn-active" class="px-4 py-1.5 text-xs font-bold rounded-md bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition">Active</button>
-                                <button onclick="setDashboardFilter('legacy')" id="filter-btn-legacy" class="px-4 py-1.5 text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition">Legacy Archives</button>
-                                <button onclick="setDashboardFilter('all')" id="filter-btn-all" class="px-4 py-1.5 text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition">All Data</button>
+                                <button onclick="setDashboardFilter('active')" id="filter-btn-active" class="flex-1 px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all whitespace-nowrap">Active Operations</button>
+                                <button onclick="setDashboardFilter('legacy')" id="filter-btn-legacy" class="flex-1 px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all whitespace-nowrap">Legacy Archives</button>
                             </div>
                         </div>
                     </div>
+
+                    <!-- ADMIN ONLY: LEGACY LINKS BANNER -->
+                    <div id="admin-legacy-links" class="hidden mb-6 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 rounded-xl p-4 md:p-5 flex-col justify-between items-start gap-3">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-database text-orange-600 dark:text-orange-400 text-lg"></i>
+                            <div>
+                                <h3 class="font-black text-orange-800 dark:text-orange-400 text-sm leading-tight">Raw Database Links</h3>
+                                <p class="text-[10px] text-orange-600 dark:text-orange-300 font-medium">Direct Admin access to historical Excel formats in Google Sheets.</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 w-full mt-2">
+                            <a href="https://docs.google.com/spreadsheets/d/17VwLAGXl4rKhRwCX8C6bK7wNo4vXSlmbfCvi_MhADgs/edit?gid=539833864#gid=539833864" target="_blank" class="flex-1 md:flex-none text-center px-4 py-2 bg-white dark:bg-slate-800 border border-orange-200 dark:border-orange-700 rounded-lg shadow-sm text-xs font-bold text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-slate-700">Legacy External</a>
+                            <a href="https://docs.google.com/spreadsheets/d/17VwLAGXl4rKhRwCX8C6bK7wNo4vXSlmbfCvi_MhADgs/edit?gid=577743540#gid=577743540" target="_blank" class="flex-1 md:flex-none text-center px-4 py-2 bg-white dark:bg-slate-800 border border-orange-200 dark:border-orange-700 rounded-lg shadow-sm text-xs font-bold text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-slate-700">Legacy Internal</a>
+                            <a href="https://docs.google.com/spreadsheets/d/17VwLAGXl4rKhRwCX8C6bK7wNo4vXSlmbfCvi_MhADgs/edit?gid=886176295#gid=886176295" target="_blank" class="flex-1 md:flex-none text-center px-4 py-2 bg-white dark:bg-slate-800 border border-orange-200 dark:border-orange-700 rounded-lg shadow-sm text-xs font-bold text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-slate-700">Legacy Masteral</a>
+                        </div>
+                    </div>
                     
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 uppercase text-[11px] font-black tracking-wider">
-                                <tr>
-                                    <th class="px-4 py-4 w-1/6">Request ID</th>
-                                    <th class="px-4 py-4 w-1/6">Department</th>
-                                    <th class="px-4 py-4 w-2/6">Training Details</th>
-                                    <th class="px-4 py-4 w-1/6">Status</th>
-                                    <th class="px-4 py-4 w-1/6 text-right">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="dashboard-tbody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-200"></tbody>
-                        </table>
+                    <!-- BREADCRUMB NAVIGATION -->
+                    <div class="mb-4 flex items-center text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 w-fit px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 overflow-x-auto whitespace-nowrap max-w-full shadow-sm">
+                        <button onclick="navLevel(0)" id="crumb-root-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition"><i class="fa-solid fa-house mr-1.5"></i> Directory</button>
+                        <div id="breadcrumb-dept" class="hidden items-center">
+                            <i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i>
+                            <button onclick="navLevel(1)" id="crumb-dept-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[100px] md:max-w-[150px]"></button>
+                        </div>
+                        <div id="breadcrumb-type" class="hidden items-center">
+                            <i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i>
+                            <button onclick="navLevel(2)" id="crumb-type-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[100px]"></button>
+                        </div>
+                        <div id="breadcrumb-title" class="hidden items-center">
+                            <i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i>
+                            <span id="crumb-title-text" class="text-slate-800 dark:text-slate-200 truncate max-w-[150px] md:max-w-[200px]"></span>
+                        </div>
+                    </div>
+
+                    <!-- FOLDERS / CARDS CONTAINER -->
+                    <div id="directory-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Injected via JS -->
                     </div>
                 </div>
 
                 <!-- SUB-VIEW: ATTENDANCE LOGS -->
-                <div id="subview-attendance" class="subview-section hidden max-w-6xl mx-auto pb-20">
+                <div id="subview-attendance" class="subview-section hidden max-w-7xl mx-auto pb-20">
                     <div class="flex justify-between items-end mb-6">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100">Attendance Logs</h2>
                             <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Hospital-wide digital signature and event tracking.</p>
                         </div>
                     </div>
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm">
-                        <table class="w-full text-left text-sm">
-                            <thead class="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 uppercase text-[11px] font-black tracking-wider">
-                                <tr>
-                                    <th class="px-4 py-4">Timestamp</th>
-                                    <th class="px-4 py-4">Event / Req ID</th>
-                                    <th class="px-4 py-4">Attendee Name</th>
-                                    <th class="px-4 py-4">Department</th>
-                                    <th class="px-4 py-4 text-center">Signature</th>
-                                </tr>
-                            </thead>
-                            <tbody id="attendance-tbody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-200"></tbody>
-                        </table>
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm w-full overflow-hidden">
+                        <div class="overflow-x-auto w-full pb-2">
+                            <table class="w-full text-left text-sm min-w-[700px]">
+                                <thead class="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 uppercase text-[11px] font-black tracking-wider">
+                                    <tr>
+                                        <th class="px-5 py-4">Timestamp</th>
+                                        <th class="px-5 py-4">Event / Req ID</th>
+                                        <th class="px-5 py-4">Attendee Name</th>
+                                        <th class="px-5 py-4">Department</th>
+                                        <th class="px-5 py-4 text-center">Signature</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="attendance-tbody" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-200"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
                 <!-- SUB-VIEW: NEW REQUEST FORM -->
-                <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-20 transition-colors">
+                <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-20">
                     <div class="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <h2 id="form-header-title" class="text-2xl font-black text-slate-900 dark:text-slate-100">Create Training Request</h2>
-                        <button type="button" id="btn-cancel-edit" class="hidden text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white px-4 py-2 rounded-lg transition font-bold border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-xmark mr-1"></i> Cancel Edit</button>
+                        <h2 id="form-header-title" class="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100">Create Training Request</h2>
+                        <button type="button" id="btn-cancel-edit" class="hidden text-xs md:text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white px-3 md:px-4 py-2 rounded-lg font-bold border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-xmark mr-1"></i> Cancel Edit</button>
                     </div>
                     
-                    <form id="request-form" class="space-y-8">
+                    <form id="request-form" class="space-y-6 md:space-y-8">
                         <input type="hidden" id="edit-req-id" value="">
                         
-                        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-5 rounded-lg">
-                            <label class="block text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Training Type</label>
+                        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 md:p-5 rounded-lg">
+                            <label class="block text-xs md:text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Training Type</label>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 transition relative overflow-hidden">
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
                                     <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100">External Seminar</span><span class="block text-xs text-slate-500 dark:text-slate-400">1 Person. Short course.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">External Seminar</span><span class="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400">1 Person. Short course.</span></div>
                                 </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 transition relative overflow-hidden">
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
                                     <input type="radio" name="training-type" value="Masteral" class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100">Masteral / Degree</span><span class="block text-xs text-slate-500 dark:text-slate-400">1 Person. Long term.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">Masteral / Degree</span><span class="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400">1 Person. Long term.</span></div>
                                 </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 transition relative overflow-hidden">
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
                                     <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100">Internal / In-Service</span><span class="block text-xs text-slate-500 dark:text-slate-400">Group event. Generates Roster.</span></div>
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">Internal / In-Service</span><span class="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Group event. Generates Roster.</span></div>
                                 </label>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Date of Application</label>
-                                <input type="date" id="req-date-app" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 transition font-medium text-slate-900 dark:text-slate-100 dark:[color-scheme:dark]">
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Date of Application</label>
+                                <input type="date" id="req-date-app" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 font-medium text-slate-900 dark:text-slate-100 dark:[color-scheme:dark]">
                             </div>
                             <div>
-                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Department / Hosting Entity</label>
-                                <input type="text" id="req-department" readonly class="w-full border-slate-300 dark:border-slate-600 border rounded-md p-2.5 bg-slate-100 dark:bg-slate-900 text-slate-500 font-medium cursor-not-allowed">
-                                <select id="req-department-select" class="hidden w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 transition font-medium text-slate-900 dark:text-slate-100"></select>
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Department / Hosting Entity</label>
+                                <input type="text" id="req-department" readonly class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2.5 bg-slate-100 dark:bg-slate-900 text-slate-500 font-medium cursor-not-allowed">
+                                <select id="req-department-select" class="hidden w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 font-medium text-slate-900 dark:text-slate-100"></select>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="md:col-span-2"><label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-900 dark:text-slate-100"></div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div class="md:col-span-2"><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
                             
                             <div id="field-employee-name" class="md:col-span-2">
-                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Specific Employee Name</label>
-                                <input type="text" id="req-emp-name" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-900 dark:text-slate-100">
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Specific Employee Name</label>
+                                <input type="text" id="req-emp-name" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100">
                             </div>
                             <div id="field-position">
-                                <label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Position / Job Title</label>
-                                <input type="text" id="req-position" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-900 dark:text-slate-100">
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Position / Job Title</label>
+                                <input type="text" id="req-position" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100">
                             </div>
 
-                            <div><label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Venue / Modality</label><input type="text" id="req-venue" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-900 dark:text-slate-100"></div>
+                            <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Venue / Modality</label><input type="text" id="req-venue" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
                             
                             <div class="grid grid-cols-2 gap-4">
-                                <div><label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g. Oct 12-14" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-900 dark:text-slate-100"></div>
-                                <div><label class="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Total Days</label><input type="number" id="req-days" required placeholder="0" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 transition text-slate-900 dark:text-slate-100"></div>
+                                <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g. Oct 12-14" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                                <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Total Days</label><input type="number" id="req-days" required placeholder="0" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
                             </div>
                         </div>
 
                         <div id="field-roster-builder" class="hidden border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
                             <div class="bg-slate-50 dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <div><h3 class="font-bold text-slate-900 dark:text-slate-100">Expected Roster</h3><p class="text-xs text-slate-500 dark:text-slate-400">Generates Official Attendance Record sheet.</p></div>
-                                <button type="button" id="btn-add-roster" class="bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-slate-600 text-xs font-bold px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-600 transition flex items-center shadow-sm"><i class="fa-solid fa-user-plus mr-1"></i> Add Trainee</button>
+                                <div><h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base">Expected Roster</h3><p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Generates Official Attendance Record sheet.</p></div>
+                                <button type="button" id="btn-add-roster" class="bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-slate-600 text-xs font-bold px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center shadow-sm whitespace-nowrap"><i class="fa-solid fa-user-plus mr-1"></i> Add</button>
                             </div>
-                            <div class="p-4 bg-white dark:bg-slate-800 space-y-3" id="roster-container"></div>
+                            <div class="p-4 bg-white dark:bg-slate-800 overflow-x-auto w-full">
+                                <div id="roster-container" class="space-y-3 min-w-[500px]"></div>
+                            </div>
                         </div>
 
                         <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
                             <div class="bg-slate-50 dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <h3 class="font-bold text-slate-900 dark:text-slate-100">Budget Breakdown (₱)</h3>
-                                <span id="budget-masteral-badge" class="hidden bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-300 dark:border-purple-700/50">Masteral Mode</span>
+                                <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base">Budget Breakdown (₱)</h3>
+                                <span id="budget-masteral-badge" class="hidden bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-300 dark:border-purple-700/50">Masteral</span>
                             </div>
                             <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 bg-white dark:bg-transparent">
-                                <div><label id="lbl-cost-reg" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition"></div>
-                                <div><label id="lbl-cost-travel" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition"></div>
-                                <div><label id="lbl-cost-food" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition"></div>
-                                <div><label id="lbl-cost-acc" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500 transition"></div>
+                                <div><label id="lbl-cost-reg" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-travel" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-food" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-acc" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
                             </div>
                             <div class="bg-slate-50 dark:bg-slate-900 p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <span class="font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-sm">Total Budget Requested</span>
-                                <span class="text-2xl font-black text-blue-600 dark:text-blue-400">₱<span id="total-amount">0.00</span></span>
+                                <span class="font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px] md:text-sm">Total Budget</span>
+                                <span class="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400">₱<span id="total-amount">0.00</span></span>
                             </div>
                         </div>
 
-                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 dark:hover:bg-blue-500 text-white font-bold py-4 rounded-xl shadow-md transition active:scale-[0.98] text-lg flex items-center justify-center">
+                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md active:scale-[0.98] text-base md:text-lg flex items-center justify-center">
                             <i class="fa-solid fa-paper-plane mr-2"></i> <span id="btn-submit-text">Submit Training Request</span>
                         </button>
                     </form>
                 </div>
 
-                <!-- ==================== SUB-VIEW: SYSTEM OVERVIEW / EXPORT ==================== -->
-                <div id="subview-reports" class="subview-section hidden max-w-6xl mx-auto pb-20">
-                    <div class="flex justify-between items-end mb-6">
+                <!-- SUB-VIEW: ANALYTICS & REPORTS -->
+                <div id="subview-reports" class="subview-section hidden max-w-7xl mx-auto pb-20">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
-                            <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100">System Overview</h2>
-                            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Hospital-wide Masterfile Compilation & Analytics.</p>
+                            <h2 class="text-2xl font-black text-slate-900 dark:text-slate-100">Analytics & Reports</h2>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Masterfile Compilation & Analytics.</p>
                         </div>
-                        <button onclick="exportToExcel()" class="bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 text-white font-bold py-2 px-5 rounded-lg shadow-md transition flex items-center gap-2">
-                            <i class="fa-solid fa-file-excel"></i> Export Masterfile
-                        </button>
+                        
+                        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                            <select id="report-year-filter" onchange="renderReports()" class="flex-1 md:flex-none px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm outline-none focus:border-blue-500">
+                                <option value="all">All Years</option><option value="2025">2025</option><option value="2026" selected>2026</option><option value="2027">2027</option>
+                            </select>
+                            <select id="report-month-filter" onchange="renderReports()" class="flex-1 md:flex-none px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold text-slate-600 dark:text-slate-300 shadow-sm outline-none focus:border-blue-500">
+                                <option value="all">All Months</option>
+                                <option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option><option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option><option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option><option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option>
+                            </select>
+                            <button onclick="exportToExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 md:px-5 rounded-lg shadow-md flex items-center justify-center gap-2 text-sm">
+                                <i class="fa-solid fa-file-excel"></i> <span class="hidden md:inline">Export Filtered</span><span class="md:hidden">Export</span>
+                            </button>
+                        </div>
                     </div>
 
-                    <!-- CATEGORIZED KPIs -->
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-xs font-black text-slate-500 dark:text-slate-400 uppercase mb-1">External Seminars</div><div id="kpi-external" class="text-3xl font-black text-slate-900 dark:text-white">0</div></div>
-                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-xs font-black text-indigo-500 dark:text-indigo-400 uppercase mb-1">Internal / In-Service</div><div id="kpi-internal" class="text-3xl font-black text-slate-900 dark:text-white">0</div></div>
-                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-xs font-black text-purple-500 dark:text-purple-400 uppercase mb-1">Masteral Degrees</div><div id="kpi-masteral" class="text-3xl font-black text-slate-900 dark:text-white">0</div></div>
-                        <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-xs font-black text-blue-600 dark:text-blue-400 uppercase mb-1">Total System Budget (₱)</div><div id="kpi-budget" class="text-2xl font-black text-slate-900 dark:text-white mt-1">0</div></div>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6 md:mb-8">
+                        <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-slate-500 dark:text-slate-400 uppercase mb-1">External Seminars</div><div id="kpi-external" class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">0</div></div>
+                        <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-indigo-500 dark:text-indigo-400 uppercase mb-1">Internal / In-Service</div><div id="kpi-internal" class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">0</div></div>
+                        <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-purple-500 dark:text-purple-400 uppercase mb-1">Masteral Degrees</div><div id="kpi-masteral" class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">0</div></div>
+                        <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-blue-600 dark:text-blue-400 uppercase mb-1">Total System Budget</div><div id="kpi-budget" class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">₱0</div></div>
                     </div>
                     
-                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-6">
-                        <h3 class="font-bold text-slate-900 dark:text-slate-200 mb-4">Categorized Volume by Department</h3>
-                        <div class="relative h-[400px] w-full"><canvas id="reports-chart"></canvas></div>
+                    <!-- ACTIVE OPERATIONS MATRIX -->
+                    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-4 md:p-6 mb-6 overflow-hidden">
+                        <div class="flex justify-between items-center mb-4 min-w-[700px]">
+                            <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm md:text-base"><i class="fa-solid fa-hospital mr-2 text-blue-500"></i>Active Operations Report (Volume)</h3>
+                            <p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Total requests filed by active hospital departments.</p>
+                        </div>
+                        <div class="overflow-x-auto w-full pb-2">
+                            <table class="w-full text-left text-xs md:text-sm min-w-[800px]">
+                                <thead class="bg-blue-50 dark:bg-blue-900/20 text-slate-700 dark:text-slate-300 uppercase text-[10px] md:text-[11px] font-black tracking-wider">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg w-[20%]">Department</th>
+                                        <th class="px-2 py-3 text-center">Jan</th><th class="px-2 py-3 text-center">Feb</th><th class="px-2 py-3 text-center">Mar</th>
+                                        <th class="px-2 py-3 text-center">Apr</th><th class="px-2 py-3 text-center">May</th><th class="px-2 py-3 text-center">Jun</th>
+                                        <th class="px-2 py-3 text-center">Jul</th><th class="px-2 py-3 text-center">Aug</th><th class="px-2 py-3 text-center">Sep</th>
+                                        <th class="px-2 py-3 text-center">Oct</th><th class="px-2 py-3 text-center">Nov</th><th class="px-2 py-3 text-center">Dec</th>
+                                        <th class="px-4 py-3 text-center text-blue-600 dark:text-blue-400 rounded-tr-lg">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="matrix-tbody-active" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- HISTORICAL ARCHIVES MATRIX -->
+                    <div id="legacy-matrix-container" class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-4 md:p-6 mb-8 overflow-hidden hidden">
+                        <div class="flex justify-between items-center mb-4 min-w-[700px]">
+                            <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm md:text-base"><i class="fa-solid fa-clock-rotate-left mr-2 text-orange-500"></i>Historical Archives (Legacy Imports)</h3>
+                        </div>
+                        <div class="overflow-x-auto w-full pb-2">
+                            <table class="w-full text-left text-xs md:text-sm min-w-[800px]">
+                                <thead class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 uppercase text-[10px] md:text-[11px] font-black tracking-wider border-b border-slate-200 dark:border-slate-600">
+                                    <tr>
+                                        <th class="px-4 py-3 rounded-tl-lg w-[20%]">Source</th>
+                                        <th class="px-2 py-3 text-center">Jan</th><th class="px-2 py-3 text-center">Feb</th><th class="px-2 py-3 text-center">Mar</th>
+                                        <th class="px-2 py-3 text-center">Apr</th><th class="px-2 py-3 text-center">May</th><th class="px-2 py-3 text-center">Jun</th>
+                                        <th class="px-2 py-3 text-center">Jul</th><th class="px-2 py-3 text-center">Aug</th><th class="px-2 py-3 text-center">Sep</th>
+                                        <th class="px-2 py-3 text-center">Oct</th><th class="px-2 py-3 text-center">Nov</th><th class="px-2 py-3 text-center">Dec</th>
+                                        <th class="px-4 py-3 text-center text-slate-900 dark:text-white rounded-tr-lg">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="matrix-tbody-legacy" class="divide-y divide-slate-200 dark:divide-slate-700 text-slate-700 dark:text-slate-300"></tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
-                <!-- ==================== PART 3: QR ATTENDANCE STATION ==================== -->
-                <div id="subview-qr-station" class="subview-section hidden absolute inset-0 bg-white dark:bg-slate-900 z-40 flex flex-col md:flex-row overflow-hidden transition-colors">
-                    <div class="w-full md:w-1/2 p-8 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 relative">
-                        <button onclick="closeQRStation()" class="absolute top-6 left-6 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg transition"><i class="fa-solid fa-arrow-left mr-2"></i> Stop Event</button>
-                        <h2 class="text-3xl font-black text-blue-600 dark:text-blue-400 mb-2 text-center uppercase tracking-widest mt-10 md:mt-0">Scan to Sign-in</h2>
-                        <p id="qr-title-display" class="text-slate-500 dark:text-slate-400 font-medium mb-8 text-center max-w-sm"></p>
-                        <div class="bg-white p-6 rounded-3xl shadow-[0_0_50px_rgba(59,130,246,0.15)] mb-8 border border-slate-100 dark:border-none"><div id="qr-container"></div></div>
+                <!-- SUB-VIEW: QR ATTENDANCE STATION -->
+                <div id="subview-qr-station" class="subview-section hidden absolute inset-0 bg-white dark:bg-slate-900 z-40 flex flex-col md:flex-row overflow-hidden">
+                    <div class="w-full md:w-1/2 p-6 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 relative">
+                        <button onclick="closeQRStation()" class="absolute top-4 left-4 md:top-6 md:left-6 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg"><i class="fa-solid fa-arrow-left mr-2"></i> <span class="hidden md:inline">Stop Event</span></button>
+                        <h2 class="text-2xl md:text-3xl font-black text-blue-600 dark:text-blue-400 mb-2 text-center uppercase tracking-widest mt-12 md:mt-0">Scan to Sign-in</h2>
+                        <p id="qr-title-display" class="text-slate-500 dark:text-slate-400 font-medium mb-6 md:mb-8 text-center max-w-sm text-sm"></p>
+                        <div class="bg-white p-4 md:p-6 rounded-3xl shadow-[0_0_50px_rgba(59,130,246,0.15)] mb-8 border border-slate-100 dark:border-none"><div id="qr-container"></div></div>
                     </div>
                     
-                    <div class="w-full md:w-1/2 bg-slate-50 dark:bg-slate-800 p-8 flex flex-col relative h-full">
+                    <div class="w-full md:w-1/2 bg-slate-50 dark:bg-slate-800 p-6 md:p-8 flex flex-col relative h-full">
                         <div class="flex justify-between items-center mb-6">
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> Live Feed</h3>
+                            <h3 class="text-lg md:text-xl font-bold text-slate-900 dark:text-white flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span> Live Feed</h3>
                             <div class="flex gap-4">
-                                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg text-center hidden md:block shadow-sm">
+                                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 px-3 md:px-4 py-2 rounded-lg text-center hidden md:block shadow-sm">
                                     <span class="block text-[10px] text-slate-500 uppercase font-black tracking-widest">Elapsed Time</span>
-                                    <span id="qr-stopwatch" class="block text-xl font-black text-slate-900 dark:text-white leading-none tabular-nums">00:00:00</span>
+                                    <span id="qr-stopwatch" class="block text-lg md:text-xl font-black text-slate-900 dark:text-white leading-none tabular-nums">00:00:00</span>
                                 </div>
-                                <div class="bg-blue-600 px-4 py-2 rounded-lg text-center shadow-md">
+                                <div class="bg-blue-600 px-3 md:px-4 py-2 rounded-lg text-center shadow-md">
                                     <span class="block text-[10px] text-blue-100 dark:text-blue-200 uppercase font-black tracking-widest">Headcount</span>
-                                    <span id="qr-headcount" class="block text-2xl font-black text-white leading-none">0</span>
+                                    <span id="qr-headcount" class="block text-xl md:text-2xl font-black text-white leading-none">0</span>
                                 </div>
                             </div>
                         </div>
-                        <div id="qr-live-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar">
-                            <div class="text-slate-500 text-center mt-10 italic font-medium">Waiting for attendees to scan...</div>
+                        <div id="qr-live-list" class="flex-grow overflow-y-auto space-y-3 pr-2 custom-scrollbar pb-20 md:pb-0">
+                            <div class="text-slate-500 text-center mt-10 italic font-medium text-sm">Waiting for attendees to scan...</div>
                         </div>
                     </div>
                 </div>
 
             </div>
-        </div>
-    </div>
-
-    <!-- PRINTABLE ROSTER -->
-    <div id="print-roster-container" class="hidden bg-white w-full max-w-4xl mx-auto text-black">
-        <div class="text-center mb-8 border-b-2 border-black pb-4 mt-8">
-            <h1 class="text-2xl font-bold uppercase tracking-wider text-blue-900">Taytay Doctors Multispecialty Hospital</h1>
-            <h2 class="text-xl font-bold mt-2 text-gray-800">OFFICIAL ATTENDANCE RECORD</h2>
-        </div>
-        <div class="grid grid-cols-2 gap-y-6 gap-x-12 border-b-2 border-black pb-6 mb-6 text-sm">
-            <div>
-                <span class="font-bold text-gray-600 text-xs">SUBJECT:</span><br>
-                <span id="print-subject" class="font-bold text-lg">Training Title</span>
-            </div>
-            <div>
-                <span class="font-bold text-gray-600 text-xs">DATE:</span><br>
-                <span id="print-date" class="font-medium text-base">Date</span>
-            </div>
-            <div>
-                <span class="font-bold text-gray-600 text-xs">VENUE:</span><br>
-                <span id="print-venue" class="font-medium text-base">Venue</span>
-            </div>
-            <div>
-                <span class="font-bold text-gray-600 text-xs">HOSTING ENTITY / MODERATOR:</span><br>
-                <span id="print-host" class="font-medium text-base">Department</span>
-            </div>
-        </div>
-        <div class="flex justify-between font-bold mb-2 items-end">
-            <span class="text-lg">ATTENDEE ROSTER</span>
-            <span id="print-count" class="text-sm bg-gray-100 px-3 py-1 rounded">X ATTENDEES</span>
-        </div>
-        <table class="w-full text-left border-collapse border border-black text-sm">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="border border-black p-3 w-12 text-center">#</th>
-                    <th class="border border-black p-3 w-2/5">PARTICIPANT NAME</th>
-                    <th class="border border-black p-3 w-1/4">DEPARTMENT</th>
-                    <th class="border border-black p-3 w-1/3">SIGNATURE</th>
-                </tr>
-            </thead>
-            <tbody id="print-tbody"></tbody>
-        </table>
-        <div class="mt-12 no-print flex justify-center space-x-4 pb-20">
-            <button onclick="window.print()" class="bg-blue-600 text-white px-6 py-2 rounded font-bold hover:bg-blue-700 shadow"><i class="fa-solid fa-print mr-2"></i> Print Document</button>
-            <button onclick="closePrintRoster()" class="bg-gray-200 text-gray-800 px-6 py-2 rounded font-bold hover:bg-gray-300 shadow">Close Preview</button>
         </div>
     </div>
 
     <!-- MODALS -->
-    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-[70] p-4 no-print transition-colors">
-        <div class="bg-white dark:bg-slate-800 p-6 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[95vh] flex flex-col border border-slate-200 dark:border-slate-700 transform scale-95 transition-transform duration-300">
+    <div id="modal-details" class="hidden fixed inset-0 bg-slate-900/60 dark:bg-black/80 backdrop-blur-sm flex items-center justify-center z-[80] p-4 no-print">
+        <div class="bg-white dark:bg-slate-800 p-5 md:p-8 rounded-2xl shadow-2xl max-w-4xl w-full mx-auto max-h-[95vh] flex flex-col border border-slate-200 dark:border-slate-700 transform scale-95 transition-transform duration-300">
             
             <div class="flex justify-between items-center mb-4 border-b border-slate-200 dark:border-slate-700 pb-4 flex-shrink-0">
                 <div>
-                    <h3 class="text-xl font-black text-slate-900 dark:text-white">Training Dossier & Clearances</h3>
-                    <div class="flex items-center gap-3 mt-1">
-                        <p id="modal-req-id" class="text-xs font-bold text-slate-500 uppercase tracking-widest">REQ-XXXXXX</p>
-                        <span id="modal-legacy-badge" class="hidden bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-800/50 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-box-archive mr-1"></i> Legacy Archive</span>
-                        <button id="btn-edit-draft" class="hidden text-[10px] bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-800 transition"><i class="fa-solid fa-pen mr-1"></i> Edit Request Draft</button>
+                    <h3 class="text-lg md:text-xl font-black text-slate-900 dark:text-white">Training Dossier</h3>
+                    <div class="flex flex-wrap items-center gap-2 md:gap-3 mt-1">
+                        <p id="modal-req-id" class="text-[10px] md:text-xs font-bold text-slate-500 uppercase tracking-widest">REQ-XXXXXX</p>
+                        <span id="modal-legacy-badge" class="hidden bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border border-orange-300 dark:border-orange-800/50 px-2 py-0.5 rounded text-[9px] md:text-[10px] font-black uppercase tracking-widest"><i class="fa-solid fa-box-archive mr-1"></i> Legacy Archive</span>
+                        <button id="btn-edit-draft" class="hidden text-[9px] md:text-[10px] bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-2 py-0.5 rounded font-bold hover:bg-blue-100 dark:hover:bg-blue-800"><i class="fa-solid fa-pen mr-1"></i> Edit Request Draft</button>
                     </div>
                 </div>
-                <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 bg-slate-100 dark:bg-slate-700 rounded-full transition"><i class="fa-solid fa-xmark text-xl w-6 h-6 flex items-center justify-center"></i></button>
+                <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-slate-900 dark:hover:text-white p-2 bg-slate-100 dark:bg-slate-700 rounded-full"><i class="fa-solid fa-xmark text-lg md:text-xl w-6 h-6 flex items-center justify-center"></i></button>
             </div>
             
             <div class="overflow-y-auto pr-2 flex-grow custom-scrollbar">
                 
                 <div id="admin-feedback-box" class="hidden bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/50 p-4 rounded-xl mb-4">
-                    <h4 class="text-xs font-black text-red-600 dark:text-red-400 uppercase tracking-widest mb-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> Admin Remarks</h4>
-                    <p id="admin-feedback-text" class="text-sm text-red-800 dark:text-red-200 font-medium"></p>
+                    <h4 class="text-xs font-black text-red-600 dark:text-red-400 uppercase tracking-widest mb-1"><i class="fa-solid fa-circle-exclamation mr-1"></i> Admin Message / Reason</h4>
+                    <p id="admin-feedback-text" class="text-xs md:text-sm text-red-800 dark:text-red-200 font-medium"></p>
                 </div>
 
-                <div id="modal-body-data" class="bg-slate-50 dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-5 mb-8 text-slate-900 dark:text-white">
-                    <!-- Injected via JS -->
+                <div id="modal-body-data" class="bg-slate-50 dark:bg-slate-900 p-4 md:p-5 rounded-xl border border-slate-200 dark:border-slate-700 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-5 mb-6 text-slate-900 dark:text-white">
+                    <!-- Injected via JS later -->
                 </div>
 
-                <!-- Legacy Banner Warning -->
-                <div id="legacy-warning-section" class="hidden bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 p-6 rounded-xl text-center mb-6">
-                    <i class="fa-solid fa-clock-rotate-left text-orange-400 text-3xl mb-2"></i>
-                    <h4 class="font-bold text-orange-700 dark:text-orange-400">Historical Record</h4>
-                    <p class="text-xs text-orange-600 dark:text-orange-300 mt-1">This file was imported from the old Excel Masterfile. Post-training actions (like RSA editing and Clearances) are disabled for historical data to preserve integrity.</p>
+                <div id="legacy-warning-section" class="hidden bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800/50 p-5 md:p-6 rounded-xl text-center mb-6">
+                    <i class="fa-solid fa-clock-rotate-left text-orange-400 text-2xl md:text-3xl mb-2"></i>
+                    <h4 class="font-bold text-orange-700 dark:text-orange-400 text-sm md:text-base">Historical Record</h4>
+                    <p class="text-[10px] md:text-xs text-orange-600 dark:text-orange-300 mt-1 px-4">This file was imported from the old Excel Masterfile. Post-training actions (like RSA editing and Clearances) are disabled to preserve historical integrity.</p>
                 </div>
 
-                <div id="rsa-section" class="hidden mb-6 bg-slate-50 dark:bg-slate-900 p-5 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <h4 class="font-bold text-slate-900 dark:text-white mb-3 text-sm"><i class="fa-solid fa-file-contract text-yellow-500 mr-2"></i> Return Service Agreement (RSA)</h4>
+                <div id="rsa-section" class="hidden mb-6 bg-slate-50 dark:bg-slate-900 p-4 md:p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <h4 class="font-bold text-slate-900 dark:text-white mb-3 text-xs md:text-sm"><i class="fa-solid fa-file-contract text-yellow-500 mr-2"></i> Return Service Agreement (RSA)</h4>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Quick Select Duration</label>
-                            <div class="flex gap-2">
-                                <button type="button" onclick="setRSA(0)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold transition shadow-sm">None</button>
-                                <button type="button" onclick="setRSA(6)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold transition shadow-sm">6 Mos</button>
-                                <button type="button" onclick="setRSA(12)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold transition shadow-sm">1 Year</button>
-                                <button type="button" onclick="setRSA(24)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold transition shadow-sm">2 Years</button>
+                            <label class="block text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Quick Select Duration</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" onclick="setRSA(0)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold shadow-sm">None</button>
+                                <button type="button" onclick="setRSA(6)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold shadow-sm">6 Mos</button>
+                                <button type="button" onclick="setRSA(12)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold shadow-sm">1 Year</button>
+                                <button type="button" onclick="setRSA(24)" class="text-xs bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-700 font-bold shadow-sm">2 Years</button>
                             </div>
                         </div>
                         <div>
-                            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Lock-in End Date</label>
-                            <input type="date" id="rsa-end-date" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-1.5 text-sm font-medium outline-none focus:border-blue-500 dark:[color-scheme:dark] transition">
+                            <label class="block text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Lock-in End Date</label>
+                            <input type="date" id="rsa-end-date" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-1.5 text-sm font-medium outline-none focus:border-blue-500 dark:[color-scheme:dark]">
                         </div>
                     </div>
                 </div>
 
-                <div id="admin-actions-section" class="mb-8 hidden">
-                    <h4 class="font-bold text-slate-900 dark:text-white mb-4 text-sm"><i class="fa-solid fa-clipboard-check text-blue-500 mr-2"></i> Admin Actions & Feedback</h4>
-                    <textarea id="input-admin-remarks" rows="2" placeholder="Optional: Type reasons for rejection/revert here so the requester can fix it..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-3 text-sm font-medium outline-none focus:border-blue-500 mb-3 custom-scrollbar transition"></textarea>
+                <div id="admin-actions-section" class="mb-6 hidden">
+                    <h4 class="font-bold text-slate-900 dark:text-white mb-3 text-xs md:text-sm"><i class="fa-solid fa-comment-dots text-blue-500 mr-2"></i> Admin Messaging / Feedback</h4>
+                    <textarea id="input-admin-remarks" rows="2" placeholder="Send a message to the requester here (e.g. 'Please re-upload your correct receipt')..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 text-slate-900 dark:text-white rounded-lg p-3 text-xs md:text-sm font-medium outline-none focus:border-blue-500 mb-3 custom-scrollbar"></textarea>
                     
-                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700 transition">
-                        <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
-                        <div class="flex gap-3">
-                            <input type="text" id="sig-admin-name" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-sm font-medium outline-none focus:border-blue-500 transition" placeholder="Type name to sign">
-                            <button type="button" id="btn-auto-sign" class="bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-4 py-2 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-800 transition whitespace-nowrap text-xs flex items-center shadow-sm"><i class="fa-solid fa-stamp mr-1.5"></i> Auto-Sign</button>
+                    <div class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[9px] md:text-[10px] font-black text-slate-500 uppercase tracking-widest mb-1.5">Approved by CQI / Admin</label>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="text" id="sig-admin-name" class="w-full bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-2.5 text-xs md:text-sm font-medium outline-none focus:border-blue-500" placeholder="Type name to sign">
+                            <button type="button" id="btn-auto-sign" class="w-full sm:w-auto justify-center bg-blue-50 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800 px-4 py-2 rounded-lg font-bold hover:bg-blue-100 dark:hover:bg-blue-800 whitespace-nowrap text-xs flex items-center shadow-sm"><i class="fa-solid fa-stamp mr-1.5"></i> Auto-Sign</button>
                         </div>
                     </div>
                 </div>
 
-                <div id="clearance-section" class="hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl p-6 flex flex-col items-center justify-center mb-4 text-center relative transition">
-                    <button id="btn-remove-clearance" class="hidden absolute top-4 right-4 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 w-8 h-8 rounded-full flex items-center justify-center hover:bg-red-200 dark:hover:bg-red-800 transition" title="Remove & Replace File"><i class="fa-solid fa-trash-can"></i></button>
+                <div id="clearance-section" class="hidden bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800/50 rounded-xl p-5 md:p-6 flex flex-col items-center justify-center mb-4 text-center relative">
+                    <button id="btn-remove-clearance" class="hidden absolute top-3 right-3 md:top-4 md:right-4 bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 border border-red-200 dark:border-red-800 w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center hover:bg-red-200 dark:hover:bg-red-800" title="Remove & Replace File"><i class="fa-solid fa-trash-can text-xs"></i></button>
 
-                    <i class="fa-solid fa-cloud-arrow-up text-green-500 text-3xl mb-3"></i>
-                    <h4 class="font-bold text-green-700 dark:text-green-400 mb-1">Post-Training Clearance</h4>
-                    <p class="text-xs text-green-600 mb-4" id="clearance-instruction">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
+                    <i class="fa-solid fa-cloud-arrow-up text-green-500 text-2xl md:text-3xl mb-2 md:mb-3"></i>
+                    <h4 class="font-bold text-green-700 dark:text-green-400 mb-1 text-sm md:text-base">Post-Training Clearance</h4>
+                    <p class="text-[10px] md:text-xs text-green-600 mb-4 px-2" id="clearance-instruction">Upload your Certificate of Attendance or Receipts to liquidate this request.</p>
                     
                     <input type="file" id="clearance-input" accept="image/*,.pdf" class="hidden">
-                    <label id="clearance-label" for="clearance-input" class="bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 text-white font-bold py-2.5 px-6 rounded-lg cursor-pointer transition shadow-md flex items-center gap-2">
+                    <label id="clearance-label" for="clearance-input" class="bg-green-600 hover:bg-green-700 dark:hover:bg-green-500 text-white font-bold py-2 px-5 md:py-2.5 md:px-6 rounded-lg cursor-pointer shadow-md flex items-center gap-2 text-xs md:text-sm">
                         <i class="fa-solid fa-folder-open"></i> Select File
                     </label>
-                    <div id="clearance-status" class="hidden mt-3 text-sm font-bold text-green-600 dark:text-green-400 flex items-center gap-2"></div>
+                    <div id="clearance-status" class="hidden mt-3 text-xs md:text-sm font-bold text-green-600 dark:text-green-400 flex items-center gap-2 break-all"></div>
                 </div>
             </div>
 
-            <div class="flex justify-end space-x-3 pt-5 border-t border-slate-200 dark:border-slate-700 flex-shrink-0 mt-4 transition">
-                <button onclick="closeDetailsModal()" class="bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition shadow-sm">Close</button>
-                <button id="btn-save-details" class="hidden bg-blue-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 transition shadow-md">Save Admin Updates</button>
-                <button id="btn-upload-clearance" class="hidden bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-700 dark:hover:bg-green-500 transition shadow-md">Upload & Liquidate</button>
+            <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-5 border-t border-slate-200 dark:border-slate-700 flex-shrink-0 mt-4">
+                <button onclick="closeDetailsModal()" class="w-full sm:w-auto bg-slate-200 dark:bg-slate-700 text-slate-800 dark:text-slate-300 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 shadow-sm text-sm">Close</button>
+                <button id="btn-save-details" class="hidden w-full sm:w-auto bg-blue-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 shadow-md text-sm">Save Admin Updates</button>
+                <button id="btn-upload-clearance" class="hidden w-full sm:w-auto bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-700 dark:hover:bg-green-500 shadow-md text-sm">Upload & Liquidate</button>
             </div>
         </div>
     </div>
 
     <!-- PREVIEW MODAL -->
-    <div id="modal-preview" class="hidden fixed inset-0 bg-slate-900/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center z-[90] p-4 no-print">
-        <div class="relative w-full max-w-5xl h-[85vh] flex flex-col items-center justify-center">
-            <button onclick="closePreviewModal()" class="absolute -top-10 right-0 text-white/70 hover:text-white transition p-2 bg-white/10 rounded-full"><i class="fa-solid fa-xmark text-2xl w-8 h-8 flex items-center justify-center"></i></button>
+    <div id="modal-preview" class="hidden fixed inset-0 bg-slate-900/90 dark:bg-black/90 backdrop-blur-sm flex items-center justify-center z-[100] p-2 md:p-4 no-print">
+        <div class="relative w-full max-w-5xl h-[90vh] md:h-[85vh] flex flex-col items-center justify-center">
+            <button onclick="closePreviewModal()" class="absolute -top-2 right-0 md:-top-10 md:-right-4 text-white hover:text-gray-300 transition p-2 bg-black/50 md:bg-white/10 rounded-full z-10"><i class="fa-solid fa-xmark text-xl md:text-2xl w-6 h-6 md:w-8 md:h-8 flex items-center justify-center"></i></button>
             
-            <div id="image-modal-error" class="hidden text-center text-white mb-6">
-                <i class="fa-solid fa-shield-halved text-5xl mb-4 text-blue-400"></i>
-                <h3 class="text-2xl font-bold mb-2">Browser Security Block</h3>
-                <p class="text-slate-300 max-w-md mx-auto">Google Drive prevents this file from being displayed inside another website for security reasons.</p>
+            <div id="image-modal-error" class="hidden text-center text-white mb-6 px-4">
+                <i class="fa-solid fa-shield-halved text-4xl md:text-5xl mb-4 text-blue-400"></i>
+                <h3 class="text-xl md:text-2xl font-bold mb-2">Browser Security Block</h3>
+                <p class="text-sm md:text-base text-slate-300 max-w-md mx-auto">Google Drive prevents this file from being displayed inside another website for security reasons.</p>
             </div>
 
             <img id="preview-img" src="" class="hidden max-w-full max-h-full rounded-xl shadow-2xl object-contain bg-white">
             <iframe id="preview-iframe" src="" class="hidden w-full h-full bg-white rounded-xl shadow-2xl border-0"></iframe>
             
-            <a id="preview-fallback" href="" target="_blank" class="mt-6 px-8 py-3 bg-blue-600 text-white rounded-full hover:bg-blue-500 transition font-bold shadow-lg flex items-center text-lg">
-                <i class="fa-solid fa-arrow-up-right-from-square mr-3"></i> Open File Externally
+            <a id="preview-fallback" href="" target="_blank" class="mt-6 px-6 py-3 md:px-8 md:py-3 bg-blue-600 text-white rounded-full hover:bg-blue-500 font-bold shadow-lg flex items-center text-sm md:text-lg">
+                <i class="fa-solid fa-arrow-up-right-from-square mr-2 md:mr-3"></i> Open File Externally
             </a>
         </div>
     </div>
 
-    <!-- ==================== SCRIPT ENGINE ==================== -->
     <script>
-        // HARDCODED GAS URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec';
         
-        // --- High-Performance CSS Peel Transition ---
-        function toggleTheme(e) {
-            const html = document.documentElement;
-            const isDark = html.classList.contains('dark');
-            const overlay = document.getElementById('theme-transition-overlay');
-            
-            // Get click coordinates
-            const x = e.clientX || window.innerWidth / 2;
-            const y = e.clientY || 50;
-
-            // Set overlay position and color based on target theme
-            overlay.style.transformOrigin = `${x}px ${y}px`;
-            overlay.style.backgroundColor = isDark ? '#f8fafc' : '#0f172a'; // Switch to target color
-            
-            // Trigger animation
-            overlay.classList.add('active');
-            
-            // Switch DOM classes exactly halfway through the peel
-            setTimeout(() => {
-                html.classList.toggle('dark');
-            }, 300);
-
-            // Remove overlay smoothly
-            setTimeout(() => {
-                overlay.style.opacity = '0';
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                    overlay.style.opacity = '1';
-                }, 400);
-            }, 600);
-        }
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
         
         let systemDepts = ["CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"];
         
         let currentUserRole = null; let currentUserName = null; let currentDeptName = null;
         let requestsData = []; let attendanceData = []; 
-        let currentFilter = 'active'; // Filter state: 'all', 'active', 'legacy'
+        let currentFilter = 'active'; // 'active', 'legacy', 'all'
         
+        // Navigation State for Folders (0: Dept, 1: Type, 2: Title, 3: Records)
+        let navLevelIndex = 0; let navDept = null; let navType = null; let navTitle = null;
+
         let reportsChartInstance = null; let activeQRRequestId = null; let liveAttendanceInterval = null; let stopwatchInterval = null; let eventStartTime = null;
 
         document.addEventListener('keydown', (e) => {
@@ -610,8 +618,8 @@
             if (type === 'error') { bgClass = 'bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-100'; icon = '<i class="fa-solid fa-triangle-exclamation text-red-500 dark:text-red-400"></i>'; }
             if (type === 'warning') { bgClass = 'bg-orange-50 dark:bg-orange-900/50 border border-orange-200 dark:border-orange-700 text-orange-800 dark:text-orange-100'; icon = '<i class="fa-solid fa-bolt text-orange-500 dark:text-orange-400"></i>'; }
 
-            toast.className = `${bgClass} px-5 py-3.5 rounded-xl shadow-lg flex items-center gap-3 toast-enter font-bold text-sm z-[99]`; toast.innerHTML = `${icon} <span>${msg}</span>`; container.appendChild(toast);
-            setTimeout(() => { toast.classList.replace('toast-enter', 'toast-exit'); setTimeout(() => toast.remove(), 400); }, 4000);
+            toast.className = `${bgClass} px-4 py-3 md:px-5 md:py-3.5 rounded-xl shadow-lg flex items-center gap-3 anim-slide-in font-bold text-xs md:text-sm z-[99]`; toast.innerHTML = `${icon} <span>${msg}</span>`; container.appendChild(toast);
+            setTimeout(() => { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 4000);
         }
 
         let offlineDB; const dbRequest = indexedDB.open("TDMH_SuperApp_OfflineDB", 1);
@@ -627,7 +635,7 @@
                     showNotification(`Syncing ${records.length} offline records...`, "warning");
                     for (const record of records) {
                         try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(record.payload) }); const deleteTx = offlineDB.transaction("attendanceQueue", "readwrite"); deleteTx.objectStore("attendanceQueue").delete(record.id); } catch(e) {}
-                    } showNotification("All offline records synced successfully!", "success");
+                    } showNotification("Offline records synced!", "success");
                 }
             };
         }
@@ -668,7 +676,7 @@
             const btn = document.getElementById('btn-public-submit'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
 
             const payload = { action: 'addAttendance', data: { reqId: new URLSearchParams(window.location.search).get('reqId'), name: document.getElementById('public-name').value, dept: document.getElementById('public-dept').value, signature: canvas.toDataURL('image/webp', 0.5) } };
-            async function triggerSuccess() { document.getElementById('public-signin-form').classList.add('hidden'); document.getElementById('public-success').classList.remove('hidden'); setTimeout(() => document.getElementById('public-success').classList.replace('scale-95', 'scale-100'), 50); }
+            async function triggerSuccess() { document.getElementById('public-signin-form').classList.add('hidden'); document.getElementById('public-success').classList.remove('hidden'); }
 
             try {
                 if (!navigator.onLine) throw new Error("Offline"); 
@@ -691,18 +699,19 @@
                 const json = await res.json();
                 if (json.success) {
                     currentUserRole = json.role; currentDeptName = loginUser; currentUserName = loginUser;
-                    document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-600 dark:text-blue-400 mr-1">${currentDeptName}</span> | ${currentUserRole}`;
-                    const deptSelect = document.getElementById('req-department-select'); const deptInput = document.getElementById('req-department'); const btnReports = document.getElementById('tab-reports-btn');
+                    document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-600 dark:text-blue-400 md:mr-1">${currentDeptName}</span><span class="hidden md:inline"> | ${currentUserRole}</span>`;
+                    const deptSelect = document.getElementById('req-department-select'); const deptInput = document.getElementById('req-department'); 
                     
-                    if (currentUserRole === 'Admin') { deptInput.classList.add('hidden'); deptSelect.classList.remove('hidden'); deptSelect.value = currentDeptName; btnReports.classList.remove('hidden'); btnReports.classList.add('flex'); } 
-                    else { deptSelect.classList.add('hidden'); deptInput.classList.remove('hidden'); deptInput.value = currentDeptName; btnReports.classList.add('hidden'); btnReports.classList.remove('flex'); }
+                    if (currentUserRole === 'Admin') { 
+                        deptInput.classList.add('hidden'); deptSelect.classList.remove('hidden'); deptSelect.value = currentDeptName; 
+                    } 
+                    else { 
+                        deptSelect.classList.add('hidden'); deptInput.classList.remove('hidden'); deptInput.value = currentDeptName; 
+                    }
 
                     document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-app').classList.remove('hidden');
                     showNotification(`Welcome back, ${currentDeptName}!`, "success"); 
-                    
-                    // INITIALIZE DASHBOARD (ONLY FETCH ONCE)
-                    fetchDashboardData();
-                    switchTab('dashboard'); 
+                    fetchDashboardData(); switchTab('dashboard'); 
                 } else { errorDiv.textContent = json.message; errorDiv.classList.remove('hidden'); }
             } catch(e) { errorDiv.textContent = "Connection failed. Database might be sleeping, try again."; errorDiv.classList.remove('hidden'); } 
             finally { btn.innerHTML = 'Secure Login'; btn.disabled = false; }
@@ -710,7 +719,6 @@
 
         document.getElementById('nav-logout').addEventListener('click', () => { window.location.reload(); });
 
-        // --- SPEED OPTIMIZATION: Instant Tab Switching ---
         window.switchTab = function(tabId) {
             document.querySelectorAll('.subview-section').forEach(view => view.classList.add('hidden'));
             document.querySelectorAll('.nav-tab').forEach(btn => { btn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-slate-900', 'dark:text-blue-400', 'border-blue-600', 'dark:border-blue-500'); btn.classList.add('text-slate-500', 'dark:text-slate-400', 'border-transparent'); });
@@ -718,26 +726,32 @@
             const targetView = document.getElementById(`subview-${tabId}`); if(targetView) targetView.classList.remove('hidden');
             document.querySelectorAll(`.nav-tab[data-tab="${tabId}"]`).forEach(btn => { btn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-slate-900', 'dark:text-blue-400', 'border-blue-600', 'dark:border-blue-500'); btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'border-transparent'); });
 
-            // INSTANT RENDER (No Fetching!)
-            if(tabId === 'dashboard') renderDashboard();
+            if(tabId === 'dashboard') { navLevel(currentUserRole === 'Admin' ? 0 : 1, currentDeptName); }
             if(tabId === 'reports') renderReports();
             if(tabId === 'attendance') renderAttendance();
         }
 
         document.querySelectorAll('.nav-tab').forEach(tab => { tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab)); });
 
-        // --- DASHBOARD SEARCH & FILTER ---
         window.setDashboardFilter = function(mode) {
             currentFilter = mode;
-            ['active', 'legacy', 'all'].forEach(m => {
+            ['active', 'legacy'].forEach(m => {
                 const btn = document.getElementById(`filter-btn-${m}`);
                 if (m === mode) { btn.classList.add('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm'); btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200'); } 
                 else { btn.classList.remove('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm'); btn.classList.add('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200'); }
             });
-            renderDashboard();
+            
+            const legacyLinks = document.getElementById('admin-legacy-links');
+            if (mode === 'legacy' && currentUserRole === 'Admin') { legacyLinks.classList.remove('hidden'); legacyLinks.classList.add('flex'); } 
+            else { legacyLinks.classList.add('hidden'); legacyLinks.classList.remove('flex'); }
+
+            navLevel(0); // Reset hierarchy when filter changes
         }
 
-        document.getElementById('search-input').addEventListener('input', renderDashboard);
+        document.getElementById('search-input').addEventListener('input', () => {
+            if(document.getElementById('search-input').value.length > 0) { navLevelIndex = 3; }
+            renderDashboard();
+        });
 
         function toggleTrainingType() {
             const val = document.querySelector('input[name="training-type"]:checked').value; const isInternal = val === 'Internal'; const isMasteral = val === 'Masteral';
@@ -754,11 +768,11 @@
         document.getElementById('btn-add-roster').addEventListener('click', () => {
             const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now(); const deptOptions = document.getElementById('login-dept').innerHTML;
             container.insertAdjacentHTML('beforeend', `
-                <div id="${rowId}" class="flex gap-3 roster-row animate-[slideInRight_0.2s_ease-out]">
-                    <input type="text" placeholder="Attendee Name" class="w-[40%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-name outline-none focus:border-blue-500 transition" required>
-                    <input type="text" placeholder="Position" class="w-[20%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-pos outline-none focus:border-blue-500 transition">
-                    <select class="w-[30%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-dept outline-none focus:border-blue-500 transition" required>${deptOptions}</select>
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
+                <div id="${rowId}" class="flex gap-3 roster-row anim-slide-in min-w-[500px]">
+                    <input type="text" placeholder="Attendee Name" class="w-[40%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-name outline-none focus:border-blue-500" required>
+                    <input type="text" placeholder="Position" class="w-[20%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-pos outline-none focus:border-blue-500">
+                    <select class="w-[30%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-dept outline-none focus:border-blue-500" required>${deptOptions}</select>
+                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
                 </div>
             `);
         });
@@ -796,12 +810,11 @@
 
             try {
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json();
-                if (json.success) { showNotification(isEditing ? "Draft updated successfully!" : "Request submitted successfully to TDO!", "success"); document.getElementById('btn-cancel-edit').click(); fetchDashboardData(); switchTab('dashboard'); } 
+                if (json.success) { showNotification(isEditing ? "Draft updated successfully!" : "Request submitted successfully!", "success"); document.getElementById('btn-cancel-edit').click(); fetchDashboardData(); switchTab('dashboard'); } 
                 else { throw new Error(json.message); }
             } catch(e) { showNotification("Submission failed. Check network.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
         });
 
-        // MANUALLY TRIGGER SYNC
         document.getElementById('nav-sync').addEventListener('click', fetchDashboardData);
 
         async function fetchDashboardData() {
@@ -809,10 +822,7 @@
             try {
                 const res = await fetch(GAS_URL + '?action=getData'); const json = await res.json();
                 if(json.success) { 
-                    requestsData = json.requests; 
-                    attendanceData = json.attendance;
-                    
-                    // Render based on active tab to maintain instant speed
+                    requestsData = json.requests; attendanceData = json.attendance;
                     renderDashboard();
                     if(!document.getElementById('subview-reports').classList.contains('hidden')) renderReports();
                     if(!document.getElementById('subview-attendance').classList.contains('hidden')) renderAttendance();
@@ -820,428 +830,337 @@
             } catch(e) { showNotification("Failed to sync database.", "error"); } finally { document.getElementById('global-loader').classList.add('hidden'); }
         }
 
+        window.renderAttendance = function() {
+            const tbody = document.getElementById('attendance-tbody');
+            if(!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (!attendanceData || attendanceData.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic">No attendance records found.</td></tr>`;
+                return;
+            }
+            
+            let visibleAttendance = currentUserRole === 'Admin' ? attendanceData : attendanceData.filter(a => a.dept === currentDeptName);
+            
+            if (visibleAttendance.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic">No attendance records found for your department.</td></tr>`;
+                return;
+            }
+
+            visibleAttendance.reverse().forEach(record => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border-b border-slate-200 dark:border-slate-700";
+                
+                let sigHtml = '<span class="text-slate-400 italic text-[10px]">No signature</span>';
+                if(record.signature && record.signature.startsWith('data:image')) {
+                    sigHtml = `<img src="${record.signature}" class="h-8 mx-auto bg-white border border-slate-200 rounded px-1" alt="Signature">`;
+                }
+
+                let timeStr = "Unknown";
+                if(record.timestamp) {
+                    try { timeStr = new Date(record.timestamp).toLocaleString(); } catch(e) {}
+                }
+
+                tr.innerHTML = `
+                    <td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${timeStr}</td>
+                    <td class="px-5 py-4 font-bold text-blue-600 dark:text-blue-400 text-xs uppercase">${record.reqId || 'N/A'}</td>
+                    <td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs">${record.name || 'Unknown'}</td>
+                    <td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-300">${record.dept || 'N/A'}</td>
+                    <td class="px-5 py-2 text-center">${sigHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        };
+
+        // --- NEW FOLDER HIERARCHY LOGIC ---
+        window.navLevel = function(targetLevel, dept = null, type = null, title = null) {
+            if(currentUserRole !== 'Admin' && targetLevel === 0) targetLevel = 1; // Requesters skip Dept level
+            navLevelIndex = targetLevel;
+            if (dept !== null) navDept = dept;
+            if (type !== null) navType = type;
+            if (title !== null) navTitle = title;
+            document.getElementById('search-input').value = ''; 
+            renderDashboard();
+        }
+
         function renderDashboard() {
-            const tbody = document.getElementById('dashboard-tbody'); tbody.innerHTML = '';
+            const container = document.getElementById('directory-container');
+            container.innerHTML = '';
+            
+            const cleanDates = (dStr) => String(dStr).replace(/\(Standard na Oras sa China\)/gi, '').trim();
             const searchTerm = document.getElementById('search-input').value.toLowerCase();
             
-            // 1. Base Role Filter
             let visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
-            
-            // 2. Tab Filter (Active vs Legacy)
             if (currentFilter === 'active') visibleReqs = visibleReqs.filter(r => !String(r.id).startsWith('LEGACY'));
             if (currentFilter === 'legacy') visibleReqs = visibleReqs.filter(r => String(r.id).startsWith('LEGACY'));
-            
-            // 3. Search Filter
+
+            // 1. SEARCH MODE
             if (searchTerm) {
-                visibleReqs = visibleReqs.filter(r => 
-                    String(r.id).toLowerCase().includes(searchTerm) || 
-                    String(r.title).toLowerCase().includes(searchTerm) || 
-                    String(r.department).toLowerCase().includes(searchTerm)
+                document.getElementById('breadcrumb-dept').classList.add('hidden');
+                document.getElementById('breadcrumb-type').classList.add('hidden');
+                document.getElementById('breadcrumb-title').classList.add('hidden');
+                
+                const searchedReqs = visibleReqs.filter(r => 
+                    String(r.id).toLowerCase().includes(searchTerm) || String(r.title).toLowerCase().includes(searchTerm) || String(r.department).toLowerCase().includes(searchTerm)
                 );
+                if(searchedReqs.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No records match your search.</div>`; return; }
+                searchedReqs.reverse().forEach(req => container.appendChild(createRequestCard(req, cleanDates(req.dates))));
+                return;
             }
 
-            if(visibleReqs.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">No training requests match your filter.</td></tr>`; return; }
+            // AUTO-SKIP DEPT LEVEL FOR LEGACY FILTER
+            if (currentFilter === 'legacy' && navLevelIndex === 0) { navLevelIndex = 1; navDept = 'Legacy Import'; }
+            if (currentUserRole !== 'Admin' && navLevelIndex === 0) { navLevelIndex = 1; navDept = currentDeptName; }
 
-            visibleReqs.reverse().forEach(req => {
-                const isLegacy = String(req.id).startsWith('LEGACY');
-                
-                let statusBadge = '';
-                if(req.status === 'Pending') statusBadge = '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-yellow-300 dark:border-yellow-700/50"><i class="fa-regular fa-clock mr-1"></i> Pending</span>';
-                if(req.status === 'Approved') statusBadge = '<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-blue-300 dark:border-blue-700/50"><i class="fa-solid fa-thumbs-up mr-1"></i> Approved</span>';
-                if(req.status === 'Liquidated') statusBadge = '<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-green-300 dark:border-green-700/50"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>';
-                if(req.status === 'Rejected') statusBadge = '<span class="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider border border-red-300 dark:border-red-700/50"><i class="fa-solid fa-xmark mr-1"></i> Rejected</span>';
-                
-                let typeBadge = '';
-                if(req.type === 'Internal') typeBadge = '<span class="text-indigo-700 dark:text-indigo-400 bg-indigo-100 dark:bg-indigo-900/30 px-2 py-0.5 rounded text-[10px] font-bold border border-indigo-200 dark:border-indigo-800/50">Internal</span>';
-                else if(req.type === 'Masteral') typeBadge = '<span class="text-purple-700 dark:text-purple-400 bg-purple-100 dark:bg-purple-900/30 px-2 py-0.5 rounded text-[10px] font-bold border border-purple-200 dark:border-purple-800/50">Masteral</span>';
-                else typeBadge = '<span class="text-gray-600 dark:text-gray-400 bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded text-[10px] font-bold border border-gray-300 dark:border-gray-700">External</span>';
-
-                let actionHtml = `<div class="flex items-center justify-end gap-2">`;
-                
-                // Hide approve/reject/QR actions for legacy data
-                if (!isLegacy) {
-                    if(currentUserRole === 'Admin' && req.status === 'Pending') {
-                        actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Approved')" class="text-[11px] bg-blue-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-blue-700 dark:hover:bg-blue-500 transition">Approve</button>`;
-                        actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Rejected')" class="text-[11px] bg-red-100 dark:bg-red-900/50 text-red-600 dark:text-red-400 font-bold px-3 py-1.5 rounded hover:bg-red-200 dark:hover:bg-red-800/50 transition">Reject</button>`;
-                    }
-                    if(req.status === 'Approved' && req.type === 'Internal') {
-                        actionHtml += `<button onclick="generatePrintableRoster('${req.id}')" class="text-[11px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold px-3 py-1.5 rounded shadow hover:bg-slate-300 dark:hover:bg-slate-600 transition" title="Print Official Manual Roster"><i class="fa-solid fa-print"></i></button>`;
-                        actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="text-[11px] bg-indigo-600 text-white font-bold px-3 py-1.5 rounded shadow hover:bg-indigo-700 dark:hover:bg-indigo-500 transition animate-pulse" title="Start Live QR Event"><i class="fa-solid fa-qrcode"></i></button>`;
-                    }
-                }
-
-                actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 p-2 transition" title="View Details / Action Log"><i class="fa-solid fa-eye"></i></button></div>`;
-
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition border-b border-slate-200 dark:border-slate-700">
-                        <td class="px-4 py-4 font-black text-slate-900 dark:text-white">
-                            ${req.id}
-                            ${isLegacy ? '<br><span class="text-[10px] text-orange-500 uppercase tracking-widest"><i class="fa-solid fa-box-archive mr-1"></i>Legacy</span>' : ''}
-                        </td>
-                        <td class="px-4 py-4 font-semibold text-slate-600 dark:text-slate-400 break-words">${req.department}</td>
-                        <td class="px-4 py-4 pr-6 break-words">
-                            <div class="font-bold text-slate-900 dark:text-white flex items-center gap-2">${req.title} ${req.adminRemarks && req.status==='Pending' && !isLegacy ? '<i class="fa-solid fa-circle-exclamation text-red-500 text-xs animate-pulse" title="Admin Feedback Attached"></i>' : ''}</div>
-                            <div class="flex items-center gap-2 mt-1">${typeBadge} <span class="text-xs text-slate-500">${req.dates}</span></div>
-                        </td>
-                        <td class="px-4 py-4">${statusBadge}</td>
-                        <td class="px-4 py-4">${actionHtml}</td>
-                    </tr>
-                `);
-            });
-        }
-
-        // --- RENDER ATTENDANCE LOGS ---
-        function renderAttendance() {
-            const tbody = document.getElementById('attendance-tbody'); tbody.innerHTML = '';
-            // Admins see all logs. Requesters only see logs linked to their own department's events.
-            let visibleLogs = attendanceData;
-            if (currentUserRole !== 'Admin') {
-                const deptReqIds = requestsData.filter(r => r.department === currentDeptName).map(r => r.id);
-                visibleLogs = attendanceData.filter(a => deptReqIds.includes(a.reqId));
+            // BREADCRUMBS
+            const bDept = document.getElementById('breadcrumb-dept'); const bType = document.getElementById('breadcrumb-type'); const bTitle = document.getElementById('breadcrumb-title');
+            if (navLevelIndex === 0) { bDept.classList.add('hidden'); bType.classList.add('hidden'); bTitle.classList.add('hidden'); }
+            if (navLevelIndex === 1) { 
+                bDept.classList.remove('hidden'); bType.classList.add('hidden'); bTitle.classList.add('hidden');
+                document.getElementById('crumb-dept-text').textContent = navDept;
+            }
+            if (navLevelIndex === 2) { 
+                bDept.classList.remove('hidden'); bType.classList.remove('hidden'); bTitle.classList.add('hidden');
+                document.getElementById('crumb-dept-text').textContent = navDept; document.getElementById('crumb-type-text').textContent = navType;
+            }
+            if (navLevelIndex === 3) { 
+                bDept.classList.remove('hidden'); bType.classList.remove('hidden'); bTitle.classList.remove('hidden');
+                document.getElementById('crumb-dept-text').textContent = navDept; document.getElementById('crumb-type-text').textContent = navType; document.getElementById('crumb-title-text').textContent = navTitle;
             }
 
-            if(visibleLogs.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-slate-500 italic">No attendance records found.</td></tr>`; return; }
+            // LEVEL 0: DEPARTMENT FOLDERS
+            if (navLevelIndex === 0) {
+                const depts = {}; visibleReqs.forEach(r => { if(!depts[r.department]) depts[r.department] = []; depts[r.department].push(r); });
+                if(Object.keys(depts).length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No active requests yet. Use 'New Request' to start filing!</div>`; return; }
 
-            visibleLogs.reverse().forEach(log => {
-                const dateObj = new Date(log.timestamp || log.dateApplied);
-                const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
-                
-                tbody.insertAdjacentHTML('beforeend', `
-                    <tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition border-b border-slate-200 dark:border-slate-700">
-                        <td class="px-4 py-4 font-medium text-slate-600 dark:text-slate-400 text-xs">${formattedDate}</td>
-                        <td class="px-4 py-4 font-black text-slate-900 dark:text-white">${log.reqId}</td>
-                        <td class="px-4 py-4 font-bold text-slate-900 dark:text-white">${log.name}</td>
-                        <td class="px-4 py-4 font-semibold text-slate-600 dark:text-slate-400 uppercase text-xs">${log.dept}</td>
-                        <td class="px-4 py-4 text-center">
-                            <button onclick="showAttachment('${log.sig}')" class="text-[11px] bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-white font-bold px-3 py-1.5 rounded shadow hover:bg-slate-300 dark:hover:bg-slate-600 transition"><i class="fa-solid fa-signature mr-1"></i> View</button>
-                        </td>
-                    </tr>
-                `);
-            });
-        }
-
-        window.updateReqStatus = async function(id, status) {
-            document.getElementById('global-loader').classList.remove('hidden');
-            try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', id: id, status: status }) });
-                showNotification(`Request marked as ${status}`, "success"); fetchDashboardData();
-            } catch(e) { showNotification("Failed to update status", "error"); document.getElementById('global-loader').classList.add('hidden'); }
-        };
-
-        window.generatePrintableRoster = function(id) {
-            const req = requestsData.find(r => String(r.id) === String(id)); if(!req) return;
-            document.getElementById('print-subject').textContent = req.title; document.getElementById('print-date').textContent = req.dates;
-            document.getElementById('print-venue').textContent = req.venue; document.getElementById('print-host').textContent = req.department;
-
-            let rosterList = []; try { rosterList = JSON.parse(req.expectedRoster); } catch(e) {}
-            document.getElementById('print-count').textContent = `${rosterList.length} ATTENDEES`; const tbody = document.getElementById('print-tbody'); tbody.innerHTML = '';
-
-            rosterList.forEach((person, i) => {
-                if(person.name) {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td class="border border-black p-3 text-center font-bold">${i + 1}</td>
-                        <td class="border border-black p-3">
-                            <div class="font-bold text-base">${person.name}</div>
-                            <div class="text-xs text-gray-500 mt-1">${person.position || ''}</div>
-                        </td>
-                        <td class="border border-black p-3 font-medium uppercase text-xs tracking-wide">${person.dept}</td>
-                        <td class="border border-black p-3"></td>
+                Object.keys(depts).sort().forEach(dept => {
+                    const count = depts[dept].length;
+                    const folder = document.createElement('div');
+                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md";
+                    folder.onclick = () => navLevel(1, dept);
+                    folder.innerHTML = `
+                        <div class="bg-slate-100 dark:bg-slate-700 w-14 h-14 rounded-xl text-slate-600 dark:text-slate-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hospital-user text-2xl"></i></div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-slate-900 dark:text-white truncate">${dept}</h3>
+                            <p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>
                     `;
-                    tbody.appendChild(tr);
-                }
-            });
+                    container.appendChild(folder);
+                });
+            }
 
-            document.getElementById('view-app').classList.add('hidden'); document.getElementById('print-roster-container').classList.remove('hidden');
-        };
+            // LEVEL 1: TRAINING TYPE FOLDERS
+            else if (navLevelIndex === 1) {
+                const deptReqs = visibleReqs.filter(r => r.department === navDept);
+                const types = { 'External': [], 'Internal': [], 'Masteral': [] };
+                deptReqs.forEach(r => { if(types[r.type]) types[r.type].push(r); });
 
-        window.closePrintRoster = function() { document.getElementById('print-roster-container').classList.add('hidden'); document.getElementById('view-app').classList.remove('hidden'); }
+                if(deptReqs.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No records found for ${navDept}.</div>`; return; }
 
-        window.openQRStation = function(id, title) {
-            activeQRRequestId = id; switchTab('qr-station'); document.getElementById('qr-title-display').textContent = title;
-            let baseUrl = window.location.href.split('?')[0]; const qrUrl = `${baseUrl}?reqId=${id}&title=${encodeURIComponent(title)}`;
-            
-            document.getElementById('qr-container').innerHTML = '';
-            new QRCode(document.getElementById('qr-container'), { text: qrUrl, width: 250, height: 250, colorDark : document.documentElement.classList.contains('dark') ? "#1e3a8a" : "#2563eb", colorLight : "#ffffff" });
+                Object.keys(types).forEach(type => {
+                    const count = types[type].length;
+                    if(count === 0) return; // Hide empty type folders
+                    
+                    let icon = 'fa-arrow-up-right-from-square'; let color = 'text-slate-600 dark:text-slate-400'; let bg = 'bg-slate-100 dark:bg-slate-700';
+                    if(type === 'Internal') { icon = 'fa-users-rectangle'; color = 'text-indigo-600 dark:text-indigo-400'; bg = 'bg-indigo-50 dark:bg-indigo-900/30'; }
+                    if(type === 'Masteral') { icon = 'fa-graduation-cap'; color = 'text-purple-600 dark:text-purple-400'; bg = 'bg-purple-50 dark:bg-purple-900/30'; }
 
-            eventStartTime = Date.now();
-            stopwatchInterval = setInterval(() => {
-                const diff = Date.now() - eventStartTime; const hrs = Math.floor(diff / 3600000).toString().padStart(2, '0'); const mins = Math.floor((diff % 3600000) / 60000).toString().padStart(2, '0'); const secs = Math.floor((diff % 60000) / 1000).toString().padStart(2, '0');
-                document.getElementById('qr-stopwatch').innerText = `${hrs}:${mins}:${secs}`;
-            }, 1000);
+                    const folder = document.createElement('div');
+                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md anim-slide-in";
+                    folder.onclick = () => navLevel(2, navDept, type);
+                    folder.innerHTML = `
+                        <div class="${bg} w-14 h-14 rounded-xl ${color} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} text-2xl"></i></div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-slate-900 dark:text-white truncate">${type}</h3>
+                            <p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>
+                    `;
+                    container.appendChild(folder);
+                });
+            }
 
-            fetchLiveFeed(); liveAttendanceInterval = setInterval(fetchLiveFeed, 10000);
-        };
+            // LEVEL 2: TITLE FOLDERS
+            else if (navLevelIndex === 2) {
+                const targetReqs = visibleReqs.filter(r => r.department === navDept && r.type === navType);
+                const titles = {};
+                targetReqs.forEach(r => { if(!titles[r.title]) titles[r.title] = []; titles[r.title].push(r); });
 
-        window.closeQRStation = function() { activeQRRequestId = null; clearInterval(liveAttendanceInterval); clearInterval(stopwatchInterval); switchTab('dashboard'); };
+                Object.keys(titles).sort().forEach(title => {
+                    const count = titles[title].length;
+                    const folder = document.createElement('div');
+                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md anim-slide-in";
+                    folder.onclick = () => navLevel(3, navDept, navType, title);
+                    folder.innerHTML = `
+                        <div class="bg-blue-50 dark:bg-blue-900/30 w-14 h-14 rounded-xl text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-folder-open text-2xl"></i></div>
+                        <div class="flex-grow min-w-0">
+                            <h3 class="font-bold text-slate-900 dark:text-white truncate" title="${title}">${title}</h3>
+                            <p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p>
+                        </div>
+                        <i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>
+                    `;
+                    container.appendChild(folder);
+                });
+            }
 
-        async function fetchLiveFeed() {
-            if(!activeQRRequestId) return;
-            try {
-                const res = await fetch(GAS_URL + '?action=getData'); const json = await res.json();
-                if(json.success) {
-                    const attendees = json.attendance.filter(a => a.reqId === activeQRRequestId); document.getElementById('qr-headcount').textContent = attendees.length;
-                    const list = document.getElementById('qr-live-list');
-                    if(attendees.length > 0) {
-                        list.innerHTML = attendees.map((a, i) => `
-                            <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 p-3 rounded-xl flex items-center animate-[slideInRight_0.3s_ease-out]">
-                                <span class="font-black text-blue-600 dark:text-blue-400 w-6">${i+1}.</span>
-                                <div><div class="font-bold text-slate-900 dark:text-white leading-tight">${a.name}</div><div class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-wider">${a.dept}</div></div>
-                            </div>`).join('');
-                        list.scrollTop = list.scrollHeight;
-                    }
-                }
-            } catch(e) {}
+            // LEVEL 3: ACTUAL CARDS
+            else if (navLevelIndex === 3) {
+                const finalReqs = visibleReqs.filter(r => r.department === navDept && r.type === navType && r.title === navTitle);
+                finalReqs.reverse().forEach(req => container.appendChild(createRequestCard(req, cleanDates(req.dates))));
+            }
         }
-
-        let currentModalReqId = null; let pendingClearanceBase64 = null;
 
         window.openDetailsModal = function(id) {
-            const req = requestsData.find(r => String(r.id) === String(id)); if (!req) return;
-            currentModalReqId = id; document.getElementById('modal-req-id').textContent = req.id;
+            document.getElementById('modal-details').classList.remove('hidden');
+            document.getElementById('modal-req-id').textContent = id;
             
-            const isLegacy = String(req.id).startsWith('LEGACY');
-            
-            let attachHtml = req.clearanceUrl ? `<button onclick="showAttachment('${req.clearanceUrl}')" class="mt-2 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50 px-4 py-2 rounded-lg font-bold hover:bg-green-100 dark:hover:bg-green-800/50 transition shadow-sm flex items-center w-fit text-xs"><i class="fa-solid fa-file-invoice mr-2"></i> View Uploaded Clearance / Receipts</button>` : '';
-
-            let parsedNames = req.expectedRoster;
-            try {
-                let rosterObj = JSON.parse(req.expectedRoster);
-                parsedNames = rosterObj.map(p => `${p.name} <span class="text-slate-500 dark:text-slate-400 text-xs font-normal">(${p.position || 'N/A'})</span>`).join('<br>');
-            } catch(e) { parsedNames = req.expectedRoster.replace(/,/g, '<br>'); }
-
-            document.getElementById('modal-body-data').innerHTML = `
-                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Title / Venue</span> <span class="font-bold text-slate-900 dark:text-white">${req.title}</span><br><span class="text-xs text-slate-600 dark:text-slate-400">${req.venue}</span></div>
-                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Total Budget Approved</span> <span class="font-black text-blue-600 dark:text-blue-400 text-xl">₱${req.totalCost}</span></div>
-                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Department</span> <span class="font-bold text-slate-900 dark:text-white">${req.department}</span></div>
-                <div><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Status</span> <span class="font-bold text-slate-900 dark:text-white">${req.status}</span></div>
-                <div class="md:col-span-2"><span class="text-slate-500 text-[10px] font-black uppercase mb-1 block">Trainee(s)</span> <span class="font-medium text-slate-900 dark:text-white break-words leading-tight block mt-1 bg-white dark:bg-slate-800 p-3 rounded border border-slate-200 dark:border-slate-700 shadow-sm">${parsedNames}</span></div>
-                <div class="md:col-span-2 border-t border-slate-200 dark:border-slate-700 pt-3">${attachHtml}</div>
-            `;
-
-            const rsaSec = document.getElementById('rsa-section'); 
-            const adminActions = document.getElementById('admin-actions-section');
-            const clearanceSec = document.getElementById('clearance-section'); 
-            const uploadBtn = document.getElementById('btn-upload-clearance'); 
-            const removeClearanceBtn = document.getElementById('btn-remove-clearance');
-            const legacyBadge = document.getElementById('modal-legacy-badge');
-            const legacyWarning = document.getElementById('legacy-warning-section');
-            
-            // Populate Fields
-            document.getElementById('sig-admin-name').value = req.signatures ? req.signatures.appName : ''; 
-            document.getElementById('rsa-end-date').value = req.rsaEndDate ? new Date(req.rsaEndDate).toISOString().split('T')[0] : ''; 
-            document.getElementById('input-admin-remarks').value = req.adminRemarks || '';
-
-            // --- LEGACY ARCHIVE LOGIC ---
+            const isLegacy = String(id).startsWith('LEGACY');
             if (isLegacy) {
-                legacyBadge.classList.remove('hidden');
-                legacyWarning.classList.remove('hidden');
-                
-                // Completely hide operational sections for legacy data
-                rsaSec.classList.add('hidden');
-                adminActions.classList.add('hidden');
-                clearanceSec.classList.add('hidden');
-                uploadBtn.classList.add('hidden');
-                document.getElementById('btn-save-details').classList.add('hidden');
-                document.getElementById('btn-edit-draft').classList.add('hidden');
-                
+                document.getElementById('modal-legacy-badge').classList.remove('hidden');
+                document.getElementById('legacy-warning-section').classList.remove('hidden');
+                document.getElementById('clearance-section').classList.add('hidden');
+                document.getElementById('rsa-section').classList.add('hidden');
+                document.getElementById('admin-actions-section').classList.add('hidden');
             } else {
-                // --- ACTIVE REQUEST LOGIC ---
-                legacyBadge.classList.add('hidden');
-                legacyWarning.classList.add('hidden');
-
-                if (currentUserRole === 'Admin') { document.getElementById('btn-save-details').classList.remove('hidden'); adminActions.classList.remove('hidden'); rsaSec.classList.remove('hidden'); } 
-                else { document.getElementById('btn-save-details').classList.add('hidden'); adminActions.classList.add('hidden'); rsaSec.classList.add('hidden'); }
-
-                const feedbackBox = document.getElementById('admin-feedback-box');
-                if(req.adminRemarks && req.adminRemarks.trim() !== '' && currentUserRole !== 'Admin') { feedbackBox.classList.remove('hidden'); document.getElementById('admin-feedback-text').textContent = req.adminRemarks; } 
-                else { feedbackBox.classList.add('hidden'); }
-
-                const editBtn = document.getElementById('btn-edit-draft');
-                if (req.status === 'Pending' && (currentUserRole === 'Admin' || req.department === currentDeptName)) { editBtn.classList.remove('hidden'); } 
-                else { editBtn.classList.add('hidden'); }
-
-                if (req.status === 'Approved' || req.status === 'Liquidated') {
-                    clearanceSec.classList.remove('hidden'); document.getElementById('clearance-status').classList.add('hidden'); document.getElementById('clearance-input').value = ''; pendingClearanceBase64 = null;
-                    if (req.status === 'Liquidated' && (currentUserRole === 'Admin' || req.department === currentDeptName)) {
-                        removeClearanceBtn.classList.remove('hidden'); uploadBtn.classList.add('hidden');
-                        document.getElementById('clearance-instruction').innerHTML = "<span class='text-green-600 dark:text-green-500'>Clearance successfully uploaded. Click the trash icon to replace it.</span>"; document.getElementById('clearance-label').classList.add('hidden');
-                    } else {
-                        removeClearanceBtn.classList.add('hidden'); uploadBtn.classList.remove('hidden');
-                        document.getElementById('clearance-instruction').textContent = "Upload your Certificate of Attendance or Receipts to liquidate this request."; document.getElementById('clearance-label').classList.remove('hidden');
-                    }
-                } else { clearanceSec.classList.add('hidden'); uploadBtn.classList.add('hidden'); }
-            }
-
-            document.getElementById('modal-details').classList.remove('hidden'); setTimeout(() => document.getElementById('modal-details').children[0].classList.replace('scale-95', 'scale-100'), 10);
-        };
-
-        window.closeDetailsModal = function() { document.getElementById('modal-details').children[0].classList.replace('scale-100', 'scale-95'); setTimeout(() => document.getElementById('modal-details').classList.add('hidden'), 300); };
-
-        window.setRSA = function(months) {
-            if(months === 0) { document.getElementById('rsa-end-date').value = ''; return; }
-            let d = new Date(); d.setMonth(d.getMonth() + months); document.getElementById('rsa-end-date').value = d.toISOString().split('T')[0];
-        }
-
-        document.getElementById('btn-edit-draft').addEventListener('click', () => {
-            closeDetailsModal(); const req = requestsData.find(r => String(r.id) === String(currentModalReqId));
-            document.querySelector(`input[name="training-type"][value="${req.type}"]`).checked = true; toggleTrainingType();
-            
-            document.getElementById('req-title').value = req.title; document.getElementById('req-venue').value = req.venue; document.getElementById('req-dates').value = req.dates; document.getElementById('req-days').value = req.totalDays;
-
-            let rosterObj = []; try { rosterObj = JSON.parse(req.expectedRoster); } catch(e){}
-            if(req.type === 'Internal') {
-                const container = document.getElementById('roster-container'); container.innerHTML = ''; const deptOptions = document.getElementById('login-dept').innerHTML;
-                rosterObj.forEach(p => {
-                    const rowId = 'r' + Math.random().toString(36).substr(2, 9);
-                    container.insertAdjacentHTML('beforeend', `
-                        <div id="${rowId}" class="flex gap-3 roster-row">
-                            <input type="text" value="${p.name}" class="w-[40%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-name outline-none focus:border-blue-500 transition" required>
-                            <input type="text" value="${p.position||''}" class="w-[20%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-pos outline-none focus:border-blue-500 transition">
-                            <select class="w-[30%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-dept outline-none focus:border-blue-500 transition" required>${deptOptions}</select>
-                            <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded transition flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
-                        </div>
-                    `); document.querySelector(`#${rowId} .roster-dept`).value = p.dept;
-                });
-            } else { if(rosterObj.length > 0) { document.getElementById('req-emp-name').value = rosterObj[0].name; document.getElementById('req-position').value = rosterObj[0].position || ''; } }
-
-            document.getElementById('cost-reg').value = req.totalCost; document.getElementById('cost-travel').value = 0; document.getElementById('cost-food').value = 0; document.getElementById('cost-acc').value = 0; updateTotal();
-            document.getElementById('edit-req-id').value = req.id; document.getElementById('form-header-title').textContent = `Editing Draft: ${req.id}`; document.getElementById('btn-submit-text').textContent = 'Update Request Draft'; document.getElementById('btn-cancel-edit').classList.remove('hidden');
-            switchTab('new-request'); showNotification("Draft loaded. You can now make corrections.", "info");
-        });
-
-        document.getElementById('btn-auto-sign').addEventListener('click', () => { document.getElementById('sig-admin-name').value = "MPTD / CQI Approved (" + currentUserName + ")"; });
-
-        function optimizeFile(file, callback) {
-            if (file.type === 'application/pdf') { const reader = new FileReader(); reader.onload = (e) => callback(e.target.result); reader.readAsDataURL(file); return; }
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image(); img.onload = function() {
-                    const canvas = document.createElement('canvas'); const MAX = 1024; let w = img.width; let h = img.height;
-                    if (w > h) { if (w > MAX) { h *= MAX / w; w = MAX; } } else { if (h > MAX) { w *= MAX / h; h = MAX; } }
-                    canvas.width = w; canvas.height = h; canvas.getContext('2d').drawImage(img, 0, 0, w, h); callback(canvas.toDataURL('image/jpeg', 0.7));
-                }; img.onerror = () => callback(e.target.result); img.src = e.target.result;
-            }; reader.readAsDataURL(file);
-        }
-
-        document.getElementById('clearance-input').addEventListener('change', (e) => {
-            const file = e.target.files[0]; const statusEl = document.getElementById('clearance-status');
-            if (file) {
-                statusEl.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing file...'; statusEl.classList.remove('hidden');
-                optimizeFile(file, (base64) => { pendingClearanceBase64 = base64; statusEl.innerHTML = `<i class="fa-solid fa-circle-check text-green-500"></i> Attached: ${file.name}`; });
-            }
-        });
-
-        document.getElementById('btn-upload-clearance').addEventListener('click', async () => {
-            if (!pendingClearanceBase64) return showNotification("Please select a file first.", "warning");
-            const btn = document.getElementById('btn-upload-clearance'); const origHtml = btn.innerHTML; btn.innerHTML = '<div class="loader"></div>'; btn.disabled = true;
-
-            try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadClearance', id: currentModalReqId, base64File: pendingClearanceBase64 }) });
-                showNotification("Clearance uploaded. Status updated to Liquidated.", "success"); closeDetailsModal(); fetchDashboardData();
-            } catch(e) { showNotification("Upload failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
-        });
-
-        document.getElementById('btn-remove-clearance').addEventListener('click', async () => {
-            if(!confirm("Are you sure you want to remove the uploaded clearance? The status will revert to Approved.")) return;
-            closeDetailsModal(); document.getElementById('global-loader').classList.remove('hidden');
-            try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'removeClearance', id: currentModalReqId }) });
-                showNotification("Clearance removed successfully.", "success"); fetchDashboardData();
-            } catch(e) { showNotification("Removal failed.", "error"); document.getElementById('global-loader').classList.add('hidden'); }
-        });
-
-        document.getElementById('btn-save-details').addEventListener('click', async () => {
-            const btn = document.getElementById('btn-save-details'); const origHtml = btn.innerHTML; btn.innerHTML = '<div class="loader"></div>'; btn.disabled = true;
-            
-            const req = requestsData.find(r => String(r.id) === String(currentModalReqId));
-            req.signatures = req.signatures || {}; req.signatures.appName = document.getElementById('sig-admin-name').value; req.rsaEndDate = document.getElementById('rsa-end-date').value; req.adminRemarks = document.getElementById('input-admin-remarks').value;
-            
-            try {
-                await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateSignatures', data: req }) }); showNotification("Admin dossier updated.", "success"); closeDetailsModal(); fetchDashboardData();
-            } catch(e) { showNotification("Update failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
-        });
-
-        window.showAttachment = function(url) {
-            if (!url) return; document.getElementById('modal-preview').classList.remove('hidden');
-            const imgEl = document.getElementById('preview-img'); const iframeEl = document.getElementById('preview-iframe'); const fb = document.getElementById('preview-fallback'); const errDiv = document.getElementById('image-modal-error');
-            fb.href = url; imgEl.classList.add('hidden'); iframeEl.classList.add('hidden'); errDiv.classList.add('hidden');
-            if (url.includes('drive.google.com')) {
-                let fileId = ''; if (url.includes('id=')) fileId = url.split('id=')[1].split('&')[0]; else if (url.includes('/d/')) fileId = url.split('/d/')[1].split('/')[0];
-                if (fileId) { errDiv.classList.remove('hidden'); iframeEl.src = `https://drive.google.com/file/d/${fileId}/preview`; iframeEl.classList.remove('hidden'); } else fb.click();
-            } else { imgEl.src = url; imgEl.classList.remove('hidden'); }
-        };
-
-        window.closePreviewModal = function() { document.getElementById('modal-preview').classList.add('hidden'); document.getElementById('preview-img').src = ''; document.getElementById('preview-iframe').src = ''; };
-
-        window.exportToExcel = function() {
-            showNotification("Generating Masterfile...", "info");
-            const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName); let flatData = [];
-
-            visibleReqs.forEach(req => {
-                let rosterObj = []; try { rosterObj = JSON.parse(req.expectedRoster); } catch(e){}
-                if (rosterObj.length === 0) {
-                    flatData.push({ "Request ID": req.id, "Type": req.type, "Employee Name": "N/A", "Position": "N/A", "Department": req.department, "Title of Seminar": req.title, "Venue": req.venue, "Dates": req.dates, "Total Cost (₱)": req.totalCost, "Status": req.status, "Remarks": req.adminRemarks || "" });
-                } else {
-                    const splitCost = (req.totalCost / rosterObj.length).toFixed(2);
-                    rosterObj.forEach(p => { flatData.push({ "Request ID": req.id, "Type": req.type, "Employee Name": p.name, "Position": p.position || "N/A", "Department": p.dept, "Title of Seminar": req.title, "Venue": req.venue, "Dates": req.dates, "Total Cost (₱)": splitCost, "Status": req.status, "Remarks": req.adminRemarks || "" }); });
+                document.getElementById('modal-legacy-badge').classList.add('hidden');
+                document.getElementById('legacy-warning-section').classList.add('hidden');
+                document.getElementById('clearance-section').classList.remove('hidden');
+                document.getElementById('clearance-section').classList.add('flex');
+                if(currentUserRole === 'Admin') {
+                    document.getElementById('rsa-section').classList.remove('hidden');
+                    document.getElementById('admin-actions-section').classList.remove('hidden');
                 }
-            });
-
-            const ws = XLSX.utils.json_to_sheet(flatData); const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "TDMH_Masterfile"); XLSX.writeFile(wb, `TDMH_Training_Masterfile_${new Date().toISOString().split('T')[0]}.xlsx`); showNotification("Export Complete!", "success");
+            }
+            // A future backend call would populate modal-body-data here
         }
 
-        // --- ENHANCED STACKED REPORTS ---
-        function renderReports() {
-            const visibleReqs = requestsData; // Overview uses all hospital data
+        window.closeDetailsModal = function() {
+            document.getElementById('modal-details').classList.add('hidden');
+        }
+
+        // HTML Generator for the Request Cards
+        function createRequestCard(req, cleanDate) {
+            const isLegacy = String(req.id).startsWith('LEGACY');
+            let traineeName = 'N/A';
+            try { let rObj = JSON.parse(req.expectedRoster); if(rObj.length > 0) traineeName = rObj[0].name; if(rObj.length > 1) traineeName += ` <span class="text-[10px] text-blue-500">(+${rObj.length - 1} more)</span>`; } catch(e) {}
+
+            let statusBadge = '';
+            if(req.status === 'Pending') statusBadge = '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-regular fa-clock mr-1"></i> Pending</span>';
+            if(req.status === 'Approved') statusBadge = '<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-thumbs-up mr-1"></i> Approved</span>';
+            if(req.status === 'Liquidated') statusBadge = '<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>';
+            if(req.status === 'Rejected') statusBadge = '<span class="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-xmark mr-1"></i> Rejected</span>';
+
+            const card = document.createElement('div');
+            card.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between anim-slide-in";
             
-            // KPIs categorized by type
-            const extReqs = visibleReqs.filter(r => r.type === 'External').length;
-            const intReqs = visibleReqs.filter(r => r.type === 'Internal').length;
-            const masReqs = visibleReqs.filter(r => r.type === 'Masteral').length;
-            const totalBudget = visibleReqs.filter(r => r.status === 'Approved' || r.status === 'Liquidated').reduce((sum, req) => sum + parseFloat(req.totalCost || 0), 0);
+            let actionHtml = `<div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">`;
+            
+            if (!isLegacy) {
+                if(currentUserRole === 'Admin' && req.status === 'Pending') {
+                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Approved')" class="flex-1 text-[11px] bg-blue-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-blue-700 transition">Approve</button>`;
+                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Rejected')" class="flex-1 text-[11px] bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-400 font-bold py-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/50 transition">Reject</button>`;
+                }
+                if(req.status === 'Approved' && req.type === 'Internal') {
+                    actionHtml += `<button onclick="generatePrintableRoster('${req.id}')" class="flex-1 text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition"><i class="fa-solid fa-print"></i> Roster</button>`;
+                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="flex-1 text-[11px] bg-indigo-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition animate-pulse"><i class="fa-solid fa-qrcode mr-1"></i> Live QR Event</button>`;
+                }
+            }
+
+            actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="flex-1 text-[11px] bg-slate-800 dark:bg-slate-700 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition"><i class="fa-solid fa-eye mr-1"></i> Dossier</button></div>`;
+
+            card.innerHTML = `
+                <div>
+                    <div class="flex justify-between items-start mb-3">
+                        <div>
+                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">${req.id}</span>
+                            <span class="text-xs font-bold text-slate-600 dark:text-slate-400 mt-0.5 block"><i class="fa-solid fa-user mr-1"></i>${traineeName}</span>
+                        </div>
+                        ${statusBadge}
+                    </div>
+                    <h4 class="font-bold text-slate-900 dark:text-white leading-tight mb-2">${req.title} ${req.adminRemarks && req.status==='Pending' && !isLegacy ? '<i class="fa-solid fa-circle-exclamation text-red-500 animate-pulse"></i>' : ''}</h4>
+                    <div class="flex flex-wrap items-center gap-2 mb-2"><span class="text-[10px] md:text-xs text-slate-500 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${cleanDate}</span></div>
+                </div>
+                ${actionHtml}
+            `;
+            return card;
+        }
+
+        // --- ENHANCED MATRIX REPORTS ---
+        function getFilteredReportData() {
+            const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
+            const yFilter = document.getElementById('report-year-filter').value;
+            const mFilter = document.getElementById('report-month-filter').value;
+            
+            return visibleReqs.filter(r => {
+                let cleanDateStr = String(r.dates).replace(/\(Standard na Oras sa China\)/gi, '').trim().toLowerCase();
+                let rYear = "", rMonth = "";
+                
+                if(cleanDateStr.includes('2025')) rYear = '2025';
+                else if(cleanDateStr.includes('2026')) rYear = '2026';
+                else if(cleanDateStr.includes('2027')) rYear = '2027';
+
+                const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+                months.forEach(m => { if(cleanDateStr.includes(m)) rMonth = m; });
+                
+                const yearMatch = yFilter === 'all' || rYear === yFilter;
+                const monthMatch = mFilter === 'all' || rMonth === mFilter.toLowerCase();
+                return yearMatch && monthMatch;
+            });
+        }
+
+        window.renderReports = function() {
+            const filteredReqs = getFilteredReportData();
+            
+            const extReqs = filteredReqs.filter(r => r.type === 'External').length;
+            const intReqs = filteredReqs.filter(r => r.type === 'Internal').length;
+            const masReqs = filteredReqs.filter(r => r.type === 'Masteral').length;
+            const totalBudget = filteredReqs.filter(r => r.status === 'Approved' || r.status === 'Liquidated').reduce((sum, req) => sum + parseFloat(req.totalCost || 0), 0);
             
             document.getElementById('kpi-external').textContent = extReqs; 
             document.getElementById('kpi-internal').textContent = intReqs; 
             document.getElementById('kpi-masteral').textContent = masReqs; 
-            document.getElementById('kpi-budget').textContent = totalBudget.toLocaleString('en-US');
+            document.getElementById('kpi-budget').textContent = `₱${totalBudget.toLocaleString('en-US')}`;
+
+            // --- SPLIT MATRICES (ACTIVE VS LEGACY) ---
+            const activeTbody = document.getElementById('matrix-tbody-active'); activeTbody.innerHTML = '';
+            const legacyTbody = document.getElementById('matrix-tbody-legacy'); legacyTbody.innerHTML = '';
             
-            // Categorized Chart Logic
-            const depts = [...new Set(visibleReqs.map(r => r.department))];
-            let extData = []; let intData = []; let masData = [];
+            const depts = [...new Set(filteredReqs.map(r => r.department))].sort();
+            const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+            let hasActive = false; let hasLegacy = false;
 
             depts.forEach(dept => {
-                const deptReqs = visibleReqs.filter(r => r.department === dept);
-                extData.push(deptReqs.filter(r => r.type === 'External').length);
-                intData.push(deptReqs.filter(r => r.type === 'Internal').length);
-                masData.push(deptReqs.filter(r => r.type === 'Masteral').length);
+                const isLegacy = dept === 'Legacy Import';
+                const dReqs = filteredReqs.filter(r => r.department === dept);
+                if(dReqs.length === 0) return;
+
+                let rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition border-b border-slate-200 dark:border-slate-700">
+                    <td class="px-4 py-3 font-bold text-slate-900 dark:text-white max-w-[150px] truncate" title="${dept}">${dept}</td>`;
+                
+                months.forEach(m => {
+                    const mCount = dReqs.filter(r => String(r.dates).toLowerCase().includes(m)).length;
+                    rowHtml += `<td class="px-2 py-3 text-center ${mCount > 0 ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}">${mCount > 0 ? mCount : '-'}</td>`;
+                });
+                
+                rowHtml += `<td class="px-4 py-3 text-center font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/50">${dReqs.length}</td></tr>`;
+                
+                if (isLegacy) {
+                    legacyTbody.insertAdjacentHTML('beforeend', rowHtml);
+                    hasLegacy = true;
+                } else {
+                    activeTbody.insertAdjacentHTML('beforeend', rowHtml);
+                    hasActive = true;
+                }
             });
 
-            const ctx = document.getElementById('reports-chart').getContext('2d');
-            Chart.defaults.color = document.documentElement.classList.contains('dark') ? '#94a3b8' : '#475569';
-            Chart.defaults.borderColor = document.documentElement.classList.contains('dark') ? '#334155' : '#e2e8f0';
-
-            if (reportsChartInstance) reportsChartInstance.destroy();
-            reportsChartInstance = new Chart(ctx, { 
-                type: 'bar', 
-                data: { 
-                    labels: depts, 
-                    datasets: [
-                        { label: 'External', data: extData, backgroundColor: '#64748b' },
-                        { label: 'Internal', data: intData, backgroundColor: '#6366f1' },
-                        { label: 'Masteral', data: masData, backgroundColor: '#a855f7' }
-                    ] 
-                }, 
-                options: { 
-                    responsive: true, 
-                    maintainAspectRatio: false, 
-                    plugins: { legend: { display: true, position: 'bottom' } }, 
-                    scales: { 
-                        x: { stacked: true, grid: { display: false } },
-                        y: { stacked: true, beginAtZero: true, ticks: { stepSize: 1 } }
-                    } 
-                } 
-            });
+            if (!hasActive) activeTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No active operations match this filter.</td></tr>`;
+            if (!hasLegacy) legacyTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No historical archives match this filter.</td></tr>`;
+            
+            // Show/Hide Legacy Matrix Container
+            const legacyContainer = document.getElementById('legacy-matrix-container');
+            if(hasLegacy) { legacyContainer.classList.remove('hidden'); } else { legacyContainer.classList.add('hidden'); }
         }
 
         init();
