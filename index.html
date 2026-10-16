@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TDMH Training & Development</title>
     
-    <!-- Training Favicon -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -23,19 +20,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     
     <style>
-        /* Smooth Global Transition */
         *, *::before, *::after { transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease; }
-        
         body { overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         .dark ::-webkit-scrollbar-thumb { background: #475569; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
         
         #signature-pad { border: 2px dashed #94a3b8; border-radius: 0.75rem; width: 100%; height: 220px; background-color: #f8fafc; touch-action: none; cursor: crosshair; }
         .dark #signature-pad { border-color: #475569; background-color: #1e293b; }
-        #signature-pad:focus-within, #signature-pad:hover { border-color: #3b82f6; }
 
         @keyframes slideIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
         .anim-slide-in { animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
@@ -45,8 +38,8 @@
 
         @media print { 
             body * { visibility: hidden; }
-            #print-roster-container, #print-roster-container * { visibility: visible; }
-            #print-roster-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 0; background-color: white !important; color: black !important; }
+            #print-dossier-container, #print-dossier-container * { visibility: visible; }
+            #print-dossier-container { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 20px; background-color: white !important; color: black !important; font-family: 'Inter', sans-serif; }
             .no-print { display: none !important; } 
         }
     </style>
@@ -54,10 +47,6 @@
 <body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200">
 
     <div id="toast-container" class="fixed bottom-20 md:top-4 md:bottom-auto right-4 left-4 md:left-auto z-[100] flex flex-col gap-2 no-print pointer-events-none"></div>
-
-    <div id="offline-banner" class="fixed top-0 left-0 w-full bg-orange-600 text-white text-center py-1.5 text-[10px] md:text-xs font-bold uppercase tracking-widest z-[100] hidden no-print shadow-md">
-        ⚠️ Working Offline - Signatures queued in vault. Will sync automatically when Wi-Fi returns.
-    </div>
 
     <!-- VIEW 1: PUBLIC SIGN-IN -->
     <div id="view-public-signin" class="hidden flex-grow flex flex-col items-center justify-center p-4 py-12">
@@ -67,61 +56,44 @@
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white uppercase tracking-wide">Training Sign-In</h1>
                 <p id="public-title-display" class="text-slate-600 dark:text-slate-400 font-bold mt-2 bg-slate-100 dark:bg-slate-900 py-2 px-4 rounded-lg inline-block">Loading details...</p>
             </div>
-
             <form id="public-signin-form" class="space-y-6">
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-1.5">Full Name</label>
-                    <input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white">
-                </div>
-                <div>
-                    <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-1.5">Department</label>
-                    <select id="public-dept" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white"></select>
-                </div>
+                <div><label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-1.5">Full Name</label><input type="text" id="public-name" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white"></div>
+                <div><label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-1.5">Department</label><select id="public-dept" required class="w-full px-4 py-3.5 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-xl outline-none focus:border-blue-500 text-slate-900 dark:text-white"></select></div>
                 <div class="pt-2">
-                    <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 flex justify-between items-center">
-                        <span>Digital Signature</span>
-                        <button type="button" id="btn-clear-sig" class="text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg">Clear Canvas</button>
-                    </label>
+                    <label class="block text-sm font-bold text-slate-600 dark:text-slate-400 mb-2 flex justify-between items-center"><span>Digital Signature</span><button type="button" id="btn-clear-sig" class="text-xs bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 text-slate-700 dark:text-slate-300 px-3 py-1.5 rounded-lg">Clear Canvas</button></label>
                     <canvas id="signature-pad" class="shadow-inner"></canvas>
                 </div>
                 <button type="submit" id="btn-public-submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md">Submit Attendance</button>
             </form>
-
             <div id="public-success" class="hidden text-center py-10">
                 <div class="w-24 h-24 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-6"><i class="fa-solid fa-check text-5xl text-green-600 dark:text-green-400"></i></div>
                 <h2 class="text-3xl font-black text-slate-900 dark:text-white mb-3">Recorded!</h2>
-                <div class="bg-slate-50 dark:bg-slate-700 p-4 rounded-xl mt-6"><p class="text-sm font-medium text-slate-600 dark:text-slate-300">You may now close this tab.</p></div>
             </div>
         </div>
     </div>
 
-    <!-- VIEW 2: PROFESSIONAL LOGIN -->
+    <!-- VIEW 2: LOGIN -->
     <div id="view-login" class="flex-grow flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 p-10 md:p-12 rounded-2xl shadow-xl max-w-sm w-full border border-slate-200 dark:border-slate-700 relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
             
-            <button onclick="toggleTheme()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 bg-slate-100 dark:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center">
+            <!-- DARK MODE TOGGLE RESTORED HERE -->
+            <button onclick="toggleTheme()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-2 bg-slate-100 dark:bg-slate-700 rounded-full w-8 h-8 flex items-center justify-center transition-colors border border-slate-200 dark:border-slate-600 shadow-sm">
                 <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
             </button>
 
             <div class="text-center mb-8 mt-2">
                 <div class="w-16 h-16 bg-slate-100 dark:bg-slate-700 rounded-full flex items-center justify-center mx-auto mb-4 text-blue-600 dark:text-blue-400"><i class="fa-solid fa-hospital text-2xl"></i></div>
                 <h1 class="text-2xl font-black text-slate-900 dark:text-white tracking-tight">TDMH Portal</h1>
-                <p class="text-[10px] font-bold text-slate-500 dark:text-slate-400 mt-1.5 uppercase tracking-widest">Training & Development</p>
+                <p class="text-[10px] font-bold text-slate-500 mt-1.5 uppercase tracking-widest">Training & Development</p>
             </div>
             <form id="login-form" class="space-y-5">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Department</label><select id="login-dept" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-semibold text-slate-900 dark:text-slate-100"></select></div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Department</label>
-                    <select id="login-dept" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-semibold text-slate-900 dark:text-slate-100"></select>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Password</label>
+                    <div class="relative"><input type="password" id="login-password" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-medium tracking-widest text-slate-900 dark:text-slate-100 pr-12"><button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400"><i class="fa-solid fa-eye text-lg"></i></button></div>
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
-                    <div class="relative">
-                        <input type="password" id="login-password" required class="w-full px-4 py-3 bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg outline-none focus:border-blue-500 font-medium tracking-widest text-slate-900 dark:text-slate-100 pr-12">
-                        <button type="button" id="toggle-password" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400"><i class="fa-solid fa-eye text-lg"></i></button>
-                    </div>
-                </div>
-                <div id="login-error" class="hidden text-red-600 dark:text-red-300 text-xs font-bold text-center bg-red-50 dark:bg-red-900/30 py-3 rounded-lg border border-red-200 dark:border-red-800"></div>
+                <div id="login-error" class="hidden text-red-600 text-xs font-bold text-center bg-red-50 py-3 rounded-lg border border-red-200"></div>
                 <button type="submit" id="btn-login" class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 shadow-md mt-4">Secure Login</button>
             </form>
         </div>
@@ -138,13 +110,21 @@
                         <div class="w-8 h-8 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-hospital-user text-blue-600 dark:text-blue-400"></i></div>
                         <span class="font-black text-lg tracking-wide hidden sm:block text-slate-900 dark:text-slate-100">TDMH Operations</span>
                     </div>
-                    <div class="flex items-center space-x-2 md:space-x-4">
-                        <button onclick="toggleTheme()" class="text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-700 p-2 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200 dark:border-slate-600">
+                    <div class="flex items-center space-x-3 md:space-x-4">
+                        
+                        <!-- DARK MODE TOGGLE RESTORED HERE PROMINENTLY -->
+                        <button onclick="toggleTheme()" class="text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-700 p-2 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200 dark:border-slate-600 transition-colors shadow-sm">
                             <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
                         </button>
-                        <button id="nav-sync" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-md font-bold flex items-center border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-rotate md:mr-2 text-blue-600 dark:text-blue-400"></i> <span class="hidden md:inline">Sync Data</span></button>
-                        <div class="text-[10px] md:text-sm bg-slate-50 dark:bg-slate-900 px-2 md:px-4 py-1.5 rounded-md font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300"><i class="fa-solid fa-user-shield text-slate-400"></i> <span id="user-badge" class="truncate max-w-[100px] md:max-w-none">User</span></div>
-                        <button id="nav-logout" class="text-sm bg-red-50 hover:bg-red-100 dark:bg-slate-700 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-md font-bold border border-red-100 dark:border-slate-600"><i class="fa-solid fa-power-off"></i></button>
+
+                        <div class="relative cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-700 p-2 rounded-full transition" onclick="switchTab('dashboard')">
+                            <i class="fa-solid fa-bell text-slate-500 dark:text-slate-400 text-lg"></i>
+                            <span id="notif-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden shadow-sm border border-white dark:border-slate-800">0</span>
+                        </div>
+
+                        <button id="nav-sync" class="text-xs bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-slate-200 px-3 py-1.5 rounded-md font-bold flex items-center border border-slate-200 dark:border-slate-600 shadow-sm"><i class="fa-solid fa-rotate md:mr-2 text-blue-600 dark:text-blue-400"></i> <span class="hidden md:inline">Sync Data</span></button>
+                        <div class="text-[10px] md:text-sm bg-slate-50 dark:bg-slate-900 px-2 md:px-4 py-1.5 rounded-md font-bold border border-slate-200 dark:border-slate-700 flex items-center gap-2 text-slate-700 dark:text-slate-300 shadow-sm"><i class="fa-solid fa-user-shield text-slate-400"></i> <span id="user-badge" class="truncate max-w-[100px] md:max-w-none">User</span></div>
+                        <button id="nav-logout" class="text-sm bg-red-50 hover:bg-red-100 dark:bg-slate-700 dark:hover:bg-red-900/40 text-red-600 dark:text-red-400 px-3 py-1.5 rounded-md font-bold border border-red-100 dark:border-slate-600 shadow-sm" title="Log Out"><i class="fa-solid fa-power-off"></i></button>
                     </div>
                 </div>
             </div>
@@ -184,8 +164,7 @@
                     <div class="loader mb-4"></div>
                     <p class="text-blue-600 dark:text-blue-400 font-bold tracking-widest animate-pulse">SYNCING DATABASE...</p>
                 </div>
-
-                <!-- ==================== SUB-VIEW: FOLDER DIRECTORY ==================== -->
+<!-- SUBVIEW: DASHBOARD -->
                 <div id="subview-dashboard" class="subview-section max-w-7xl mx-auto pb-20">
                     
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
@@ -194,14 +173,27 @@
                             <p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">Organized folders for requests, approvals, and attendance.</p>
                         </div>
                         
-                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto">
+                        <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
+                            
+                            <!-- ADMIN ONLY: EMAIL TOGGLE -->
+                            <div id="admin-settings" class="hidden bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-2 shadow-sm flex items-center gap-3">
+                                <i class="fa-solid fa-envelope text-blue-500"></i>
+                                <span class="text-xs font-bold text-slate-700 dark:text-slate-300 whitespace-nowrap">Email Alerts</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                  <input type="checkbox" id="email-toggle" class="sr-only peer" checked>
+                                  <div class="w-9 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                                </label>
+                            </div>
+
+                            <!-- ADMIN ONLY: ACTIVE / LEGACY TOGGLES -->
+                            <div id="admin-filter-toggles" class="hidden bg-slate-200 dark:bg-slate-800 p-1 rounded-lg border border-slate-300 dark:border-slate-700">
+                                <button onclick="setDashboardFilter('active')" id="filter-btn-active" class="flex-1 px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all whitespace-nowrap">Active Operations</button>
+                                <button onclick="setDashboardFilter('legacy')" id="filter-btn-legacy" class="flex-1 px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all whitespace-nowrap">Legacy Archives</button>
+                            </div>
+
                             <div class="relative w-full md:w-64">
                                 <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
                                 <input type="text" id="search-input" placeholder="Search ID, Title, Dept..." class="w-full pl-9 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:border-blue-500 text-slate-900 dark:text-white">
-                            </div>
-                            <div class="flex bg-slate-200 dark:bg-slate-800 p-1 rounded-lg border border-slate-300 dark:border-slate-700">
-                                <button onclick="setDashboardFilter('active')" id="filter-btn-active" class="flex-1 px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 shadow-sm transition-all whitespace-nowrap">Active Operations</button>
-                                <button onclick="setDashboardFilter('legacy')" id="filter-btn-legacy" class="flex-1 px-4 py-1.5 text-[10px] md:text-xs font-bold rounded-md text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 transition-all whitespace-nowrap">Legacy Archives</button>
                             </div>
                         </div>
                     </div>
@@ -221,31 +213,20 @@
                             <a href="https://docs.google.com/spreadsheets/d/17VwLAGXl4rKhRwCX8C6bK7wNo4vXSlmbfCvi_MhADgs/edit?gid=886176295#gid=886176295" target="_blank" class="flex-1 md:flex-none text-center px-4 py-2 bg-white dark:bg-slate-800 border border-orange-200 dark:border-orange-700 rounded-lg shadow-sm text-xs font-bold text-orange-700 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-slate-700">Legacy Masteral</a>
                         </div>
                     </div>
-                    
-                    <!-- BREADCRUMB NAVIGATION -->
+
+                    <!-- BREADCRUMBS -->
                     <div class="mb-4 flex items-center text-xs md:text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-200 dark:bg-slate-800 w-fit px-4 py-2 rounded-lg border border-slate-300 dark:border-slate-700 overflow-x-auto whitespace-nowrap max-w-full shadow-sm">
                         <button onclick="navLevel(0)" id="crumb-root-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition"><i class="fa-solid fa-house mr-1.5"></i> Directory</button>
-                        <div id="breadcrumb-dept" class="hidden items-center">
-                            <i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i>
-                            <button onclick="navLevel(1)" id="crumb-dept-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[100px] md:max-w-[150px]"></button>
-                        </div>
-                        <div id="breadcrumb-type" class="hidden items-center">
-                            <i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i>
-                            <button onclick="navLevel(2)" id="crumb-type-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[100px]"></button>
-                        </div>
-                        <div id="breadcrumb-title" class="hidden items-center">
-                            <i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i>
-                            <span id="crumb-title-text" class="text-slate-800 dark:text-slate-200 truncate max-w-[150px] md:max-w-[200px]"></span>
-                        </div>
+                        <div id="breadcrumb-dept" class="hidden items-center"><i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i><button onclick="navLevel(1)" id="crumb-dept-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition truncate max-w-[150px]"></button></div>
+                        <div id="breadcrumb-type" class="hidden items-center"><i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i><button onclick="navLevel(2)" id="crumb-type-text" class="hover:text-blue-600 dark:hover:text-blue-400 transition"></button></div>
+                        <div id="breadcrumb-title" class="hidden items-center"><i class="fa-solid fa-chevron-right mx-2 text-[10px]"></i><span id="crumb-title-text" class="text-slate-800 dark:text-slate-200 truncate max-w-[200px]"></span></div>
                     </div>
 
                     <!-- FOLDERS / CARDS CONTAINER -->
-                    <div id="directory-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Injected via JS -->
-                    </div>
+                    <div id="directory-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
                 </div>
 
-                <!-- SUB-VIEW: ATTENDANCE LOGS -->
+                <!-- SUBVIEW: ATTENDANCE LOGS -->
                 <div id="subview-attendance" class="subview-section hidden max-w-7xl mx-auto pb-20">
                     <div class="flex justify-between items-end mb-6">
                         <div>
@@ -271,100 +252,7 @@
                     </div>
                 </div>
 
-                <!-- SUB-VIEW: NEW REQUEST FORM -->
-                <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-20">
-                    <div class="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-700 pb-4">
-                        <h2 id="form-header-title" class="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100">Create Training Request</h2>
-                        <button type="button" id="btn-cancel-edit" class="hidden text-xs md:text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white px-3 md:px-4 py-2 rounded-lg font-bold border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-xmark mr-1"></i> Cancel Edit</button>
-                    </div>
-                    
-                    <form id="request-form" class="space-y-6 md:space-y-8">
-                        <input type="hidden" id="edit-req-id" value="">
-                        
-                        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 md:p-5 rounded-lg">
-                            <label class="block text-xs md:text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Training Type</label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
-                                    <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">External Seminar</span><span class="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400">1 Person. Short course.</span></div>
-                                </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
-                                    <input type="radio" name="training-type" value="Masteral" class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">Masteral / Degree</span><span class="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400">1 Person. Long term.</span></div>
-                                </label>
-                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
-                                    <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
-                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">Internal / In-Service</span><span class="block text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Group event. Generates Roster.</span></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            <div>
-                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Date of Application</label>
-                                <input type="date" id="req-date-app" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 font-medium text-slate-900 dark:text-slate-100 dark:[color-scheme:dark]">
-                            </div>
-                            <div>
-                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Department / Hosting Entity</label>
-                                <input type="text" id="req-department" readonly class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2.5 bg-slate-100 dark:bg-slate-900 text-slate-500 font-medium cursor-not-allowed">
-                                <select id="req-department-select" class="hidden w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 font-medium text-slate-900 dark:text-slate-100"></select>
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                            <div class="md:col-span-2"><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
-                            
-                            <div id="field-employee-name" class="md:col-span-2">
-                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Specific Employee Name</label>
-                                <input type="text" id="req-emp-name" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100">
-                            </div>
-                            <div id="field-position">
-                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Position / Job Title</label>
-                                <input type="text" id="req-position" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100">
-                            </div>
-
-                            <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Venue / Modality</label><input type="text" id="req-venue" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
-                            
-                            <div class="grid grid-cols-2 gap-4">
-                                <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required placeholder="e.g. Oct 12-14" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
-                                <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Total Days</label><input type="number" id="req-days" required placeholder="0" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
-                            </div>
-                        </div>
-
-                        <div id="field-roster-builder" class="hidden border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                            <div class="bg-slate-50 dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <div><h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base">Expected Roster</h3><p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Generates Official Attendance Record sheet.</p></div>
-                                <button type="button" id="btn-add-roster" class="bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-slate-600 text-xs font-bold px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center shadow-sm whitespace-nowrap"><i class="fa-solid fa-user-plus mr-1"></i> Add</button>
-                            </div>
-                            <div class="p-4 bg-white dark:bg-slate-800 overflow-x-auto w-full">
-                                <div id="roster-container" class="space-y-3 min-w-[500px]"></div>
-                            </div>
-                        </div>
-
-                        <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
-                            <div class="bg-slate-50 dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base">Budget Breakdown (₱)</h3>
-                                <span id="budget-masteral-badge" class="hidden bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-300 dark:border-purple-700/50">Masteral</span>
-                            </div>
-                            <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 bg-white dark:bg-transparent">
-                                <div><label id="lbl-cost-reg" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
-                                <div><label id="lbl-cost-travel" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
-                                <div><label id="lbl-cost-food" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
-                                <div><label id="lbl-cost-acc" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
-                            </div>
-                            <div class="bg-slate-50 dark:bg-slate-900 p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
-                                <span class="font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px] md:text-sm">Total Budget</span>
-                                <span class="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400">₱<span id="total-amount">0.00</span></span>
-                            </div>
-                        </div>
-
-                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md active:scale-[0.98] text-base md:text-lg flex items-center justify-center">
-                            <i class="fa-solid fa-paper-plane mr-2"></i> <span id="btn-submit-text">Submit Training Request</span>
-                        </button>
-                    </form>
-                </div>
-
-                <!-- SUB-VIEW: ANALYTICS & REPORTS -->
+                <!-- SUBVIEW: ANALYTICS & REPORTS -->
                 <div id="subview-reports" class="subview-section hidden max-w-7xl mx-auto pb-20">
                     <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
@@ -380,9 +268,6 @@
                                 <option value="all">All Months</option>
                                 <option value="Jan">Jan</option><option value="Feb">Feb</option><option value="Mar">Mar</option><option value="Apr">Apr</option><option value="May">May</option><option value="Jun">Jun</option><option value="Jul">Jul</option><option value="Aug">Aug</option><option value="Sep">Sep</option><option value="Oct">Oct</option><option value="Nov">Nov</option><option value="Dec">Dec</option>
                             </select>
-                            <button onclick="exportToExcel()" class="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 md:px-5 rounded-lg shadow-md flex items-center justify-center gap-2 text-sm">
-                                <i class="fa-solid fa-file-excel"></i> <span class="hidden md:inline">Export Filtered</span><span class="md:hidden">Export</span>
-                            </button>
                         </div>
                     </div>
 
@@ -397,7 +282,6 @@
                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-4 md:p-6 mb-6 overflow-hidden">
                         <div class="flex justify-between items-center mb-4 min-w-[700px]">
                             <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm md:text-base"><i class="fa-solid fa-hospital mr-2 text-blue-500"></i>Active Operations Report (Volume)</h3>
-                            <p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Total requests filed by active hospital departments.</p>
                         </div>
                         <div class="overflow-x-auto w-full pb-2">
                             <table class="w-full text-left text-xs md:text-sm min-w-[800px]">
@@ -439,12 +323,96 @@
                     </div>
                 </div>
 
-                <!-- SUB-VIEW: QR ATTENDANCE STATION -->
+                <!-- SUBVIEW: NEW REQUEST FORM -->
+                <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-20">
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-700 pb-4">
+                        <h2 id="form-header-title" class="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100">Create Training Request</h2>
+                        <button type="button" id="btn-cancel-edit" class="hidden text-xs md:text-sm bg-slate-100 hover:bg-slate-200 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-700 dark:text-white px-3 md:px-4 py-2 rounded-lg font-bold border border-slate-200 dark:border-slate-600"><i class="fa-solid fa-xmark mr-1"></i> Cancel Edit</button>
+                    </div>
+                    
+                    <form id="request-form" class="space-y-6 md:space-y-8">
+                        <input type="hidden" id="edit-req-id" value="">
+                        
+                        <div class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 p-4 md:p-5 rounded-lg">
+                            <label class="block text-xs md:text-sm font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-3">Training Type</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="External" checked class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">External Seminar</span></div>
+                                </label>
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="Masteral" class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">Masteral / Degree</span></div>
+                                </label>
+                                <label class="flex items-center cursor-pointer p-3 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg shadow-sm hover:border-blue-500 dark:hover:border-blue-500 relative overflow-hidden">
+                                    <input type="radio" name="training-type" value="Internal" class="w-5 h-5 text-blue-600 dark:text-blue-500 bg-slate-100 dark:bg-slate-700 border-slate-300 dark:border-slate-500 focus:ring-blue-500">
+                                    <div class="ml-3 z-10"><span class="block font-bold text-slate-900 dark:text-slate-100 text-sm">Internal / In-Service</span></div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div>
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Date of Application</label>
+                                <input type="date" id="req-date-app" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 font-medium text-slate-900 dark:text-slate-100 dark:[color-scheme:dark]">
+                            </div>
+                            <div>
+                                <label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Department / Hosting Entity</label>
+                                <input type="text" id="req-department" readonly class="w-full border border-slate-300 dark:border-slate-600 rounded-md p-2.5 bg-slate-100 dark:bg-slate-900 text-slate-500 font-medium cursor-not-allowed">
+                                <select id="req-department-select" class="hidden w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-md p-2.5 outline-none focus:border-blue-500 font-medium text-slate-900 dark:text-slate-100"></select>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                            <div class="md:col-span-2"><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Title of Training / Topic</label><input type="text" id="req-title" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                            <div id="field-employee-name" class="md:col-span-2"><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Specific Employee Name</label><input type="text" id="req-emp-name" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                            <div id="field-position"><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Position / Job Title</label><input type="text" id="req-position" class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                            <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Venue / Modality</label><input type="text" id="req-venue" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Target Dates</label><input type="text" id="req-dates" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                                <div><label class="block text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">Total Days</label><input type="number" id="req-days" required class="w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900 dark:text-slate-100"></div>
+                            </div>
+                        </div>
+
+                        <div id="field-roster-builder" class="hidden border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                            <div class="bg-slate-50 dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                <div><h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base">Expected Roster</h3><p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400">Generates Official Attendance Record sheet.</p></div>
+                                <button type="button" id="btn-add-roster" class="bg-white dark:bg-slate-700 text-blue-600 dark:text-blue-400 border border-slate-300 dark:border-slate-600 text-xs font-bold px-3 py-1.5 rounded hover:bg-slate-50 dark:hover:bg-slate-600 flex items-center shadow-sm whitespace-nowrap"><i class="fa-solid fa-user-plus mr-1"></i> Add</button>
+                            </div>
+                            <div class="p-4 bg-white dark:bg-slate-800 overflow-x-auto w-full">
+                                <div id="roster-container" class="space-y-3 min-w-[500px]"></div>
+                            </div>
+                        </div>
+
+                        <div class="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden shadow-sm">
+                            <div class="bg-slate-50 dark:bg-slate-900 p-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                <h3 class="font-bold text-slate-900 dark:text-slate-100 text-sm md:text-base">Budget Breakdown (₱)</h3>
+                                <span id="budget-masteral-badge" class="hidden bg-purple-100 dark:bg-purple-900/50 text-purple-700 dark:text-purple-400 text-[10px] uppercase font-black px-2 py-0.5 rounded border border-purple-300 dark:border-purple-700/50">Masteral</span>
+                            </div>
+                            <div class="p-4 grid grid-cols-2 md:grid-cols-4 gap-4 bg-white dark:bg-transparent">
+                                <div><label id="lbl-cost-reg" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Registration</label><input type="number" id="cost-reg" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-travel" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Travel</label><input type="number" id="cost-travel" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-food" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Food</label><input type="number" id="cost-food" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                                <div><label id="lbl-cost-acc" class="block text-[10px] md:text-xs font-bold text-slate-500 dark:text-slate-400 uppercase mb-1">Accommodation</label><input type="number" id="cost-acc" value="0" class="cost-input w-full bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-right font-medium text-slate-900 dark:text-slate-100 outline-none focus:border-blue-500"></div>
+                            </div>
+                            <div class="bg-slate-50 dark:bg-slate-900 p-4 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                                <span class="font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest text-[10px] md:text-sm">Total Budget</span>
+                                <span class="text-xl md:text-2xl font-black text-blue-600 dark:text-blue-400">₱<span id="total-amount">0.00</span></span>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md active:scale-[0.98] text-base md:text-lg flex items-center justify-center">
+                            <i class="fa-solid fa-paper-plane mr-2"></i> <span id="btn-submit-text">Submit Training Request</span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- SUBVIEW: QR ATTENDANCE STATION -->
                 <div id="subview-qr-station" class="subview-section hidden absolute inset-0 bg-white dark:bg-slate-900 z-40 flex flex-col md:flex-row overflow-hidden">
                     <div class="w-full md:w-1/2 p-6 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-200 dark:border-slate-700 relative">
                         <button onclick="closeQRStation()" class="absolute top-4 left-4 md:top-6 md:left-6 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white font-bold bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-lg"><i class="fa-solid fa-arrow-left mr-2"></i> <span class="hidden md:inline">Stop Event</span></button>
                         <h2 class="text-2xl md:text-3xl font-black text-blue-600 dark:text-blue-400 mb-2 text-center uppercase tracking-widest mt-12 md:mt-0">Scan to Sign-in</h2>
-                        <p id="qr-title-display" class="text-slate-500 dark:text-slate-400 font-medium mb-6 md:mb-8 text-center max-w-sm text-sm"></p>
+                        <p id="qr-title-display-station" class="text-slate-500 dark:text-slate-400 font-medium mb-6 md:mb-8 text-center max-w-sm text-sm"></p>
                         <div class="bg-white p-4 md:p-6 rounded-3xl shadow-[0_0_50px_rgba(59,130,246,0.15)] mb-8 border border-slate-100 dark:border-none"><div id="qr-container"></div></div>
                     </div>
                     
@@ -503,6 +471,25 @@
                     <i class="fa-solid fa-clock-rotate-left text-orange-400 text-2xl md:text-3xl mb-2"></i>
                     <h4 class="font-bold text-orange-700 dark:text-orange-400 text-sm md:text-base">Historical Record</h4>
                     <p class="text-[10px] md:text-xs text-orange-600 dark:text-orange-300 mt-1 px-4">This file was imported from the old Excel Masterfile. Post-training actions (like RSA editing and Clearances) are disabled to preserve historical integrity.</p>
+                </div>
+
+                <!-- NEW: ATTENDANCE RECONCILIATION (PHASE 3 FOUNDATION) -->
+                <div id="attendance-reconciliation-section" class="hidden mb-6 bg-slate-50 dark:bg-slate-900 p-4 md:p-5 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <div class="flex justify-between items-center mb-3">
+                        <h4 class="font-bold text-slate-900 dark:text-white text-xs md:text-sm"><i class="fa-solid fa-clipboard-user text-indigo-500 mr-2"></i> Attendance Reconciliation</h4>
+                        <button type="button" id="btn-edit-attendance" class="text-[10px] bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-slate-700 dark:text-slate-300 px-2 py-1 rounded shadow-sm font-bold hover:bg-slate-100 dark:hover:bg-slate-700 transition"><i class="fa-solid fa-pen mr-1"></i> Edit Mode</button>
+                    </div>
+                    <div class="text-[10px] md:text-xs text-slate-600 dark:text-slate-400 mb-4 font-medium leading-relaxed">
+                        Compare Expected Roster vs Actual QR Scans. 
+                    </div>
+                    
+                    <div id="recon-lists-container" class="space-y-4">
+                        <!-- JS Will inject: Scheduled & Attended, Walk-ins, Absentees -->
+                    </div>
+
+                    <div class="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700 flex justify-end">
+                        <button type="button" id="btn-generate-memo" class="bg-red-50 text-red-600 dark:bg-red-900/30 dark:text-red-400 border border-red-200 dark:border-red-800 px-3 py-1.5 rounded text-[10px] font-bold shadow-sm hover:bg-red-100 dark:hover:bg-red-900/50 transition"><i class="fa-solid fa-file-signature mr-1"></i> Generate Memo for Absentees</button>
+                    </div>
                 </div>
 
                 <div id="rsa-section" class="hidden mb-6 bg-slate-50 dark:bg-slate-900 p-4 md:p-5 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -580,28 +567,121 @@
         </div>
     </div>
 
-    <script>
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec';
-        
-        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
+    <!-- ISO AUDIT PRINT CONTAINER -->
+    <div id="print-dossier-container" class="hidden bg-white text-black p-8">
+        <div class="text-center border-b-2 border-black pb-4 mb-6">
+            <h1 class="text-2xl font-black uppercase">TDMH Training & Development</h1>
+            <p class="font-bold text-sm">OFFICIAL TRAINING DOSSIER & CLEARANCE RECORD</p>
+        </div>
+        <div id="print-dossier-content" class="space-y-6"></div>
+        <div class="mt-12 pt-8 border-t-2 border-black flex justify-between items-end">
+            <div>
+                <p class="text-xs font-bold text-gray-500">PRINTED ON:</p>
+                <p class="font-bold" id="print-date-stamp"></p>
+            </div>
+            <div>
+                <p class="text-xs font-bold text-gray-500 mb-8 text-center">ADMINISTRATOR SIGNATURE</p>
+                <div class="border-b border-black w-48 mb-2"></div>
+                <p class="text-center font-bold text-sm" id="print-admin-name"></p>
+            </div>
+        </div>
+    </div>
+<script>
+        // ⚠️ IMPORTANT: Replace this with your actual Google Apps Script Deployment URL
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec'; 
         
         let systemDepts = ["CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"];
         
-        let currentUserRole = null; let currentUserName = null; let currentDeptName = null;
-        let requestsData = []; let attendanceData = []; 
-        let currentFilter = 'active'; // 'active', 'legacy', 'all'
-        
-        // Navigation State for Folders (0: Dept, 1: Type, 2: Title, 3: Records)
+        let currentUserRole = null; 
+        let currentDeptName = null;
+        let requestsData = []; 
+        let attendanceData = []; 
+        let currentFilter = 'active'; 
         let navLevelIndex = 0; let navDept = null; let navType = null; let navTitle = null;
+        
+        let activeQRRequestId = null; let liveAttendanceInterval = null; let stopwatchInterval = null; let eventStartTime = null;
 
-        let reportsChartInstance = null; let activeQRRequestId = null; let liveAttendanceInterval = null; let stopwatchInterval = null; let eventStartTime = null;
+        function toggleTheme() { document.documentElement.classList.toggle('dark'); }
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') {
-                document.getElementById('modal-preview').classList.add('hidden');
-                document.getElementById('modal-details').classList.add('hidden');
-                if(!document.getElementById('print-roster-container').classList.contains('hidden')){ closePrintRoster(); }
+        // --- UI & NOTIFICATIONS ---
+        function updateNotificationBell() {
+            const badge = document.getElementById('notif-badge'); let count = 0;
+            if (currentUserRole === 'Admin') {
+                count = requestsData.filter(r => r.status === 'Pending' && !String(r.id).startsWith('LEGACY')).length;
+            } else {
+                count = requestsData.filter(r => r.department === currentDeptName && (r.status === 'Approved' || r.status === 'Rejected') && !String(r.id).startsWith('LEGACY')).length;
             }
+            if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); } else { badge.classList.add('hidden'); }
+        }
+
+        function showNotification(msg, type = 'info') {
+            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
+            let bgClass = 'bg-white border-slate-200 text-slate-800 dark:bg-slate-800 dark:border-slate-700 dark:text-slate-100'; 
+            let icon = '<i class="fa-solid fa-circle-info text-blue-500"></i>';
+            if (type === 'success') { bgClass = 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/50 dark:border-green-700 dark:text-green-100'; icon = '<i class="fa-solid fa-circle-check text-green-500"></i>'; }
+            if (type === 'error') { bgClass = 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/50 dark:border-red-700 dark:text-red-100'; icon = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>'; }
+            if (type === 'warning') { bgClass = 'bg-yellow-50 border-yellow-200 text-yellow-800 dark:bg-yellow-900/50 dark:border-yellow-700 dark:text-yellow-100'; icon = '<i class="fa-solid fa-bell text-yellow-500"></i>'; }
+
+            toast.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 anim-slide-in font-bold text-sm z-[99] border`; 
+            toast.innerHTML = `${icon} <span>${msg}</span>`; 
+            container.appendChild(toast); setTimeout(() => { toast.remove() }, 4000);
+        }
+
+        // --- INITIALIZATION & AUTO-LOGIN ---
+        function init() {
+            document.getElementById('req-date-app').valueAsDate = new Date(); updateTotal(); toggleTrainingType();
+            const select = document.getElementById('req-department-select'); const loginSelect = document.getElementById('login-dept'); const publicSelect = document.getElementById('public-dept');
+            systemDepts.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; loginSelect.innerHTML += `<option value="${d}">${d}</option>`; publicSelect.innerHTML += `<option value="${d}">${d}</option>`; });
+            
+            if (localStorage.getItem('tdmh_email_alert') === 'false') document.getElementById('email-toggle').checked = false;
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('reqId')) {
+                document.getElementById('public-title-display').textContent = urlParams.get('title') || 'Official Training'; 
+                document.getElementById('view-login').classList.add('hidden'); 
+                document.getElementById('view-public-signin').classList.remove('hidden'); 
+                initSignaturePad();
+            } else {
+                const savedDept = localStorage.getItem('tdmh_dept'); const savedRole = localStorage.getItem('tdmh_role');
+                if (savedDept && savedRole) { currentDeptName = savedDept; currentUserRole = savedRole; setupDashboardForUser(); } 
+                else { document.getElementById('view-public-signin').classList.add('hidden'); document.getElementById('view-login').classList.remove('hidden'); }
+            }
+        }
+
+        function setupDashboardForUser() {
+            document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-600 dark:text-blue-400 md:mr-1">${currentDeptName}</span><span class="hidden md:inline"> | ${currentUserRole}</span>`;
+            const deptSelect = document.getElementById('req-department-select'); const deptInput = document.getElementById('req-department'); 
+            
+            if (currentUserRole === 'Admin') { 
+                deptInput.classList.add('hidden'); deptSelect.classList.remove('hidden'); deptSelect.value = currentDeptName; 
+                document.getElementById('admin-settings').classList.remove('hidden'); 
+                document.getElementById('admin-filter-toggles').classList.remove('hidden'); 
+                document.getElementById('admin-filter-toggles').classList.add('flex');
+            } else { 
+                deptSelect.classList.add('hidden'); deptInput.classList.remove('hidden'); deptInput.value = currentDeptName; 
+            }
+
+            document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-app').classList.remove('hidden');
+            fetchDashboardData(); switchTab('dashboard');
+        }
+
+        // --- AUTH & EVENT LISTENERS ---
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-login'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
+            const errorDiv = document.getElementById('login-error'); errorDiv.classList.add('hidden');
+            const loginUser = document.getElementById('login-dept').value.trim(); const loginPass = document.getElementById('login-password').value;
+
+            try {
+                const res = await fetch(GAS_URL + `?action=login&user=${encodeURIComponent(loginUser)}&pass=${encodeURIComponent(loginPass)}`);
+                const json = await res.json();
+                if (json.success) {
+                    currentUserRole = json.role; currentDeptName = loginUser;
+                    localStorage.setItem('tdmh_dept', currentDeptName); localStorage.setItem('tdmh_role', currentUserRole);
+                    showNotification(`Welcome back, ${currentDeptName}!`, "success"); setupDashboardForUser();
+                } else { errorDiv.textContent = json.message; errorDiv.classList.remove('hidden'); }
+            } catch(e) { errorDiv.textContent = "Connection failed. Please try again."; errorDiv.classList.remove('hidden'); } 
+            finally { btn.innerHTML = 'Secure Login'; btn.disabled = false; }
         });
 
         document.getElementById('toggle-password').addEventListener('click', function() {
@@ -610,53 +690,405 @@
             else { input.type = 'password'; icon.classList.replace('fa-eye-slash', 'fa-eye'); }
         });
 
-        function showNotification(msg, type = 'info') {
-            const container = document.getElementById('toast-container'); const toast = document.createElement('div');
-            let bgClass = 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-100';
-            let icon = '<i class="fa-solid fa-circle-info text-blue-500 dark:text-blue-400"></i>';
-            if (type === 'success') { bgClass = 'bg-green-50 dark:bg-green-900/50 border border-green-200 dark:border-green-700 text-green-800 dark:text-green-100'; icon = '<i class="fa-solid fa-circle-check text-green-500 dark:text-green-400"></i>'; }
-            if (type === 'error') { bgClass = 'bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-700 text-red-800 dark:text-red-100'; icon = '<i class="fa-solid fa-triangle-exclamation text-red-500 dark:text-red-400"></i>'; }
-            if (type === 'warning') { bgClass = 'bg-orange-50 dark:bg-orange-900/50 border border-orange-200 dark:border-orange-700 text-orange-800 dark:text-orange-100'; icon = '<i class="fa-solid fa-bolt text-orange-500 dark:text-orange-400"></i>'; }
+        document.getElementById('nav-logout').addEventListener('click', () => { localStorage.clear(); window.location.reload(); });
+        document.getElementById('email-toggle').addEventListener('change', (e) => { localStorage.setItem('tdmh_email_alert', e.target.checked); showNotification(`Email alerts turned ${e.target.checked ? 'ON' : 'OFF'}.`, 'info'); });
+        document.getElementById('nav-sync').addEventListener('click', fetchDashboardData);
 
-            toast.className = `${bgClass} px-4 py-3 md:px-5 md:py-3.5 rounded-xl shadow-lg flex items-center gap-3 anim-slide-in font-bold text-xs md:text-sm z-[99]`; toast.innerHTML = `${icon} <span>${msg}</span>`; container.appendChild(toast);
-            setTimeout(() => { toast.classList.add('toast-exit'); setTimeout(() => toast.remove(), 300); }, 4000);
-        }
-
-        let offlineDB; const dbRequest = indexedDB.open("TDMH_SuperApp_OfflineDB", 1);
-        dbRequest.onupgradeneeded = (e) => { offlineDB = e.target.result; if (!offlineDB.objectStoreNames.contains("attendanceQueue")) offlineDB.createObjectStore("attendanceQueue", { keyPath: "id", autoIncrement: true }); };
-        dbRequest.onsuccess = (e) => { offlineDB = e.target.result; if(navigator.onLine) syncOfflineData(); };
-
-        async function syncOfflineData() {
-            if(!offlineDB) return;
-            const tx = offlineDB.transaction("attendanceQueue", "readonly"); const req = tx.objectStore("attendanceQueue").getAll();
-            req.onsuccess = async () => {
-                const records = req.result;
-                if(records.length > 0) {
-                    showNotification(`Syncing ${records.length} offline records...`, "warning");
-                    for (const record of records) {
-                        try { await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(record.payload) }); const deleteTx = offlineDB.transaction("attendanceQueue", "readwrite"); deleteTx.objectStore("attendanceQueue").delete(record.id); } catch(e) {}
-                    } showNotification("Offline records synced!", "success");
+        // --- DATA FETCHING (Now uses Cache from Backend) ---
+        async function fetchDashboardData() {
+            document.getElementById('global-loader').classList.remove('hidden');
+            try {
+                const res = await fetch(GAS_URL + '?action=getData'); const json = await res.json();
+                if(json.success) { 
+                    requestsData = json.requests; attendanceData = json.attendance;
+                    updateNotificationBell();
+                    renderDashboard();
+                    if(!document.getElementById('subview-reports').classList.contains('hidden')) renderReports();
+                    if(!document.getElementById('subview-attendance').classList.contains('hidden')) renderAttendance();
                 }
+            } catch(e) { showNotification("Failed to sync database.", "error"); } 
+            finally { document.getElementById('global-loader').classList.add('hidden'); }
+        }
+
+        // --- TABS & NAVIGATION ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.subview-section').forEach(view => view.classList.add('hidden'));
+            document.querySelectorAll('.nav-tab').forEach(btn => { btn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-slate-900', 'dark:text-blue-400', 'border-blue-600', 'dark:border-blue-500'); btn.classList.add('text-slate-500', 'dark:text-slate-400', 'border-transparent'); });
+            
+            const targetView = document.getElementById(`subview-${tabId}`); if(targetView) targetView.classList.remove('hidden');
+            document.querySelectorAll(`.nav-tab[data-tab="${tabId}"]`).forEach(btn => { btn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-slate-900', 'dark:text-blue-400', 'border-blue-600', 'dark:border-blue-500'); btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'border-transparent'); });
+            
+            if(tabId === 'dashboard') { navLevel(currentUserRole === 'Admin' ? 0 : 1, currentDeptName); }
+            if(tabId === 'reports') renderReports();
+            if(tabId === 'attendance') renderAttendance();
+        }
+        document.querySelectorAll('.nav-tab').forEach(tab => { tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab)); });
+
+        // --- DASHBOARD FILTERS (Updated Logic to Hide Folders completely in Legacy) ---
+        window.setDashboardFilter = function(mode) {
+            currentFilter = mode;
+            ['active', 'legacy'].forEach(m => {
+                const btn = document.getElementById(`filter-btn-${m}`);
+                if (m === mode) { btn.classList.add('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm'); btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200'); } 
+                else { btn.classList.remove('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm'); btn.classList.add('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200'); }
+            });
+            
+            const legacyLinks = document.getElementById('admin-legacy-links');
+            const breadcrumbContainer = document.getElementById('crumb-root-text').parentElement;
+            const searchBox = document.getElementById('search-input').parentElement;
+            const directoryContainer = document.getElementById('directory-container');
+
+            if (mode === 'legacy' && currentUserRole === 'Admin') { 
+                legacyLinks.classList.remove('hidden'); legacyLinks.classList.add('flex'); 
+                breadcrumbContainer.classList.add('hidden');
+                searchBox.classList.add('hidden');
+                directoryContainer.innerHTML = ''; // Clear folders
+            } 
+            else { 
+                legacyLinks.classList.add('hidden'); legacyLinks.classList.remove('flex'); 
+                breadcrumbContainer.classList.remove('hidden');
+                searchBox.classList.remove('hidden');
+                navLevel(0); // Re-render active folders
+            }
+        }
+        document.getElementById('search-input').addEventListener('input', () => { if(document.getElementById('search-input').value.length > 0) { navLevelIndex = 3; } renderDashboard(); });
+
+        // --- DASHBOARD RENDERING (Hierarchy) ---
+        window.navLevel = function(targetLevel, dept = null, type = null, title = null) {
+            if(currentUserRole !== 'Admin' && targetLevel === 0) targetLevel = 1;
+            navLevelIndex = targetLevel;
+            if (dept !== null) navDept = dept; if (type !== null) navType = type; if (title !== null) navTitle = title;
+            document.getElementById('search-input').value = ''; 
+            renderDashboard();
+        }
+
+        function renderDashboard() {
+            const container = document.getElementById('directory-container'); container.innerHTML = '';
+            if (currentFilter === 'legacy') return; // Do nothing if in legacy mode (only show links)
+
+            const cleanDates = (dStr) => String(dStr).replace(/\(Standard na Oras sa China\)/gi, '').trim();
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            
+            let visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
+            visibleReqs = visibleReqs.filter(r => !String(r.id).startsWith('LEGACY'));
+
+            if (searchTerm) {
+                const searchedReqs = visibleReqs.filter(r => String(r.id).toLowerCase().includes(searchTerm) || String(r.title).toLowerCase().includes(searchTerm) || String(r.department).toLowerCase().includes(searchTerm));
+                if(searchedReqs.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No records match your search.</div>`; return; }
+                searchedReqs.reverse().forEach(req => container.appendChild(createRequestCard(req, cleanDates(req.dates))));
+                return;
+            }
+
+            if (currentUserRole !== 'Admin' && navLevelIndex === 0) { navLevelIndex = 1; navDept = currentDeptName; }
+
+            const bDept = document.getElementById('breadcrumb-dept'); const bType = document.getElementById('breadcrumb-type'); const bTitle = document.getElementById('breadcrumb-title');
+            if (navLevelIndex === 0) { bDept.classList.add('hidden'); bType.classList.add('hidden'); bTitle.classList.add('hidden'); }
+            if (navLevelIndex === 1) { bDept.classList.remove('hidden'); bType.classList.add('hidden'); bTitle.classList.add('hidden'); document.getElementById('crumb-dept-text').textContent = navDept; }
+            if (navLevelIndex === 2) { bDept.classList.remove('hidden'); bType.classList.remove('hidden'); bTitle.classList.add('hidden'); document.getElementById('crumb-dept-text').textContent = navDept; document.getElementById('crumb-type-text').textContent = navType; }
+            if (navLevelIndex === 3) { bDept.classList.remove('hidden'); bType.classList.remove('hidden'); bTitle.classList.remove('hidden'); document.getElementById('crumb-dept-text').textContent = navDept; document.getElementById('crumb-type-text').textContent = navType; document.getElementById('crumb-title-text').textContent = navTitle; }
+
+            if (navLevelIndex === 0) {
+                const depts = {}; visibleReqs.forEach(r => { if(!depts[r.department]) depts[r.department] = []; depts[r.department].push(r); });
+                if(Object.keys(depts).length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No active requests yet. Use 'New Request' to start filing!</div>`; return; }
+                Object.keys(depts).sort().forEach(dept => {
+                    let pendingCount = depts[dept].filter(r => r.status === 'Pending').length;
+                    let dot = pendingCount > 0 ? `<span class="absolute top-2 right-2 bg-red-500 w-3 h-3 rounded-full border-2 border-white dark:border-slate-800 shadow-sm animate-pulse"></span>` : '';
+                    const folder = document.createElement('div');
+                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md relative";
+                    folder.onclick = () => navLevel(1, dept);
+                    folder.innerHTML = `${dot}<div class="bg-slate-100 dark:bg-slate-700 w-14 h-14 rounded-xl text-slate-600 dark:text-slate-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hospital-user text-2xl"></i></div><div class="flex-grow min-w-0"><h3 class="font-bold text-slate-900 dark:text-white truncate">${dept}</h3><p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${depts[dept].length} Record(s)</p></div><i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>`;
+                    container.appendChild(folder);
+                });
+            }
+            else if (navLevelIndex === 1) {
+                const deptReqs = visibleReqs.filter(r => r.department === navDept);
+                const types = { 'External': [], 'Internal': [], 'Masteral': [] }; deptReqs.forEach(r => { if(types[r.type]) types[r.type].push(r); });
+                Object.keys(types).forEach(type => {
+                    const count = types[type].length; if(count === 0) return; 
+                    let icon = 'fa-arrow-up-right-from-square'; let color = 'text-slate-600 dark:text-slate-400'; let bg = 'bg-slate-100 dark:bg-slate-700';
+                    if(type === 'Internal') { icon = 'fa-users-rectangle'; color = 'text-indigo-600 dark:text-indigo-400'; bg = 'bg-indigo-50 dark:bg-indigo-900/30'; }
+                    if(type === 'Masteral') { icon = 'fa-graduation-cap'; color = 'text-purple-600 dark:text-purple-400'; bg = 'bg-purple-50 dark:bg-purple-900/30'; }
+                    const folder = document.createElement('div');
+                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md anim-slide-in";
+                    folder.onclick = () => navLevel(2, navDept, type);
+                    folder.innerHTML = `<div class="${bg} w-14 h-14 rounded-xl ${color} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} text-2xl"></i></div><div class="flex-grow min-w-0"><h3 class="font-bold text-slate-900 dark:text-white truncate">${type}</h3><p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p></div><i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>`;
+                    container.appendChild(folder);
+                });
+            }
+            else if (navLevelIndex === 2) {
+                const targetReqs = visibleReqs.filter(r => r.department === navDept && r.type === navType);
+                const titles = {}; targetReqs.forEach(r => { if(!titles[r.title]) titles[r.title] = []; titles[r.title].push(r); });
+                Object.keys(titles).sort().forEach(title => {
+                    const count = titles[title].length;
+                    const folder = document.createElement('div');
+                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md anim-slide-in";
+                    folder.onclick = () => navLevel(3, navDept, navType, title);
+                    folder.innerHTML = `<div class="bg-blue-50 dark:bg-blue-900/30 w-14 h-14 rounded-xl text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-folder-open text-2xl"></i></div><div class="flex-grow min-w-0"><h3 class="font-bold text-slate-900 dark:text-white truncate" title="${title}">${title}</h3><p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p></div><i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>`;
+                    container.appendChild(folder);
+                });
+            }
+            else if (navLevelIndex === 3) {
+                const finalReqs = visibleReqs.filter(r => r.department === navDept && r.type === navType && r.title === navTitle);
+                finalReqs.reverse().forEach(req => container.appendChild(createRequestCard(req, cleanDates(req.dates))));
+            }
+        }
+
+        function createRequestCard(req, cleanDate) {
+            const isLegacy = String(req.id).startsWith('LEGACY');
+            let traineeName = 'N/A';
+            try { let rObj = JSON.parse(req.expectedRoster); if(rObj.length > 0) traineeName = rObj[0].name; if(rObj.length > 1) traineeName += ` <span class="text-[10px] text-blue-500">(+${rObj.length - 1} more)</span>`; } catch(e) {}
+
+            let statusBadge = ''; let borderClass = 'border-slate-200 dark:border-slate-700';
+            if(req.status === 'Pending') { statusBadge = '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-regular fa-clock mr-1"></i> Pending</span>'; borderClass = 'border-yellow-300 dark:border-yellow-600'; }
+            if(req.status === 'Approved') { statusBadge = '<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-thumbs-up mr-1"></i> Approved</span>'; borderClass = 'border-green-300 dark:border-green-600'; }
+            if(req.status === 'Liquidated') { statusBadge = '<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>'; borderClass = 'border-green-300 dark:border-green-600'; }
+            if(req.status === 'Rejected') { statusBadge = '<span class="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-xmark mr-1"></i> Denied</span>'; borderClass = 'border-red-300 dark:border-red-600'; }
+
+            const card = document.createElement('div');
+            card.className = `bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border ${borderClass} flex flex-col justify-between anim-slide-in`;
+            let actionHtml = `<div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">`;
+            
+            if(currentUserRole === 'Admin' && req.status === 'Pending' && !isLegacy) {
+                actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Approved')" class="flex-1 text-[11px] bg-green-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-green-700 transition">Approve</button>`;
+                actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Rejected')" class="flex-1 text-[11px] bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-400 font-bold py-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-900 transition">Deny</button>`;
+            }
+            if(!isLegacy && (req.status === 'Approved' || req.status === 'Liquidated')) {
+                if(req.type === 'Internal') {
+                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title.replace(/'/g, "\\'")}')" class="flex-1 text-[11px] bg-indigo-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition" title="Live QR Event"><i class="fa-solid fa-qrcode"></i> QR</button>`;
+                }
+                actionHtml += `<button onclick="printDossier('${req.id}')" class="flex-1 text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition" title="Print ISO Audit Record"><i class="fa-solid fa-print"></i> Print</button>`;
+            }
+            actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="flex-1 text-[11px] bg-slate-800 dark:bg-slate-700 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition"><i class="fa-solid fa-folder-open mr-1"></i> Open</button></div>`;
+
+            card.innerHTML = `<div><div class="flex justify-between items-start mb-3"><div><span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">${req.id}</span><span class="text-xs font-bold text-slate-600 dark:text-slate-400 mt-0.5 block"><i class="fa-solid fa-user mr-1"></i>${traineeName}</span></div>${statusBadge}</div><h4 class="font-bold text-slate-900 dark:text-white leading-tight mb-2">${req.title} ${req.adminRemarks && req.status==='Pending' && !isLegacy ? '<i class="fa-solid fa-circle-exclamation text-red-500 animate-pulse"></i>' : ''}</h4><div class="flex flex-wrap items-center gap-2 mb-2"><span class="text-[10px] md:text-xs text-slate-500 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${cleanDate}</span></div></div>${actionHtml}`;
+            return card;
+        }
+
+        // --- REPORTS & MATRICES ---
+        window.renderReports = function() {
+            const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
+            const yFilter = document.getElementById('report-year-filter').value; const mFilter = document.getElementById('report-month-filter').value;
+            
+            const filteredReqs = visibleReqs.filter(r => {
+                let cleanDateStr = String(r.dates).replace(/\(Standard na Oras sa China\)/gi, '').trim().toLowerCase();
+                let rYear = ""; let rMonth = "";
+                if(cleanDateStr.includes('2025')) rYear = '2025'; else if(cleanDateStr.includes('2026')) rYear = '2026'; else if(cleanDateStr.includes('2027')) rYear = '2027';
+                ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].forEach(m => { if(cleanDateStr.includes(m)) rMonth = m; });
+                return (yFilter === 'all' || rYear === yFilter) && (mFilter === 'all' || rMonth === mFilter.toLowerCase());
+            });
+            
+            document.getElementById('kpi-external').textContent = filteredReqs.filter(r => r.type === 'External').length; 
+            document.getElementById('kpi-internal').textContent = filteredReqs.filter(r => r.type === 'Internal').length; 
+            document.getElementById('kpi-masteral').textContent = filteredReqs.filter(r => r.type === 'Masteral').length; 
+            document.getElementById('kpi-budget').textContent = `₱${filteredReqs.filter(r => r.status === 'Approved' || r.status === 'Liquidated').reduce((sum, req) => sum + parseFloat(req.totalCost || 0), 0).toLocaleString('en-US')}`;
+
+            const activeTbody = document.getElementById('matrix-tbody-active'); activeTbody.innerHTML = '';
+            const legacyTbody = document.getElementById('matrix-tbody-legacy'); legacyTbody.innerHTML = '';
+            const depts = [...new Set(filteredReqs.map(r => r.department))].sort(); const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+            let hasActive = false; let hasLegacy = false;
+
+            depts.forEach(dept => {
+                const isLegacy = dept === 'Legacy Import';
+                const dReqs = filteredReqs.filter(r => r.department === dept); if(dReqs.length === 0) return;
+                
+                let rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-4 py-3 font-bold text-slate-900 dark:text-white max-w-[150px] truncate">${dept}</td>`;
+                months.forEach(m => { const mCount = dReqs.filter(r => String(r.dates).toLowerCase().includes(m)).length; rowHtml += `<td class="px-2 py-3 text-center ${mCount > 0 ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}">${mCount > 0 ? mCount : '-'}</td>`; });
+                rowHtml += `<td class="px-4 py-3 text-center font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/50">${dReqs.length}</td></tr>`;
+                
+                if (isLegacy) { legacyTbody.insertAdjacentHTML('beforeend', rowHtml); hasLegacy = true; } 
+                else { activeTbody.insertAdjacentHTML('beforeend', rowHtml); hasActive = true; }
+            });
+
+            if (!hasActive) activeTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No active operations match this filter.</td></tr>`;
+            if (!hasLegacy) legacyTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No historical archives match this filter.</td></tr>`;
+            if(hasLegacy) { document.getElementById('legacy-matrix-container').classList.remove('hidden'); } else { document.getElementById('legacy-matrix-container').classList.add('hidden'); }
+        }
+
+        window.renderAttendance = function() {
+            const tbody = document.getElementById('attendance-tbody'); if(!tbody) return; tbody.innerHTML = '';
+            let visibleAttendance = currentUserRole === 'Admin' ? attendanceData : attendanceData.filter(a => a.dept === currentDeptName);
+            if (visibleAttendance.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic">No attendance records found.</td></tr>`; return; }
+            visibleAttendance.reverse().forEach(record => {
+                let sigHtml = '<span class="text-slate-400 italic text-[10px]">No signature</span>';
+                if(record.signature && record.signature.startsWith('data:image')) sigHtml = `<img src="${record.signature}" class="h-8 mx-auto bg-white border border-slate-200 rounded px-1">`;
+                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${new Date(record.timestamp).toLocaleString()}</td><td class="px-5 py-4 font-bold text-blue-600 dark:text-blue-400 text-xs uppercase">${record.reqId}</td><td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs">${record.name}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${record.dept}</td><td class="px-5 py-2 text-center">${sigHtml}</td></tr>`);
+            });
+        };
+
+        // --- ISO PRINTING LOGIC ---
+        window.printDossier = function(id) {
+            const req = requestsData.find(r => r.id === id); if (!req) return;
+            const attendees = attendanceData.filter(a => a.reqId === id); let rosterHtml = '';
+            
+            if (attendees.length > 0) {
+                rosterHtml = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px;"><thead><tr style="background-color: #f1f5f9;"><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Name</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Dept</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Signature</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Timestamp</th></tr></thead><tbody>${attendees.map(a => `<tr><td style="border: 1px solid #cbd5e1; padding: 8px;"><b>${a.name}</b></td><td style="border: 1px solid #cbd5e1; padding: 8px;">${a.dept}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${a.sig.startsWith('data:image') ? `<img src="${a.sig}" style="height: 30px;">` : 'Signed'}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${new Date(a.timestamp || Date.now()).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`;
+            } else {
+                try { let rObj = JSON.parse(req.expectedRoster); rosterHtml = `<p><b>Approved Trainee:</b> ${rObj[0].name} (${rObj[0].position})</p>`; } catch(e) {}
+            }
+
+            document.getElementById('print-dossier-content').innerHTML = `
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px;"><div><p style="margin: 0; font-size: 12px; color: #64748b; font-weight: bold;">REQUEST ID</p><h2 style="margin: 0; font-size: 20px;">${req.id}</h2></div><div style="text-align: right;"><p style="margin: 0; font-size: 12px; color: #64748b; font-weight: bold;">DEPARTMENT</p><h2 style="margin: 0; font-size: 20px;">${req.department}</h2></div></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;"><div><p><b>Training Type:</b> ${req.type}</p><p><b>Title:</b> ${req.title}</p><p><b>Venue:</b> ${req.venue}</p><p><b>Dates:</b> ${req.dates} (${req.totalDays} Days)</p></div><div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;"><h4 style="margin: 0 0 10px 0;">Budget Authorization</h4><p style="font-size: 24px; font-weight: 900; margin: 0; color: #2563eb;">₱${parseFloat(req.totalCost).toLocaleString('en-US', {minimumFractionDigits: 2})}</p><p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;">STATUS: ${req.status.toUpperCase()}</p></div></div>
+                <div><h3 style="border-bottom: 2px solid #000; padding-bottom: 5px;">ATTENDANCE RECORD</h3>${rosterHtml}</div>
+            `;
+            document.getElementById('print-date-stamp').textContent = new Date().toLocaleString(); document.getElementById('print-admin-name').textContent = req.signatures ? req.signatures.appName || 'Approved via TDMH Portal' : 'Approved via TDMH Portal';
+            window.print();
+        }
+
+        // --- PHOTO SHRINKER (Client-side compression) ---
+        async function compressImage(file) {
+            return new Promise((resolve) => {
+                if (file.type === 'application/pdf') { const r = new FileReader(); r.onload = (e) => resolve(e.target.result); r.readAsDataURL(file); return; }
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas'); const MAX_SIZE = 1200; let width = img.width, height = img.height;
+                        if(width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } else if(height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
+                        canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
+                        resolve(canvas.toDataURL('image/jpeg', 0.6));
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        let compressedFileBase64 = null;
+        document.getElementById('clearance-input').addEventListener('change', async function(e) {
+            if(e.target.files.length > 0) {
+                document.getElementById('clearance-label').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`; document.getElementById('clearance-label').classList.add('pointer-events-none', 'opacity-70');
+                compressedFileBase64 = await compressImage(e.target.files[0]);
+                document.getElementById('clearance-label').innerHTML = `<i class="fa-solid fa-check"></i> File Ready`; document.getElementById('clearance-label').classList.remove('pointer-events-none', 'opacity-70'); document.getElementById('clearance-label').classList.replace('bg-green-600', 'bg-slate-700'); document.getElementById('btn-upload-clearance').classList.remove('hidden');
+            }
+        });
+
+        // --- MODALS, DETAILS & ATTENDANCE RECONCILIATION ---
+        window.openDetailsModal = function(id) {
+            document.getElementById('modal-details').classList.remove('hidden'); document.getElementById('modal-req-id').textContent = id;
+            const req = requestsData.find(r => r.id === id);
+            const isLegacy = String(id).startsWith('LEGACY');
+            
+            // Toggle visibility of panels based on Role and Status
+            if(isLegacy) {
+                document.getElementById('modal-legacy-badge').classList.remove('hidden');
+                document.getElementById('legacy-warning-section').classList.remove('hidden');
+                document.getElementById('clearance-section').classList.add('hidden');
+                document.getElementById('rsa-section').classList.add('hidden');
+                document.getElementById('admin-actions-section').classList.add('hidden');
+                document.getElementById('attendance-reconciliation-section').classList.add('hidden');
+            } else {
+                document.getElementById('modal-legacy-badge').classList.add('hidden');
+                document.getElementById('legacy-warning-section').classList.add('hidden');
+                
+                if(req && req.status === 'Approved' && currentUserRole !== 'Admin') document.getElementById('clearance-section').classList.remove('hidden'); 
+                else document.getElementById('clearance-section').classList.add('hidden');
+                
+                if(currentUserRole === 'Admin') {
+                    document.getElementById('rsa-section').classList.remove('hidden');
+                    document.getElementById('admin-actions-section').classList.remove('hidden');
+                }
+
+                // NEW: ATTENDANCE RECONCILIATION (Internal Trainings Only)
+                const reconSection = document.getElementById('attendance-reconciliation-section');
+                if (req && req.type === 'Internal' && (req.status === 'Approved' || req.status === 'Liquidated') && currentUserRole === 'Admin') {
+                    reconSection.classList.remove('hidden');
+                    let roster = [];
+                    try { roster = JSON.parse(req.expectedRoster); } catch(e){}
+                    const actualLog = attendanceData.filter(a => a.reqId === id);
+
+                    let present = []; let absent = []; let walkins = [];
+                    const logNames = actualLog.map(a => a.name.trim().toLowerCase());
+                    const rosterNames = roster.map(r => r.name.trim().toLowerCase());
+
+                    roster.forEach(r => {
+                        if (logNames.includes(r.name.trim().toLowerCase())) present.push(r);
+                        else absent.push(r);
+                    });
+
+                    actualLog.forEach(a => {
+                        if (!rosterNames.includes(a.name.trim().toLowerCase())) walkins.push(a);
+                    });
+
+                    document.getElementById('recon-lists-container').innerHTML = `
+                        <div class="mb-3">
+                            <p class="text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase">✅ Scheduled & Attended (${present.length})</p>
+                            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">${present.length > 0 ? present.map(p => p.name).join(', ') : 'None'}</div>
+                        </div>
+                        <div class="mb-3">
+                            <p class="text-[10px] font-black text-yellow-600 dark:text-yellow-500 uppercase">⚠️ Walk-ins / Unscheduled (${walkins.length})</p>
+                            <div class="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1">${walkins.length > 0 ? walkins.map(w => w.name).join(', ') : 'None'}</div>
+                        </div>
+                        <div>
+                            <p class="text-[10px] font-black text-red-500 uppercase">❌ Absentees (${absent.length})</p>
+                            <div class="text-xs font-bold text-red-600 dark:text-red-400 mt-1">${absent.length > 0 ? absent.map(a => a.name).join(', ') : 'None'}</div>
+                        </div>
+                    `;
+                } else {
+                    reconSection.classList.add('hidden');
+                }
+            }
+
+            // Fill General Data
+            const bd = document.getElementById('modal-body-data');
+            bd.innerHTML = `<div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Title</p><p class="font-bold text-sm">${req.title}</p></div>
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Type / Dept</p><p class="font-bold text-sm">${req.type} | ${req.department}</p></div>
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Dates / Days</p><p class="font-bold text-sm">${req.dates} (${req.totalDays} Days)</p></div>
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Venue</p><p class="font-bold text-sm">${req.venue}</p></div>
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Total Cost</p><p class="font-bold text-sm text-blue-600 dark:text-blue-400">₱${parseFloat(req.totalCost).toLocaleString()}</p></div>
+                            <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Status</p><p class="font-bold text-sm">${req.status}</p></div>`;
+            
+            if(req.clearanceUrl) {
+                bd.innerHTML += `<div class="col-span-full mt-2 pt-4 border-t border-slate-200 dark:border-slate-700"><button onclick="window.open('${req.clearanceUrl}', '_blank')" class="text-xs bg-green-100 text-green-700 font-bold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1"></i> View Clearance File</button></div>`;
+            }
+        }
+        window.closeDetailsModal = function() { document.getElementById('modal-details').classList.add('hidden'); }
+        window.closePreviewModal = function() { document.getElementById('modal-preview').classList.add('hidden'); document.getElementById('preview-iframe').src = ''; }
+
+        // --- FORM SUBMISSIONS ---
+        function toggleTrainingType() {
+            const val = document.querySelector('input[name="training-type"]:checked').value; const isInternal = val === 'Internal';
+            document.getElementById('field-employee-name').classList.toggle('hidden', isInternal); document.getElementById('field-position').classList.toggle('hidden', isInternal); document.getElementById('field-roster-builder').classList.toggle('hidden', !isInternal);
+            document.getElementById('req-emp-name').required = !isInternal;
+        }
+        document.querySelectorAll('input[name="training-type"]').forEach(r => r.addEventListener('change', toggleTrainingType));
+        document.getElementById('btn-add-roster').addEventListener('click', () => { const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now(); container.insertAdjacentHTML('beforeend', `<div id="${rowId}" class="flex gap-3 roster-row anim-slide-in min-w-[500px]"><input type="text" placeholder="Attendee Name" class="w-[40%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-sm roster-name outline-none text-slate-900 dark:text-white" required><input type="text" placeholder="Position" class="w-[20%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-sm roster-pos outline-none text-slate-900 dark:text-white"><select class="w-[30%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 rounded p-2 text-sm roster-dept outline-none text-slate-900 dark:text-white" required>${document.getElementById('login-dept').innerHTML}</select><button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-600 bg-red-50 dark:bg-red-900/30 rounded flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button></div>`); });
+        document.querySelectorAll('.cost-input').forEach(i => i.addEventListener('input', updateTotal));
+        function updateTotal() { document.getElementById('total-amount').textContent = ((parseFloat(document.getElementById('cost-reg').value)||0)+(parseFloat(document.getElementById('cost-travel').value)||0)+(parseFloat(document.getElementById('cost-food').value)||0)+(parseFloat(document.getElementById('cost-acc').value)||0)).toLocaleString('en-US', {minimumFractionDigits: 2}); }
+
+        document.getElementById('request-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('btn-submit-req'); const origHtml = btn.innerHTML; btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
+            let rosterData = []; const isInternal = document.querySelector('input[name="training-type"]:checked').value === 'Internal'; const chosenDept = currentUserRole === 'Admin' ? document.getElementById('req-department-select').value : currentDeptName;
+            if (isInternal) { document.querySelectorAll('.roster-row').forEach(row => { rosterData.push({ name: row.querySelector('.roster-name').value, position: row.querySelector('.roster-pos').value || 'N/A', dept: row.querySelector('.roster-dept').value }); }); if (rosterData.length === 0) { showNotification("Add at least one person to the roster.", "warning"); btn.innerHTML = origHtml; btn.disabled = false; return; } } else { rosterData.push({ name: document.getElementById('req-emp-name').value, position: document.getElementById('req-position').value || 'N/A', dept: chosenDept }); }
+
+            const payload = {
+                action: 'addRequest',
+                sendAdminEmail: document.getElementById('email-toggle').checked, // Respect Admin toggle
+                data: { id: 'REQ-' + Date.now().toString().slice(-6), department: chosenDept, type: document.querySelector('input[name="training-type"]:checked').value, title: document.getElementById('req-title').value, venue: document.getElementById('req-venue').value, dates: document.getElementById('req-dates').value, totalDays: document.getElementById('req-days').value, totalCost: parseFloat(document.getElementById('total-amount').textContent.replace(/,/g, '')), expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: chosenDept + " Head" }
             };
-        }
-        window.addEventListener('offline', () => document.getElementById('offline-banner').classList.remove('hidden')); window.addEventListener('online', () => { document.getElementById('offline-banner').classList.add('hidden'); syncOfflineData(); });
 
-        function init() {
-            document.getElementById('req-date-app').valueAsDate = new Date(); updateTotal(); toggleTrainingType();
-            const select = document.getElementById('req-department-select'); const loginSelect = document.getElementById('login-dept'); const publicSelect = document.getElementById('public-dept');
-            systemDepts.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; loginSelect.innerHTML += `<option value="${d}">${d}</option>`; publicSelect.innerHTML += `<option value="${d}">${d}</option>`; });
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('reqId')) {
-                document.getElementById('public-title-display').textContent = urlParams.get('title') || 'Official Training'; document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-public-signin').classList.remove('hidden'); initSignaturePad();
-            } else { document.getElementById('view-public-signin').classList.add('hidden'); document.getElementById('view-login').classList.remove('hidden'); }
+            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json(); if (json.success) { showNotification("Request submitted successfully!", "success"); document.getElementById('request-form').reset(); fetchDashboardData(); switchTab('dashboard'); } else { throw new Error(json.message); } } catch(e) { showNotification("Submission failed.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
+        });
+
+        window.updateReqStatus = async function(id, newStatus) {
+            if(!confirm(`Are you sure you want to mark this request as ${newStatus}?`)) return;
+            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'updateStatus', id: id, status: newStatus }) }); const json = await res.json(); if(json.success) { showNotification(`Request marked as ${newStatus}`, "success"); fetchDashboardData(); } } catch(e) { showNotification("Update failed", "error"); }
         }
 
-        let canvas, ctx, isDrawing = false, hasSigned = false, currentCanvasWidth = 0;
+        document.getElementById('btn-upload-clearance').addEventListener('click', async () => {
+            if(!compressedFileBase64) return; const reqId = document.getElementById('modal-req-id').textContent;
+            const btn = document.getElementById('btn-upload-clearance'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
+            try { const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify({ action: 'uploadClearance', id: reqId, base64File: compressedFileBase64 }) }); const json = await res.json(); if(json.success) { showNotification("Clearance uploaded and liquidated!", "success"); closeDetailsModal(); fetchDashboardData(); } } catch(e) { showNotification("Upload failed.", "error"); } finally { btn.innerHTML = 'Upload & Liquidate'; btn.disabled = false; compressedFileBase64 = null; }
+        });
+
+        // --- PUBLIC SIGN-IN & QR STATION ---
+        let canvas, ctx, isDrawing = false, hasSigned = false;
         function resizeCanvas() {
             if(document.getElementById('view-public-signin').classList.contains('hidden')) return;
-            const newWidth = canvas.offsetWidth; if (currentCanvasWidth === newWidth && canvas.width !== 0) return;
+            const newWidth = canvas.offsetWidth; 
             let savedData = null; if(hasSigned) savedData = canvas.toDataURL(); const ratio = Math.max(window.devicePixelRatio || 1, 1);
-            canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; ctx.scale(ratio, ratio); currentCanvasWidth = newWidth;
+            canvas.width = canvas.offsetWidth * ratio; canvas.height = canvas.offsetHeight * ratio; ctx.scale(ratio, ratio);
             if(hasSigned && savedData) { const img = new Image(); img.onload = () => ctx.drawImage(img, 0, 0, canvas.width/ratio, canvas.height/ratio); img.src = savedData; }
         }
         function initSignaturePad() {
@@ -671,496 +1103,67 @@
         }
 
         document.getElementById('public-signin-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!hasSigned) return showNotification("Please provide your digital signature.", "error");
+            e.preventDefault(); if (!hasSigned) return showNotification("Please provide your digital signature.", "error");
             const btn = document.getElementById('btn-public-submit'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
-
             const payload = { action: 'addAttendance', data: { reqId: new URLSearchParams(window.location.search).get('reqId'), name: document.getElementById('public-name').value, dept: document.getElementById('public-dept').value, signature: canvas.toDataURL('image/webp', 0.5) } };
-            async function triggerSuccess() { document.getElementById('public-signin-form').classList.add('hidden'); document.getElementById('public-success').classList.remove('hidden'); }
-
             try {
-                if (!navigator.onLine) throw new Error("Offline"); 
                 const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json();
-                if(json.status === 'duplicate') showNotification(json.message, "error"); else triggerSuccess();
-            } catch(e) { 
-                if (offlineDB) { const tx = offlineDB.transaction("attendanceQueue", "readwrite"); tx.objectStore("attendanceQueue").add({ payload: payload, timestamp: Date.now() }); triggerSuccess(); showNotification("Saved securely offline.", "warning"); } 
-                else { showNotification("Submission failed.", "error"); }
-            } finally { btn.innerHTML = 'Submit Secure Attendance'; btn.disabled = false; }
+                if(json.status === 'duplicate') showNotification(json.message, "error"); else { document.getElementById('public-signin-form').classList.add('hidden'); document.getElementById('public-success').classList.remove('hidden'); }
+            } catch(e) { showNotification("Submission failed.", "error"); } finally { btn.innerHTML = 'Submit Attendance'; btn.disabled = false; }
         });
 
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-login'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
-            const errorDiv = document.getElementById('login-error'); errorDiv.classList.add('hidden');
-            const loginUser = document.getElementById('login-dept').value.trim(); const loginPass = document.getElementById('login-password').value;
-
-            try {
-                const res = await fetch(GAS_URL + `?action=login&user=${encodeURIComponent(loginUser)}&pass=${encodeURIComponent(loginPass)}`);
-                const json = await res.json();
-                if (json.success) {
-                    currentUserRole = json.role; currentDeptName = loginUser; currentUserName = loginUser;
-                    document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-600 dark:text-blue-400 md:mr-1">${currentDeptName}</span><span class="hidden md:inline"> | ${currentUserRole}</span>`;
-                    const deptSelect = document.getElementById('req-department-select'); const deptInput = document.getElementById('req-department'); 
-                    
-                    if (currentUserRole === 'Admin') { 
-                        deptInput.classList.add('hidden'); deptSelect.classList.remove('hidden'); deptSelect.value = currentDeptName; 
-                    } 
-                    else { 
-                        deptSelect.classList.add('hidden'); deptInput.classList.remove('hidden'); deptInput.value = currentDeptName; 
-                    }
-
-                    document.getElementById('view-login').classList.add('hidden'); document.getElementById('view-app').classList.remove('hidden');
-                    showNotification(`Welcome back, ${currentDeptName}!`, "success"); 
-                    fetchDashboardData(); switchTab('dashboard'); 
-                } else { errorDiv.textContent = json.message; errorDiv.classList.remove('hidden'); }
-            } catch(e) { errorDiv.textContent = "Connection failed. Database might be sleeping, try again."; errorDiv.classList.remove('hidden'); } 
-            finally { btn.innerHTML = 'Secure Login'; btn.disabled = false; }
-        });
-
-        document.getElementById('nav-logout').addEventListener('click', () => { window.location.reload(); });
-
-        window.switchTab = function(tabId) {
+        window.openQRStation = function(reqId, title) {
+            activeQRRequestId = reqId; eventStartTime = new Date().getTime();
             document.querySelectorAll('.subview-section').forEach(view => view.classList.add('hidden'));
-            document.querySelectorAll('.nav-tab').forEach(btn => { btn.classList.remove('bg-blue-50', 'text-blue-600', 'dark:bg-slate-900', 'dark:text-blue-400', 'border-blue-600', 'dark:border-blue-500'); btn.classList.add('text-slate-500', 'dark:text-slate-400', 'border-transparent'); });
+            document.getElementById('subview-qr-station').classList.remove('hidden');
+            document.getElementById('qr-title-display-station').textContent = title;
+            document.getElementById('qr-container').innerHTML = '';
             
-            const targetView = document.getElementById(`subview-${tabId}`); if(targetView) targetView.classList.remove('hidden');
-            document.querySelectorAll(`.nav-tab[data-tab="${tabId}"]`).forEach(btn => { btn.classList.add('bg-blue-50', 'text-blue-600', 'dark:bg-slate-900', 'dark:text-blue-400', 'border-blue-600', 'dark:border-blue-500'); btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'border-transparent'); });
-
-            if(tabId === 'dashboard') { navLevel(currentUserRole === 'Admin' ? 0 : 1, currentDeptName); }
-            if(tabId === 'reports') renderReports();
-            if(tabId === 'attendance') renderAttendance();
-        }
-
-        document.querySelectorAll('.nav-tab').forEach(tab => { tab.addEventListener('click', (e) => switchTab(e.currentTarget.dataset.tab)); });
-
-        window.setDashboardFilter = function(mode) {
-            currentFilter = mode;
-            ['active', 'legacy'].forEach(m => {
-                const btn = document.getElementById(`filter-btn-${m}`);
-                if (m === mode) { btn.classList.add('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm'); btn.classList.remove('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200'); } 
-                else { btn.classList.remove('bg-white', 'dark:bg-slate-700', 'text-blue-600', 'dark:text-blue-400', 'shadow-sm'); btn.classList.add('text-slate-500', 'dark:text-slate-400', 'hover:text-slate-900', 'dark:hover:text-slate-200'); }
-            });
+            const webAppUrl = GAS_URL;
+            const link = webAppUrl + `?reqId=${reqId}&title=${encodeURIComponent(title)}`;
             
-            const legacyLinks = document.getElementById('admin-legacy-links');
-            if (mode === 'legacy' && currentUserRole === 'Admin') { legacyLinks.classList.remove('hidden'); legacyLinks.classList.add('flex'); } 
-            else { legacyLinks.classList.add('hidden'); legacyLinks.classList.remove('flex'); }
-
-            navLevel(0); // Reset hierarchy when filter changes
+            new QRCode(document.getElementById("qr-container"), { text: link, width: 250, height: 250, colorDark : "#2563eb", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+            
+            stopwatchInterval = setInterval(updateQRStopwatch, 1000);
+            liveAttendanceInterval = setInterval(fetchLiveAttendance, 5000);
+            fetchLiveAttendance();
         }
 
-        document.getElementById('search-input').addEventListener('input', () => {
-            if(document.getElementById('search-input').value.length > 0) { navLevelIndex = 3; }
-            renderDashboard();
-        });
-
-        function toggleTrainingType() {
-            const val = document.querySelector('input[name="training-type"]:checked').value; const isInternal = val === 'Internal'; const isMasteral = val === 'Masteral';
-            document.getElementById('field-employee-name').classList.toggle('hidden', isInternal); document.getElementById('field-position').classList.toggle('hidden', isInternal); document.getElementById('field-roster-builder').classList.toggle('hidden', !isInternal);
-            document.getElementById('req-emp-name').required = !isInternal;
-            if (isMasteral) {
-                document.getElementById('lbl-cost-reg').textContent = "Downpayment"; document.getElementById('lbl-cost-travel').textContent = "Full Payment"; document.getElementById('lbl-cost-food').textContent = "Misc 1"; document.getElementById('lbl-cost-acc').textContent = "Misc 2"; document.getElementById('budget-masteral-badge').classList.remove('hidden');
-            } else {
-                document.getElementById('lbl-cost-reg').textContent = "Registration"; document.getElementById('lbl-cost-travel').textContent = "Travel"; document.getElementById('lbl-cost-food').textContent = isInternal ? "Total Food Budget" : "Food"; document.getElementById('lbl-cost-acc').textContent = "Accommodation"; document.getElementById('budget-masteral-badge').classList.add('hidden');
-            }
-        }
-        document.querySelectorAll('input[name="training-type"]').forEach(radio => { radio.addEventListener('change', toggleTrainingType); });
-
-        document.getElementById('btn-add-roster').addEventListener('click', () => {
-            const container = document.getElementById('roster-container'); const rowId = 'r' + Date.now(); const deptOptions = document.getElementById('login-dept').innerHTML;
-            container.insertAdjacentHTML('beforeend', `
-                <div id="${rowId}" class="flex gap-3 roster-row anim-slide-in min-w-[500px]">
-                    <input type="text" placeholder="Attendee Name" class="w-[40%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-name outline-none focus:border-blue-500" required>
-                    <input type="text" placeholder="Position" class="w-[20%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-pos outline-none focus:border-blue-500">
-                    <select class="w-[30%] bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded p-2 text-sm roster-dept outline-none focus:border-blue-500" required>${deptOptions}</select>
-                    <button type="button" onclick="document.getElementById('${rowId}').remove()" class="w-[10%] text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded flex justify-center items-center"><i class="fa-solid fa-xmark"></i></button>
-                </div>
-            `);
-        });
-
-        document.querySelectorAll('.cost-input').forEach(input => { input.addEventListener('input', updateTotal); });
-        function updateTotal() {
-            const reg = parseFloat(document.getElementById('cost-reg').value) || 0; const travel = parseFloat(document.getElementById('cost-travel').value) || 0; const food = parseFloat(document.getElementById('cost-food').value) || 0; const acc = parseFloat(document.getElementById('cost-acc').value) || 0;
-            document.getElementById('total-amount').textContent = (reg+travel+food+acc).toLocaleString('en-US', {minimumFractionDigits: 2});
+        window.closeQRStation = function() {
+            clearInterval(stopwatchInterval); clearInterval(liveAttendanceInterval);
+            activeQRRequestId = null; switchTab('dashboard');
         }
 
-        document.getElementById('btn-cancel-edit').addEventListener('click', () => {
-            document.getElementById('request-form').reset(); document.getElementById('roster-container').innerHTML = ''; document.getElementById('edit-req-id').value = '';
-            document.getElementById('btn-submit-text').textContent = 'Submit Training Request'; document.getElementById('form-header-title').textContent = 'Create Training Request';
-            document.getElementById('btn-cancel-edit').classList.add('hidden'); updateTotal(); toggleTrainingType();
-        });
+        function updateQRStopwatch() {
+            if(!eventStartTime) return;
+            const now = new Date().getTime(); const distance = now - eventStartTime;
+            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const s = Math.floor((distance % (1000 * 60)) / 1000);
+            document.getElementById("qr-stopwatch").innerHTML = (h < 10 ? "0" + h : h) + ":" + (m < 10 ? "0" + m : m) + ":" + (s < 10 ? "0" + s : s);
+        }
 
-        document.getElementById('request-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit-req'); const origHtml = btn.innerHTML; btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
-            const isInternal = document.querySelector('input[name="training-type"]:checked').value === 'Internal'; let rosterData = [];
-            const chosenDept = currentUserRole === 'Admin' ? document.getElementById('req-department-select').value : currentDeptName;
-
-            if (isInternal) {
-                document.querySelectorAll('.roster-row').forEach(row => { rosterData.push({ name: row.querySelector('.roster-name').value, position: row.querySelector('.roster-pos').value || 'N/A', dept: row.querySelector('.roster-dept').value }); });
-                if (rosterData.length === 0) { showNotification("Please add at least one person to the Expected Roster.", "warning"); btn.innerHTML = origHtml; btn.disabled = false; return; }
-            } else { rosterData.push({ name: document.getElementById('req-emp-name').value, position: document.getElementById('req-position').value || 'N/A', dept: chosenDept }); }
-
-            const isEditing = document.getElementById('edit-req-id').value !== ''; const actionTarget = isEditing ? 'updateRequest' : 'addRequest';
-            const targetId = isEditing ? document.getElementById('edit-req-id').value : 'REQ-' + Date.now().toString().slice(-6);
-
-            const payload = {
-                action: actionTarget,
-                data: { id: targetId, department: chosenDept, type: document.querySelector('input[name="training-type"]:checked').value, title: document.getElementById('req-title').value, venue: document.getElementById('req-venue').value, dates: document.getElementById('req-dates').value, totalDays: document.getElementById('req-days').value, totalCost: parseFloat(document.getElementById('total-amount').textContent.replace(/,/g, '')), expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: chosenDept + " Head" }
-            };
-
-            try {
-                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) }); const json = await res.json();
-                if (json.success) { showNotification(isEditing ? "Draft updated successfully!" : "Request submitted successfully!", "success"); document.getElementById('btn-cancel-edit').click(); fetchDashboardData(); switchTab('dashboard'); } 
-                else { throw new Error(json.message); }
-            } catch(e) { showNotification("Submission failed. Check network.", "error"); } finally { btn.innerHTML = origHtml; btn.disabled = false; }
-        });
-
-        document.getElementById('nav-sync').addEventListener('click', fetchDashboardData);
-
-        async function fetchDashboardData() {
-            document.getElementById('global-loader').classList.remove('hidden');
+        async function fetchLiveAttendance() {
+            if(!activeQRRequestId) return;
             try {
                 const res = await fetch(GAS_URL + '?action=getData'); const json = await res.json();
-                if(json.success) { 
-                    requestsData = json.requests; attendanceData = json.attendance;
-                    renderDashboard();
-                    if(!document.getElementById('subview-reports').classList.contains('hidden')) renderReports();
-                    if(!document.getElementById('subview-attendance').classList.contains('hidden')) renderAttendance();
+                if(json.success) {
+                    const attendees = json.attendance.filter(a => a.reqId === activeQRRequestId);
+                    document.getElementById('qr-headcount').textContent = attendees.length;
+                    const listContainer = document.getElementById('qr-live-list');
+                    if(attendees.length === 0) listContainer.innerHTML = '<div class="text-slate-500 text-center mt-10 italic">Waiting for attendees to scan...</div>';
+                    else {
+                        listContainer.innerHTML = attendees.reverse().map(a => `<div class="bg-white dark:bg-slate-700 p-3 rounded-xl shadow-sm border border-slate-100 dark:border-slate-600 flex justify-between items-center anim-slide-in"><div><p class="font-bold text-slate-900 dark:text-white text-sm">${a.name}</p><p class="text-[10px] text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest">${a.dept}</p></div><span class="bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 text-xs px-2 py-1 rounded-md font-bold"><i class="fa-solid fa-check"></i> Present</span></div>`).join('');
+                    }
                 }
-            } catch(e) { showNotification("Failed to sync database.", "error"); } finally { document.getElementById('global-loader').classList.add('hidden'); }
+            } catch(e) {}
         }
 
-        window.renderAttendance = function() {
-            const tbody = document.getElementById('attendance-tbody');
-            if(!tbody) return;
-            tbody.innerHTML = '';
-            
-            if (!attendanceData || attendanceData.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic">No attendance records found.</td></tr>`;
-                return;
-            }
-            
-            let visibleAttendance = currentUserRole === 'Admin' ? attendanceData : attendanceData.filter(a => a.dept === currentDeptName);
-            
-            if (visibleAttendance.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic">No attendance records found for your department.</td></tr>`;
-                return;
-            }
-
-            visibleAttendance.reverse().forEach(record => {
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 dark:hover:bg-slate-700/50 transition border-b border-slate-200 dark:border-slate-700";
-                
-                let sigHtml = '<span class="text-slate-400 italic text-[10px]">No signature</span>';
-                if(record.signature && record.signature.startsWith('data:image')) {
-                    sigHtml = `<img src="${record.signature}" class="h-8 mx-auto bg-white border border-slate-200 rounded px-1" alt="Signature">`;
-                }
-
-                let timeStr = "Unknown";
-                if(record.timestamp) {
-                    try { timeStr = new Date(record.timestamp).toLocaleString(); } catch(e) {}
-                }
-
-                tr.innerHTML = `
-                    <td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${timeStr}</td>
-                    <td class="px-5 py-4 font-bold text-blue-600 dark:text-blue-400 text-xs uppercase">${record.reqId || 'N/A'}</td>
-                    <td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs">${record.name || 'Unknown'}</td>
-                    <td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-300">${record.dept || 'N/A'}</td>
-                    <td class="px-5 py-2 text-center">${sigHtml}</td>
-                `;
-                tbody.appendChild(tr);
-            });
-        };
-
-        // --- NEW FOLDER HIERARCHY LOGIC ---
-        window.navLevel = function(targetLevel, dept = null, type = null, title = null) {
-            if(currentUserRole !== 'Admin' && targetLevel === 0) targetLevel = 1; // Requesters skip Dept level
-            navLevelIndex = targetLevel;
-            if (dept !== null) navDept = dept;
-            if (type !== null) navType = type;
-            if (title !== null) navTitle = title;
-            document.getElementById('search-input').value = ''; 
-            renderDashboard();
-        }
-
-        function renderDashboard() {
-            const container = document.getElementById('directory-container');
-            container.innerHTML = '';
-            
-            const cleanDates = (dStr) => String(dStr).replace(/\(Standard na Oras sa China\)/gi, '').trim();
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            
-            let visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
-            if (currentFilter === 'active') visibleReqs = visibleReqs.filter(r => !String(r.id).startsWith('LEGACY'));
-            if (currentFilter === 'legacy') visibleReqs = visibleReqs.filter(r => String(r.id).startsWith('LEGACY'));
-
-            // 1. SEARCH MODE
-            if (searchTerm) {
-                document.getElementById('breadcrumb-dept').classList.add('hidden');
-                document.getElementById('breadcrumb-type').classList.add('hidden');
-                document.getElementById('breadcrumb-title').classList.add('hidden');
-                
-                const searchedReqs = visibleReqs.filter(r => 
-                    String(r.id).toLowerCase().includes(searchTerm) || String(r.title).toLowerCase().includes(searchTerm) || String(r.department).toLowerCase().includes(searchTerm)
-                );
-                if(searchedReqs.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No records match your search.</div>`; return; }
-                searchedReqs.reverse().forEach(req => container.appendChild(createRequestCard(req, cleanDates(req.dates))));
-                return;
-            }
-
-            // AUTO-SKIP DEPT LEVEL FOR LEGACY FILTER
-            if (currentFilter === 'legacy' && navLevelIndex === 0) { navLevelIndex = 1; navDept = 'Legacy Import'; }
-            if (currentUserRole !== 'Admin' && navLevelIndex === 0) { navLevelIndex = 1; navDept = currentDeptName; }
-
-            // BREADCRUMBS
-            const bDept = document.getElementById('breadcrumb-dept'); const bType = document.getElementById('breadcrumb-type'); const bTitle = document.getElementById('breadcrumb-title');
-            if (navLevelIndex === 0) { bDept.classList.add('hidden'); bType.classList.add('hidden'); bTitle.classList.add('hidden'); }
-            if (navLevelIndex === 1) { 
-                bDept.classList.remove('hidden'); bType.classList.add('hidden'); bTitle.classList.add('hidden');
-                document.getElementById('crumb-dept-text').textContent = navDept;
-            }
-            if (navLevelIndex === 2) { 
-                bDept.classList.remove('hidden'); bType.classList.remove('hidden'); bTitle.classList.add('hidden');
-                document.getElementById('crumb-dept-text').textContent = navDept; document.getElementById('crumb-type-text').textContent = navType;
-            }
-            if (navLevelIndex === 3) { 
-                bDept.classList.remove('hidden'); bType.classList.remove('hidden'); bTitle.classList.remove('hidden');
-                document.getElementById('crumb-dept-text').textContent = navDept; document.getElementById('crumb-type-text').textContent = navType; document.getElementById('crumb-title-text').textContent = navTitle;
-            }
-
-            // LEVEL 0: DEPARTMENT FOLDERS
-            if (navLevelIndex === 0) {
-                const depts = {}; visibleReqs.forEach(r => { if(!depts[r.department]) depts[r.department] = []; depts[r.department].push(r); });
-                if(Object.keys(depts).length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No active requests yet. Use 'New Request' to start filing!</div>`; return; }
-
-                Object.keys(depts).sort().forEach(dept => {
-                    const count = depts[dept].length;
-                    const folder = document.createElement('div');
-                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md";
-                    folder.onclick = () => navLevel(1, dept);
-                    folder.innerHTML = `
-                        <div class="bg-slate-100 dark:bg-slate-700 w-14 h-14 rounded-xl text-slate-600 dark:text-slate-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-hospital-user text-2xl"></i></div>
-                        <div class="flex-grow min-w-0">
-                            <h3 class="font-bold text-slate-900 dark:text-white truncate">${dept}</h3>
-                            <p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>
-                    `;
-                    container.appendChild(folder);
-                });
-            }
-
-            // LEVEL 1: TRAINING TYPE FOLDERS
-            else if (navLevelIndex === 1) {
-                const deptReqs = visibleReqs.filter(r => r.department === navDept);
-                const types = { 'External': [], 'Internal': [], 'Masteral': [] };
-                deptReqs.forEach(r => { if(types[r.type]) types[r.type].push(r); });
-
-                if(deptReqs.length === 0) { container.innerHTML = `<div class="col-span-full py-12 text-center text-slate-500 italic">No records found for ${navDept}.</div>`; return; }
-
-                Object.keys(types).forEach(type => {
-                    const count = types[type].length;
-                    if(count === 0) return; // Hide empty type folders
-                    
-                    let icon = 'fa-arrow-up-right-from-square'; let color = 'text-slate-600 dark:text-slate-400'; let bg = 'bg-slate-100 dark:bg-slate-700';
-                    if(type === 'Internal') { icon = 'fa-users-rectangle'; color = 'text-indigo-600 dark:text-indigo-400'; bg = 'bg-indigo-50 dark:bg-indigo-900/30'; }
-                    if(type === 'Masteral') { icon = 'fa-graduation-cap'; color = 'text-purple-600 dark:text-purple-400'; bg = 'bg-purple-50 dark:bg-purple-900/30'; }
-
-                    const folder = document.createElement('div');
-                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md anim-slide-in";
-                    folder.onclick = () => navLevel(2, navDept, type);
-                    folder.innerHTML = `
-                        <div class="${bg} w-14 h-14 rounded-xl ${color} flex items-center justify-center flex-shrink-0"><i class="fa-solid ${icon} text-2xl"></i></div>
-                        <div class="flex-grow min-w-0">
-                            <h3 class="font-bold text-slate-900 dark:text-white truncate">${type}</h3>
-                            <p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>
-                    `;
-                    container.appendChild(folder);
-                });
-            }
-
-            // LEVEL 2: TITLE FOLDERS
-            else if (navLevelIndex === 2) {
-                const targetReqs = visibleReqs.filter(r => r.department === navDept && r.type === navType);
-                const titles = {};
-                targetReqs.forEach(r => { if(!titles[r.title]) titles[r.title] = []; titles[r.title].push(r); });
-
-                Object.keys(titles).sort().forEach(title => {
-                    const count = titles[title].length;
-                    const folder = document.createElement('div');
-                    folder.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 flex items-center gap-4 transition-all hover:shadow-md anim-slide-in";
-                    folder.onclick = () => navLevel(3, navDept, navType, title);
-                    folder.innerHTML = `
-                        <div class="bg-blue-50 dark:bg-blue-900/30 w-14 h-14 rounded-xl text-blue-600 dark:text-blue-400 flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-folder-open text-2xl"></i></div>
-                        <div class="flex-grow min-w-0">
-                            <h3 class="font-bold text-slate-900 dark:text-white truncate" title="${title}">${title}</h3>
-                            <p class="text-[10px] md:text-xs text-slate-500 font-black uppercase tracking-widest mt-0.5">${count} Record(s)</p>
-                        </div>
-                        <i class="fa-solid fa-chevron-right text-slate-300 dark:text-slate-600"></i>
-                    `;
-                    container.appendChild(folder);
-                });
-            }
-
-            // LEVEL 3: ACTUAL CARDS
-            else if (navLevelIndex === 3) {
-                const finalReqs = visibleReqs.filter(r => r.department === navDept && r.type === navType && r.title === navTitle);
-                finalReqs.reverse().forEach(req => container.appendChild(createRequestCard(req, cleanDates(req.dates))));
-            }
-        }
-
-        window.openDetailsModal = function(id) {
-            document.getElementById('modal-details').classList.remove('hidden');
-            document.getElementById('modal-req-id').textContent = id;
-            
-            const isLegacy = String(id).startsWith('LEGACY');
-            if (isLegacy) {
-                document.getElementById('modal-legacy-badge').classList.remove('hidden');
-                document.getElementById('legacy-warning-section').classList.remove('hidden');
-                document.getElementById('clearance-section').classList.add('hidden');
-                document.getElementById('rsa-section').classList.add('hidden');
-                document.getElementById('admin-actions-section').classList.add('hidden');
-            } else {
-                document.getElementById('modal-legacy-badge').classList.add('hidden');
-                document.getElementById('legacy-warning-section').classList.add('hidden');
-                document.getElementById('clearance-section').classList.remove('hidden');
-                document.getElementById('clearance-section').classList.add('flex');
-                if(currentUserRole === 'Admin') {
-                    document.getElementById('rsa-section').classList.remove('hidden');
-                    document.getElementById('admin-actions-section').classList.remove('hidden');
-                }
-            }
-            // A future backend call would populate modal-body-data here
-        }
-
-        window.closeDetailsModal = function() {
-            document.getElementById('modal-details').classList.add('hidden');
-        }
-
-        // HTML Generator for the Request Cards
-        function createRequestCard(req, cleanDate) {
-            const isLegacy = String(req.id).startsWith('LEGACY');
-            let traineeName = 'N/A';
-            try { let rObj = JSON.parse(req.expectedRoster); if(rObj.length > 0) traineeName = rObj[0].name; if(rObj.length > 1) traineeName += ` <span class="text-[10px] text-blue-500">(+${rObj.length - 1} more)</span>`; } catch(e) {}
-
-            let statusBadge = '';
-            if(req.status === 'Pending') statusBadge = '<span class="bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-500 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-regular fa-clock mr-1"></i> Pending</span>';
-            if(req.status === 'Approved') statusBadge = '<span class="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-thumbs-up mr-1"></i> Approved</span>';
-            if(req.status === 'Liquidated') statusBadge = '<span class="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-check-double mr-1"></i> Liquidated</span>';
-            if(req.status === 'Rejected') statusBadge = '<span class="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider"><i class="fa-solid fa-xmark mr-1"></i> Rejected</span>';
-
-            const card = document.createElement('div');
-            card.className = "bg-white dark:bg-slate-800 p-5 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 flex flex-col justify-between anim-slide-in";
-            
-            let actionHtml = `<div class="flex flex-wrap items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-700">`;
-            
-            if (!isLegacy) {
-                if(currentUserRole === 'Admin' && req.status === 'Pending') {
-                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Approved')" class="flex-1 text-[11px] bg-blue-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-blue-700 transition">Approve</button>`;
-                    actionHtml += `<button onclick="updateReqStatus('${req.id}', 'Rejected')" class="flex-1 text-[11px] bg-red-50 dark:bg-red-900/50 text-red-600 dark:text-red-400 font-bold py-2 rounded-lg hover:bg-red-100 dark:hover:bg-red-800/50 transition">Reject</button>`;
-                }
-                if(req.status === 'Approved' && req.type === 'Internal') {
-                    actionHtml += `<button onclick="generatePrintableRoster('${req.id}')" class="flex-1 text-[11px] bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-200 dark:hover:bg-slate-600 transition"><i class="fa-solid fa-print"></i> Roster</button>`;
-                    actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title}')" class="flex-1 text-[11px] bg-indigo-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition animate-pulse"><i class="fa-solid fa-qrcode mr-1"></i> Live QR Event</button>`;
-                }
-            }
-
-            actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="flex-1 text-[11px] bg-slate-800 dark:bg-slate-700 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-700 dark:hover:bg-slate-600 transition"><i class="fa-solid fa-eye mr-1"></i> Dossier</button></div>`;
-
-            card.innerHTML = `
-                <div>
-                    <div class="flex justify-between items-start mb-3">
-                        <div>
-                            <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest block">${req.id}</span>
-                            <span class="text-xs font-bold text-slate-600 dark:text-slate-400 mt-0.5 block"><i class="fa-solid fa-user mr-1"></i>${traineeName}</span>
-                        </div>
-                        ${statusBadge}
-                    </div>
-                    <h4 class="font-bold text-slate-900 dark:text-white leading-tight mb-2">${req.title} ${req.adminRemarks && req.status==='Pending' && !isLegacy ? '<i class="fa-solid fa-circle-exclamation text-red-500 animate-pulse"></i>' : ''}</h4>
-                    <div class="flex flex-wrap items-center gap-2 mb-2"><span class="text-[10px] md:text-xs text-slate-500 font-medium"><i class="fa-regular fa-calendar mr-1"></i>${cleanDate}</span></div>
-                </div>
-                ${actionHtml}
-            `;
-            return card;
-        }
-
-        // --- ENHANCED MATRIX REPORTS ---
-        function getFilteredReportData() {
-            const visibleReqs = currentUserRole === 'Admin' ? requestsData : requestsData.filter(r => r.department === currentDeptName);
-            const yFilter = document.getElementById('report-year-filter').value;
-            const mFilter = document.getElementById('report-month-filter').value;
-            
-            return visibleReqs.filter(r => {
-                let cleanDateStr = String(r.dates).replace(/\(Standard na Oras sa China\)/gi, '').trim().toLowerCase();
-                let rYear = "", rMonth = "";
-                
-                if(cleanDateStr.includes('2025')) rYear = '2025';
-                else if(cleanDateStr.includes('2026')) rYear = '2026';
-                else if(cleanDateStr.includes('2027')) rYear = '2027';
-
-                const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-                months.forEach(m => { if(cleanDateStr.includes(m)) rMonth = m; });
-                
-                const yearMatch = yFilter === 'all' || rYear === yFilter;
-                const monthMatch = mFilter === 'all' || rMonth === mFilter.toLowerCase();
-                return yearMatch && monthMatch;
-            });
-        }
-
-        window.renderReports = function() {
-            const filteredReqs = getFilteredReportData();
-            
-            const extReqs = filteredReqs.filter(r => r.type === 'External').length;
-            const intReqs = filteredReqs.filter(r => r.type === 'Internal').length;
-            const masReqs = filteredReqs.filter(r => r.type === 'Masteral').length;
-            const totalBudget = filteredReqs.filter(r => r.status === 'Approved' || r.status === 'Liquidated').reduce((sum, req) => sum + parseFloat(req.totalCost || 0), 0);
-            
-            document.getElementById('kpi-external').textContent = extReqs; 
-            document.getElementById('kpi-internal').textContent = intReqs; 
-            document.getElementById('kpi-masteral').textContent = masReqs; 
-            document.getElementById('kpi-budget').textContent = `₱${totalBudget.toLocaleString('en-US')}`;
-
-            // --- SPLIT MATRICES (ACTIVE VS LEGACY) ---
-            const activeTbody = document.getElementById('matrix-tbody-active'); activeTbody.innerHTML = '';
-            const legacyTbody = document.getElementById('matrix-tbody-legacy'); legacyTbody.innerHTML = '';
-            
-            const depts = [...new Set(filteredReqs.map(r => r.department))].sort();
-            const months = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-
-            let hasActive = false; let hasLegacy = false;
-
-            depts.forEach(dept => {
-                const isLegacy = dept === 'Legacy Import';
-                const dReqs = filteredReqs.filter(r => r.department === dept);
-                if(dReqs.length === 0) return;
-
-                let rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800 transition border-b border-slate-200 dark:border-slate-700">
-                    <td class="px-4 py-3 font-bold text-slate-900 dark:text-white max-w-[150px] truncate" title="${dept}">${dept}</td>`;
-                
-                months.forEach(m => {
-                    const mCount = dReqs.filter(r => String(r.dates).toLowerCase().includes(m)).length;
-                    rowHtml += `<td class="px-2 py-3 text-center ${mCount > 0 ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}">${mCount > 0 ? mCount : '-'}</td>`;
-                });
-                
-                rowHtml += `<td class="px-4 py-3 text-center font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/50">${dReqs.length}</td></tr>`;
-                
-                if (isLegacy) {
-                    legacyTbody.insertAdjacentHTML('beforeend', rowHtml);
-                    hasLegacy = true;
-                } else {
-                    activeTbody.insertAdjacentHTML('beforeend', rowHtml);
-                    hasActive = true;
-                }
-            });
-
-            if (!hasActive) activeTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No active operations match this filter.</td></tr>`;
-            if (!hasLegacy) legacyTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No historical archives match this filter.</td></tr>`;
-            
-            // Show/Hide Legacy Matrix Container
-            const legacyContainer = document.getElementById('legacy-matrix-container');
-            if(hasLegacy) { legacyContainer.classList.remove('hidden'); } else { legacyContainer.classList.add('hidden'); }
+        // Set RSA Action (Admin)
+        window.setRSA = function(months) {
+            if(months === 0) { document.getElementById('rsa-end-date').value = ''; return; }
+            let d = new Date(); d.setMonth(d.getMonth() + months);
+            document.getElementById('rsa-end-date').value = d.toISOString().split('T')[0];
         }
 
         init();
