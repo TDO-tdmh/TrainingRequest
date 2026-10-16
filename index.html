@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
-    <!-- FULLCALENDAR ADDED HERE -->
+    <!-- FULLCALENDAR JS ADDED HERE -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
     <script>
@@ -234,8 +234,7 @@
                         </button>
                     </div>
                 </div>
-
-                <!-- SUBVIEW: NEW REQUEST FORM -->
+<!-- SUBVIEW: NEW REQUEST FORM -->
                 <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-20">
                     <div class="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-700 pb-4">
                         <h2 id="form-header-title" class="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100">Create Training Request</h2>
@@ -316,7 +315,8 @@
                         </button>
                     </form>
                 </div>
-<!-- SUBVIEW: SCHEDULE CALENDAR -->
+
+                <!-- SUBVIEW: SCHEDULE CALENDAR -->
                 <div id="subview-calendar" class="subview-section hidden max-w-7xl mx-auto pb-20">
                     <div class="flex justify-between items-end mb-6">
                         <div>
@@ -408,7 +408,7 @@
                         <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-slate-500 dark:text-slate-400 uppercase mb-1">External Seminars</div><div id="kpi-external" class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">0</div></div>
                         <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-indigo-500 dark:text-indigo-400 uppercase mb-1">Internal / In-Service</div><div id="kpi-internal" class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">0</div></div>
                         <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-purple-500 dark:text-purple-400 uppercase mb-1">Masteral Degrees</div><div id="kpi-masteral" class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">0</div></div>
-                        <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-blue-600 dark:text-blue-400 uppercase mb-1">Total System Budget</div><div id="kpi-budget" class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">₱0</div></div>
+                        <div class="bg-white dark:bg-slate-800 p-4 md:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm"><div class="text-[10px] md:text-xs font-black text-blue-600 dark:text-blue-400 uppercase mb-1">Total Training Cost</div><div id="kpi-budget" class="text-xl md:text-2xl font-black text-slate-900 dark:text-white mt-1">₱0</div></div>
                     </div>
                     
                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl shadow-sm p-4 md:p-6 mb-6 overflow-hidden">
@@ -618,7 +618,7 @@
                     <select id="lic-dept" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-3 outline-none focus:border-purple-500"></select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">License Type</label>
+                    <label class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mb-1.5">License / Credential Type</label>
                     <select id="lic-type" required class="w-full bg-slate-50 dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-slate-900 dark:text-white rounded-lg p-3 outline-none focus:border-purple-500">
                         <option value="PRC License">PRC License</option>
                         <option value="BLS">BLS (Basic Life Support)</option>
