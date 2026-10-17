@@ -6,7 +6,7 @@
     <title>TDMH Training & Development</title>
     
     <!-- PWA Requirements -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#f8fafc">
     <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Briefcase_icon.svg/1024px-Briefcase_icon.svg.png">
     
@@ -46,6 +46,38 @@
         .loader { border: 3px solid rgba(59, 130, 246, 0.2); border-top: 3px solid #3b82f6; border-radius: 50%; width: 24px; height: 24px; animation: spin 1s linear infinite; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* --- UI FIXES START --- */
+        
+        /* Fix for Loader getting cut off */
+        #global-loader { position: fixed !important; z-index: 9999 !important; }
+        body.loading-active { overflow: hidden !important; }
+
+        /* FullCalendar Mobile & Dark Mode Overrides */
+        .fc .fc-toolbar-title { font-size: 1.1rem !important; font-weight: 900 !important; }
+        .fc .fc-button { padding: 0.3rem 0.6rem !important; font-size: 0.75rem !important; border-radius: 0.5rem !important; text-transform: capitalize !important; }
+        .dark .fc-theme-standard td, .dark .fc-theme-standard th { border-color: #334155 !important; }
+        .dark .fc-col-header-cell-cushion, .dark .fc-daygrid-day-number { color: #f8fafc !important; }
+        .dark .fc-list-day-text, .dark .fc-list-day-side-text { color: #cbd5e1 !important; }
+        .dark .fc-list-event-title, .dark .fc-list-event-time { color: #f8fafc !important; }
+        
+        @media (min-width: 768px) {
+           .fc .fc-toolbar-title { font-size: 1.5rem !important; }
+           .fc .fc-button { padding: 0.4rem 0.8rem !important; font-size: 0.875rem !important; }
+        }
+
+        /* Responsive Mobile Cards for Tables (Eliminates horizontal scrolling) */
+        @media (max-width: 767px) {
+            .mobile-card-table thead { display: none; }
+            .mobile-card-table, .mobile-card-table tbody, .mobile-card-table tr, .mobile-card-table td { display: block; width: 100%; }
+            .mobile-card-table tr { margin-bottom: 1rem; border: 1px solid #e2e8f0; border-radius: 0.75rem; padding: 0.75rem; background: #fff; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+            .dark .mobile-card-table tr { border-color: #334155; background: #1e293b; }
+            .mobile-card-table td { display: flex; justify-content: space-between; align-items: center; text-align: right; padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9; }
+            .dark .mobile-card-table td { border-bottom-color: #334155; }
+            .mobile-card-table td:last-child { border-bottom: 0; padding-bottom: 0; }
+            .mobile-card-table td::before { content: attr(data-label); font-weight: 800; font-size: 0.65rem; text-transform: uppercase; color: #64748b; text-align: left; padding-right: 1rem; }
+        }
+        /* --- UI FIXES END --- */
+
         @media print { 
             body * { visibility: hidden; }
             #print-dossier-container, #print-dossier-container * { visibility: visible; }
@@ -56,7 +88,7 @@
 </head>
 <body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800 dark:bg-slate-900 dark:text-slate-200">
 
-    <div id="toast-container" class="fixed bottom-20 md:top-4 md:bottom-auto right-4 left-4 md:left-auto z-[100] flex flex-col gap-2 no-print pointer-events-none"></div>
+    <div id="toast-container" class="fixed bottom-20 md:top-4 md:bottom-auto right-4 left-4 md:left-auto z-[9999] flex flex-col gap-2 no-print pointer-events-none"></div>
 
     <!-- VIEW 1: PUBLIC SIGN-IN -->
     <div id="view-public-signin" class="hidden flex-grow flex flex-col items-center justify-center p-4 py-12">
@@ -140,8 +172,8 @@
                 </div>
             </div>
         </nav>
-
-        <div class="flex-grow flex overflow-hidden max-w-[1600px] w-full mx-auto relative no-print">
+        
+<div class="flex-grow flex overflow-hidden max-w-[1600px] w-full mx-auto relative no-print">
             
             <!-- DESKTOP SIDEBAR -->
             <div class="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex overflow-y-auto">
@@ -350,7 +382,7 @@
                     
                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm w-full overflow-hidden">
                         <div class="overflow-x-auto w-full pb-2">
-                            <table class="w-full text-left text-sm min-w-[800px]">
+                            <table class="w-full text-left text-sm md:min-w-[800px] mobile-card-table">
                                 <thead class="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 uppercase text-[11px] font-black tracking-wider">
                                     <tr>
                                         <th class="px-5 py-4">Employee</th>
@@ -377,7 +409,7 @@
                     </div>
                     <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl shadow-sm w-full overflow-hidden">
                         <div class="overflow-x-auto w-full pb-2">
-                            <table class="w-full text-left text-sm min-w-[700px]">
+                            <table class="w-full text-left text-sm md:min-w-[700px] mobile-card-table">
                                 <thead class="bg-slate-100 dark:bg-slate-700 border-b border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300 uppercase text-[11px] font-black tracking-wider">
                                     <tr>
                                         <th class="px-5 py-4">Timestamp</th>
@@ -423,7 +455,7 @@
                             <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm md:text-base"><i class="fa-solid fa-hospital mr-2 text-blue-500"></i>Active Operations Report</h3>
                         </div>
                         <div class="overflow-x-auto w-full pb-2">
-                            <table class="w-full text-left text-xs md:text-sm min-w-[800px]">
+                            <table class="w-full text-left text-xs md:text-sm md:min-w-[800px] mobile-card-table">
                                 <thead class="bg-blue-50 dark:bg-blue-900/20 text-slate-700 dark:text-slate-300 uppercase text-[10px] md:text-[11px] font-black tracking-wider">
                                     <tr>
                                         <th class="px-4 py-3 rounded-tl-lg w-[20%]">Department</th>
@@ -445,7 +477,7 @@
                             <h3 class="font-bold text-slate-900 dark:text-slate-200 text-sm md:text-base"><i class="fa-solid fa-clock-rotate-left mr-2 text-orange-500"></i>Historical Archives (Legacy Imports)</h3>
                         </div>
                         <div class="overflow-x-auto w-full pb-2">
-                            <table class="w-full text-left text-xs md:text-sm min-w-[800px]">
+                            <table class="w-full text-left text-xs md:text-sm md:min-w-[800px] mobile-card-table">
                                 <thead class="bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400 uppercase text-[10px] md:text-[11px] font-black tracking-wider border-b border-slate-200 dark:border-slate-600">
                                     <tr>
                                         <th class="px-4 py-3 rounded-tl-lg w-[20%]">Source</th>
@@ -688,7 +720,7 @@
             </div>
         </div>
     </div>
-    
+
 <script>
         // ⚠️ IMPORTANT: Replace this with your actual Google Apps Script Deployment URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec'; 
@@ -720,7 +752,7 @@
             let icon = '<i class="fa-solid fa-circle-info text-blue-500"></i>';
             if (type === 'success') { bgClass = 'bg-green-50 border-green-200 text-green-800 dark:bg-green-900/50 dark:border-green-700 dark:text-green-100'; icon = '<i class="fa-solid fa-circle-check text-green-500"></i>'; }
             if (type === 'error') { bgClass = 'bg-red-50 border-red-200 text-red-800 dark:bg-red-900/50 dark:border-red-700 dark:text-red-100'; icon = '<i class="fa-solid fa-triangle-exclamation text-red-500"></i>'; }
-            toast.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 anim-slide-in font-bold text-sm z-[99] border`; 
+            toast.className = `${bgClass} px-4 py-3 rounded-xl shadow-lg flex items-center gap-3 anim-slide-in font-bold text-sm z-[9999] border`; 
             toast.innerHTML = `${icon} <span>${msg}</span>`; 
             container.appendChild(toast); setTimeout(() => { toast.remove() }, 4000);
         }
@@ -764,7 +796,11 @@
         // --- AUTH & EVENT LISTENERS ---
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('btn-login'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
+            const btn = document.getElementById('btn-login'); 
+            btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; 
+            btn.disabled = true;
+            document.getElementById('login-error').classList.add('hidden');
+
             try {
                 const res = await fetch(GAS_URL + `?action=login&user=${encodeURIComponent(document.getElementById('login-dept').value)}&pass=${encodeURIComponent(document.getElementById('login-password').value)}`);
                 const json = await res.json();
@@ -772,9 +808,16 @@
                     currentUserRole = json.role; currentDeptName = document.getElementById('login-dept').value;
                     localStorage.setItem('tdmh_dept', currentDeptName); localStorage.setItem('tdmh_role', currentUserRole);
                     showNotification(`Welcome back, ${currentDeptName}!`, "success"); setupDashboardForUser();
-                } else { document.getElementById('login-error').textContent = json.message; document.getElementById('login-error').classList.remove('hidden'); }
-            } catch(e) { } 
-            finally { btn.innerHTML = 'Secure Login'; btn.disabled = false; }
+                } else { 
+                    document.getElementById('login-error').textContent = json.message; 
+                    document.getElementById('login-error').classList.remove('hidden'); 
+                    btn.innerHTML = 'Secure Login'; btn.disabled = false;
+                }
+            } catch(e) { 
+                document.getElementById('login-error').textContent = "Connection error. Please check your internet and try again."; 
+                document.getElementById('login-error').classList.remove('hidden');
+                btn.innerHTML = 'Secure Login'; btn.disabled = false;
+            } 
         });
 
         document.getElementById('toggle-password').addEventListener('click', function() {
@@ -785,13 +828,15 @@
 
         document.getElementById('nav-logout').addEventListener('click', () => { localStorage.clear(); window.location.reload(); });
         document.getElementById('email-toggle').addEventListener('change', (e) => { localStorage.setItem('tdmh_email_alert', e.target.checked); showNotification(`Email alerts turned ${e.target.checked ? 'ON' : 'OFF'}.`, 'info'); });
-        document.getElementById('nav-sync').addEventListener('click', fetchDashboardData);
+        document.getElementById('nav-sync').addEventListener('click', () => fetchDashboardData(3));
 
-        // --- GLOBAL DATA FETCHING ---
-        async function fetchDashboardData() {
+        // --- GLOBAL DATA FETCHING WITH RETRY LOGIC ---
+        async function fetchDashboardData(retries = 3) {
             document.getElementById('global-loader').classList.remove('hidden');
+            document.body.classList.add('loading-active');
             try {
-                const res = await fetch(GAS_URL + '?action=getData'); const json = await res.json();
+                const res = await fetch(GAS_URL + '?action=getData'); 
+                const json = await res.json();
                 if(json.success) { 
                     requestsData = json.requests; attendanceData = json.attendance; licensesData = json.licenses; absenteesData = json.absentees;
                     
@@ -800,9 +845,22 @@
                     if (count > 0) { badge.textContent = count; badge.classList.remove('hidden'); } else badge.classList.add('hidden');
                     
                     renderDashboard(); renderReports(); renderAttendance(); renderLicenses(); renderCalendar();
+                    
+                    document.getElementById('global-loader').classList.add('hidden');
+                    document.body.classList.remove('loading-active');
+                } else {
+                    throw new Error("Failed backend response");
                 }
-            } catch(e) { showNotification("Failed to sync database.", "error"); } 
-            finally { document.getElementById('global-loader').classList.add('hidden'); }
+            } catch(e) { 
+                if (retries > 0) {
+                    // Retry silently after 1.5 seconds if connection was interrupted
+                    setTimeout(() => fetchDashboardData(retries - 1), 1500);
+                } else {
+                    document.getElementById('global-loader').classList.add('hidden');
+                    document.body.classList.remove('loading-active');
+                    showNotification("Failed to sync database. Connection too slow.", "error"); 
+                }
+            } 
         }
 
         // --- TABS & NAVIGATION ---
@@ -1019,16 +1077,16 @@
             if (document.getElementById('lic-dept').options.length === 0) systemDepts.forEach(d => document.getElementById('lic-dept').innerHTML += `<option value="${d}">${d}</option>`);
             
             let visibleLicenses = currentUserRole === 'Admin' ? licensesData : licensesData.filter(l => l.dept === currentDeptName);
-            if (visibleLicenses.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-500 italic">No license credentials found.</td></tr>`; return; }
+            if (visibleLicenses.length === 0) { tbody.innerHTML = `<tr><td colspan="6" class="px-5 py-8 text-center text-slate-500 italic" data-label="Status">No license credentials found.</td></tr>`; return; }
 
             visibleLicenses.forEach(lic => {
                 let diffDays = Math.ceil((new Date(lic.expiry) - new Date()) / (1000 * 60 * 60 * 24));
-                let badgeColor = diffDays <= 0 ? 'bg-red-100 text-red-700 border-red-200' : diffDays <= 60 ? 'bg-orange-100 text-orange-700 border-orange-200' : 'bg-green-100 text-green-700 border-green-200';
+                let badgeColor = diffDays <= 0 ? 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-400' : diffDays <= 60 ? 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400' : 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-400';
                 let statusText = diffDays <= 0 ? 'Expired' : diffDays <= 60 ? `Expiring (${diffDays}d)` : 'Active';
                 let icon = diffDays <= 0 ? 'fa-triangle-exclamation animate-pulse' : diffDays <= 60 ? 'fa-clock' : 'fa-check';
                 let actions = currentUserRole === 'Admin' || currentDeptName === lic.dept ? `<button onclick="deleteLicense('${lic.id}')" class="text-red-500 hover:text-red-700 p-1"><i class="fa-solid fa-trash"></i></button>` : '';
 
-                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs">${lic.name}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${lic.dept}</td><td class="px-5 py-4 font-bold text-purple-600 dark:text-purple-400 text-xs">${lic.type}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${new Date(lic.expiry).toLocaleDateString()}</td><td class="px-5 py-4 text-center"><span class="border px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${badgeColor}"><i class="fa-solid ${icon} mr-1"></i> ${statusText}</span></td><td class="px-5 py-4 text-right">${actions}</td></tr>`);
+                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs" data-label="Employee">${lic.name}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400" data-label="Dept">${lic.dept}</td><td class="px-5 py-4 font-bold text-purple-600 dark:text-purple-400 text-xs" data-label="License Type">${lic.type}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400" data-label="Expiry Date">${new Date(lic.expiry).toLocaleDateString()}</td><td class="px-5 py-4 text-center" data-label="Status"><span class="border px-2 py-1 rounded-md text-[10px] font-black uppercase tracking-wider ${badgeColor}"><i class="fa-solid ${icon} mr-1"></i> ${statusText}</span></td><td class="px-5 py-4 text-right" data-label="Actions">${actions}</td></tr>`);
             });
         }
         window.openLicenseModal = function() { document.getElementById('license-form').reset(); document.getElementById('lic-id').value = ''; document.getElementById('lic-dept').value = currentDeptName; document.getElementById('modal-license').classList.remove('hidden'); }
@@ -1044,12 +1102,12 @@
         window.renderAttendance = function() {
             const tbody = document.getElementById('attendance-tbody'); if(!tbody) return; tbody.innerHTML = '';
             let visibleAttendance = currentUserRole === 'Admin' ? attendanceData : attendanceData.filter(a => a.dept === currentDeptName);
-            if (visibleAttendance.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic">No attendance records found.</td></tr>`; return; }
+            if (visibleAttendance.length === 0) { tbody.innerHTML = `<tr><td colspan="5" class="px-5 py-8 text-center text-slate-500 italic" data-label="Status">No attendance records found.</td></tr>`; return; }
             visibleAttendance.reverse().forEach(record => {
                 let sigHtml = '<span class="text-slate-400 italic text-[10px]">No signature</span>';
                 if(record.sig && record.sig.startsWith('data:image')) sigHtml = `<img src="${record.sig}" class="h-8 mx-auto bg-white border border-slate-200 rounded px-1">`;
-                else if(record.sig === 'Manually Overridden') sigHtml = `<span class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded border border-indigo-200">Manual Override</span>`;
-                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${new Date(record.timestamp || Date.now()).toLocaleString()}</td><td class="px-5 py-4 font-bold text-blue-600 dark:text-blue-400 text-xs uppercase">${record.reqId}</td><td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs">${record.name}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400">${record.dept}</td><td class="px-5 py-2 text-center">${sigHtml}</td></tr>`);
+                else if(record.sig === 'Manually Overridden') sigHtml = `<span class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded border border-indigo-200 dark:bg-indigo-900/30 dark:text-indigo-400">Manual Override</span>`;
+                tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400" data-label="Timestamp">${new Date(record.timestamp || Date.now()).toLocaleString()}</td><td class="px-5 py-4 font-bold text-blue-600 dark:text-blue-400 text-xs uppercase" data-label="Event / Req ID">${record.reqId}</td><td class="px-5 py-4 font-bold text-slate-900 dark:text-white text-xs" data-label="Attendee Name">${record.name}</td><td class="px-5 py-4 text-xs text-slate-600 dark:text-slate-400" data-label="Department">${record.dept}</td><td class="px-5 py-2 text-center" data-label="Signature">${sigHtml}</td></tr>`);
             });
         }
 
@@ -1092,19 +1150,19 @@
 
             depts.forEach(dept => {
                 const isLegacy = dept === 'Legacy Import'; const dReqs = filteredReqs.filter(r => r.department === dept); if(dReqs.length === 0) return;
-                let rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-4 py-3 font-bold text-slate-900 dark:text-white max-w-[150px] truncate">${dept}</td>`;
+                let rowHtml = `<tr class="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition border-b border-slate-200 dark:border-slate-700"><td class="px-4 py-3 font-bold text-slate-900 dark:text-white max-w-[150px] truncate" data-label="Department">${dept}</td>`;
                 months.forEach(m => { 
                     const mCount = dReqs.filter(r => String(r.dates).toLowerCase().includes(m) || new Date(r.dateApplied).toLocaleString('en-US',{month:'short'}).toLowerCase() === m).length; 
-                    rowHtml += `<td class="px-2 py-3 text-center ${mCount > 0 ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}">${mCount > 0 ? mCount : '-'}</td>`; 
+                    rowHtml += `<td class="px-2 py-3 text-center ${mCount > 0 ? 'font-bold text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-600'}" data-label="${m.toUpperCase()}">${mCount > 0 ? mCount : '-'}</td>`; 
                 });
-                rowHtml += `<td class="px-4 py-3 text-center font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/50">${dReqs.length}</td></tr>`;
+                rowHtml += `<td class="px-4 py-3 text-center font-black text-slate-900 dark:text-white bg-slate-100 dark:bg-slate-800/50" data-label="Total">${dReqs.length}</td></tr>`;
                 
                 if (isLegacy) { legacyTbody.insertAdjacentHTML('beforeend', rowHtml); hasLegacy = true; } 
                 else { activeTbody.insertAdjacentHTML('beforeend', rowHtml); hasActive = true; }
             });
 
-            if (!hasActive) activeTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No active operations match this filter.</td></tr>`;
-            if (!hasLegacy) legacyTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic">No historical archives match this filter.</td></tr>`;
+            if (!hasActive) activeTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic" data-label="Status">No active operations match this filter.</td></tr>`;
+            if (!hasLegacy) legacyTbody.innerHTML = `<tr><td colspan="14" class="px-4 py-8 text-center text-slate-500 italic" data-label="Status">No historical archives match this filter.</td></tr>`;
             if(hasLegacy) { document.getElementById('legacy-matrix-container').classList.remove('hidden'); } else { document.getElementById('legacy-matrix-container').classList.add('hidden'); }
         }
 
@@ -1191,7 +1249,7 @@
                             <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Venue</p><p class="font-bold text-sm">${req.venue}</p></div>
                             <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Total Cost</p><p class="font-bold text-sm text-blue-600 dark:text-blue-400">₱${parseFloat(req.totalCost).toLocaleString()}</p></div>
                             <div><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-1">Status</p><p class="font-bold text-sm">${req.status}</p></div>`;
-            if(req.clearanceUrl) bd.innerHTML += `<div class="col-span-full mt-2 pt-4 border-t border-slate-200 dark:border-slate-700"><button onclick="window.open('${req.clearanceUrl}', '_blank')" class="text-xs bg-green-100 text-green-700 font-bold px-4 py-2 rounded-lg"><i class="fa-solid fa-file-invoice mr-1"></i> View Clearance File</button></div>`;
+            if(req.clearanceUrl) bd.innerHTML += `<div class="col-span-full mt-2 pt-4 border-t border-slate-200 dark:border-slate-700"><button onclick="window.open('${req.clearanceUrl}', '_blank')" class="text-xs bg-green-100 text-green-700 font-bold px-4 py-2 rounded-lg dark:bg-green-900/30 dark:text-green-400"><i class="fa-solid fa-file-invoice mr-1"></i> View Clearance File</button></div>`;
         }
         window.closeDetailsModal = function() { document.getElementById('modal-details').classList.add('hidden'); }
         
@@ -1233,8 +1291,8 @@
             reconEditMode = !reconEditMode;
             document.getElementById('recon-edit-tools').classList.toggle('hidden', !reconEditMode);
             const btn = document.getElementById('btn-edit-attendance');
-            if(reconEditMode) { btn.classList.add('bg-indigo-100','text-indigo-700'); btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Exit Edit Mode'; }
-            else { btn.classList.remove('bg-indigo-100','text-indigo-700'); btn.innerHTML = '<i class="fa-solid fa-pen mr-1"></i> Toggle Edit Mode'; }
+            if(reconEditMode) { btn.classList.add('bg-indigo-100','text-indigo-700', 'dark:bg-indigo-900/50', 'dark:text-indigo-400'); btn.innerHTML = '<i class="fa-solid fa-check mr-1"></i> Exit Edit Mode'; }
+            else { btn.classList.remove('bg-indigo-100','text-indigo-700', 'dark:bg-indigo-900/50', 'dark:text-indigo-400'); btn.innerHTML = '<i class="fa-solid fa-pen mr-1"></i> Toggle Edit Mode'; }
             renderReconSection(document.getElementById('modal-req-id').textContent);
         }
 
@@ -1377,7 +1435,11 @@
 
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Registration failed', err));
+                navigator.serviceWorker.register('./sw.js')
+                .then(registration => {
+                    console.log('SW Registration successful with scope: ', registration.scope);
+                })
+                .catch(err => console.log('SW Registration failed: ', err));
             });
         }
 
