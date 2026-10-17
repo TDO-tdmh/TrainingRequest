@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TDMH Training & Development</title>
     
+    <!-- PWA Requirements -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#f8fafc">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Briefcase_icon.svg/1024px-Briefcase_icon.svg.png">
+    
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>💼</text></svg>">
     
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <!-- FULLCALENDAR JS ADDED HERE -->
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
     <script>
@@ -118,6 +121,9 @@
                     </div>
                     <div class="flex items-center space-x-3 md:space-x-4">
                         
+                        <!-- PWA Install Button -->
+                        <button id="btn-install-pwa" class="hidden text-xs bg-indigo-50 hover:bg-indigo-100 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-3 py-1.5 rounded-md font-bold border border-indigo-100 dark:border-indigo-800 shadow-sm transition"><i class="fa-solid fa-download md:mr-2"></i> <span class="hidden md:inline">Install App</span></button>
+
                         <button onclick="toggleTheme()" class="text-slate-500 hover:text-blue-600 dark:hover:text-blue-400 bg-slate-100 dark:bg-slate-700 p-2 rounded-full w-8 h-8 flex items-center justify-center border border-slate-200 dark:border-slate-600 transition-colors shadow-sm">
                             <i class="fa-solid fa-moon dark:hidden"></i><i class="fa-solid fa-sun hidden dark:block text-yellow-400"></i>
                         </button>
@@ -234,7 +240,8 @@
                         </button>
                     </div>
                 </div>
-<!-- SUBVIEW: NEW REQUEST FORM -->
+
+                <!-- SUBVIEW: NEW REQUEST FORM -->
                 <div id="subview-new-request" class="subview-section hidden max-w-4xl mx-auto bg-white dark:bg-slate-800 p-6 md:p-8 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 mb-20">
                     <div class="flex justify-between items-center mb-8 border-b border-slate-200 dark:border-slate-700 pb-4">
                         <h2 id="form-header-title" class="text-xl md:text-2xl font-black text-slate-900 dark:text-slate-100">Create Training Request</h2>
@@ -681,6 +688,7 @@
             </div>
         </div>
     </div>
+    
 <script>
         // ⚠️ IMPORTANT: Replace this with your actual Google Apps Script Deployment URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec'; 
@@ -1060,9 +1068,14 @@
                 
                 let rMonth = ""; 
                 ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'].forEach(m => { 
-                    // Fallback to Application Month if string doesn't contain it
-                    if(cleanDateStr.includes(m) || parsedDate.toLocaleString('en-US', {month: 'short'}).toLowerCase() === m) rMonth = m; 
+                    // CRITICAL FIX: Only check the actual text string from the user/excel input
+                    if(cleanDateStr.includes(m)) rMonth = m; 
                 });
+                
+                // If text completely lacks a month (e.g. they typed "TBA"), then fallback to the application date
+                if (rMonth === "") {
+                    rMonth = parsedDate.toLocaleString('en-US', {month: 'short'}).toLowerCase();
+                }
                 
                 return (yFilter === 'all' || rYear === yFilter) && (mFilter === 'all' || rMonth === mFilter.toLowerCase());
             });
@@ -1343,7 +1356,32 @@
             let d = new Date(); d.setMonth(d.getMonth() + months); document.getElementById('rsa-end-date').value = d.toISOString().split('T')[0];
         }
 
+        // --- PWA: MAKE IT AN APP LOGIC ---
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('btn-install-pwa').classList.remove('hidden');
+        });
+
+        document.getElementById('btn-install-pwa').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    document.getElementById('btn-install-pwa').classList.add('hidden');
+                }
+                deferredPrompt = null;
+            }
+        });
+
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js').catch(err => console.log('SW Registration failed', err));
+            });
+        }
+
         init();
-    </script>
+</script>
 </body>
 </html>
