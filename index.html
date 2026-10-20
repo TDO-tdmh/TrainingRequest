@@ -16,7 +16,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 
-    <!-- Tailwind Config (Dark Mode Removed for Speed & Cleanliness) -->
+    <!-- Tailwind Config -->
     <script>
         tailwind.config = {
             theme: { 
@@ -50,7 +50,7 @@
         #global-loader { position: fixed !important; z-index: 9999 !important; }
         body.modal-open { overflow: hidden !important; touch-action: none !important; } 
 
-        /* FullCalendar Overhauls */
+        /* FullCalendar Overhauls - Redesigned to fix the messy blue bars */
         .fc .fc-toolbar.fc-header-toolbar { flex-direction: column; gap: 0.75rem; margin-bottom: 1rem !important; }
         .fc .fc-toolbar-chunk { display: flex; justify-content: center; width: 100%; }
         .fc .fc-toolbar-title { font-size: 1.25rem !important; font-weight: 900 !important; text-align: center; } 
@@ -58,11 +58,22 @@
         .fc-theme-standard th { background-color: #f8fafc; }
         .fc-day-today { background-color: #dbeafe !important; } 
         
+        /* Clean Dot Design for Calendar Events */
+        .fc-daygrid-event-harness { margin-bottom: 3px !important; }
+        .fc-event { border: none !important; background: transparent !important; color: #1e293b !important; font-size: 0.7rem !important; font-weight: 700 !important; padding: 2px 4px !important; cursor: pointer; }
+        .fc-event:hover { background-color: #f1f5f9 !important; border-radius: 4px; }
+        /* Color Coding for Training Types on the Calendar Grid */
+        .fc-daygrid-event-dot { border: 4px solid #94a3b8 !important; margin-right: 4px !important; } /* Default Gray */
+        .fc-event.internal-event .fc-daygrid-event-dot { border-color: #22c55e !important; } /* Green for Internal */
+        .fc-event.external-event .fc-daygrid-event-dot { border-color: #eab308 !important; } /* Yellow for External */
+        .fc-event.masteral-event .fc-daygrid-event-dot { border-color: #3b82f6 !important; } /* Blue for Masteral */
+        
         @media (min-width: 768px) {
            .fc .fc-toolbar.fc-header-toolbar { flex-direction: row; justify-content: space-between; }
            .fc .fc-toolbar-chunk { width: auto; }
            .fc .fc-toolbar-title { font-size: 1.5rem !important; text-align: left; }
            .fc .fc-button { padding: 0.4rem 0.8rem !important; font-size: 0.875rem !important; border-radius: 0.5rem !important; }
+           .fc-event { font-size: 0.75rem !important; }
         }
 
         /* Responsive Mobile Cards for Tables */
@@ -79,7 +90,6 @@
         /* Refined A4 Print Layout */
         @media print { 
             body * { visibility: hidden; }
-            /* FIXED: Force print container to be visible and properly layered */
             #print-dossier-container.print-mode, #print-dossier-container.print-mode * { visibility: visible; }
             #print-dossier-container.print-mode { position: absolute; left: 0; top: 0; width: 100%; margin: 0; padding: 15px; background-color: white !important; color: black !important; font-family: 'Inter', sans-serif; display: block !important; }
             .no-print { display: none !important; } 
@@ -87,7 +97,14 @@
         }
     </style>
 </head>
-<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800">
+<body class="min-h-screen flex flex-col antialiased bg-slate-50 text-slate-800 relative">
+
+    <!-- NEW: Shared Computer Warning Banner -->
+    <div id="logout-reminder" class="hidden bg-yellow-100 border-b border-yellow-200 text-yellow-800 text-xs md:text-sm font-bold text-center py-2.5 px-8 shadow-sm relative z-50">
+        <i class="fa-solid fa-triangle-exclamation mr-1.5 text-yellow-600"></i> 
+        Reminder: If using a shared computer, please <span class="underline">Log Out</span> when finished to secure your department's data!
+        <button onclick="document.getElementById('logout-reminder').style.display='none'" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-yellow-600 hover:text-yellow-800 p-1"><i class="fa-solid fa-xmark"></i></button>
+    </div>
 
     <!-- Global Toasts -->
     <div id="toast-container" class="fixed bottom-20 md:top-4 md:bottom-auto right-4 left-4 md:left-auto z-[9999] flex flex-col gap-2 no-print pointer-events-none"></div>
@@ -145,7 +162,6 @@
             </div>
             
             <form id="public-signin-form" class="space-y-5">
-                <!-- Employee ID Auto-Fill Trigger -->
                 <div>
                     <label class="block text-sm font-black text-blue-600 uppercase tracking-widest mb-1.5"><i class="fa-solid fa-id-badge mr-1"></i> Employee ID</label>
                     <input type="text" id="public-emp-id" required placeholder="Type ID to auto-fill..." class="w-full px-4 py-3 bg-blue-50 border border-blue-200 rounded-xl outline-none focus:border-blue-500 text-slate-900 font-bold placeholder-blue-300 transition-all">
@@ -210,7 +226,6 @@
                     </div>
                     <div class="flex items-center space-x-3 md:space-x-4">
                         
-                        <!-- Working Notification Dropdown -->
                         <div class="relative cursor-pointer p-2 rounded-full transition hover:bg-slate-100" id="notif-bell-container">
                             <i class="fa-solid fa-bell text-slate-500 text-lg"></i>
                             <span id="notif-badge" class="absolute top-0 right-0 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full hidden shadow-sm border border-white">0</span>
@@ -232,8 +247,7 @@
                 </div>
             </div>
         </nav>
-
-        <div class="flex-grow flex overflow-hidden max-w-[1600px] w-full mx-auto relative no-print">
+<div class="flex-grow flex overflow-hidden max-w-[1600px] w-full mx-auto relative no-print">
             <!-- DESKTOP SIDEBAR -->
             <div class="w-64 bg-white border-r border-slate-200 flex-shrink-0 flex flex-col py-6 z-10 hidden md:flex overflow-y-auto">
                 <div class="px-6 mb-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Workspace Menu</div>
@@ -269,8 +283,9 @@
                         </div>
                         <div class="flex flex-col md:flex-row gap-3 w-full md:w-auto items-center">
                             
-                            <!-- ADMIN ONLY: EMAIL TOGGLE -->
+                            <!-- ADMIN ONLY: SETTINGS & SIG UPLOAD -->
                             <div id="admin-settings" class="hidden bg-white border border-slate-200 rounded-lg px-4 py-2 shadow-sm flex items-center gap-3">
+                                <button onclick="openAdminSigModal()" class="text-xs font-bold text-slate-700 hover:text-blue-600 transition flex items-center gap-1.5 border-r border-slate-200 pr-3 mr-1"><i class="fa-solid fa-file-signature text-blue-500"></i> Upload E-Sig</button>
                                 <i class="fa-solid fa-envelope text-blue-500"></i>
                                 <span class="text-xs font-bold text-slate-700 whitespace-nowrap">Email Alerts</span>
                                 <label class="relative inline-flex items-center cursor-pointer">
@@ -372,7 +387,6 @@
                             <div id="field-position"><label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Position / Job Title</label><input type="text" id="req-position" class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900"></div>
                             <div><label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Venue / Modality</label><input type="text" id="req-venue" required class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900"></div>
                             
-                            <!-- FIXED: Target Dates is now Start Date -->
                             <div class="grid grid-cols-3 gap-3 md:col-span-2">
                                 <div><label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Start Date</label><input type="date" id="req-dates" required class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900"></div>
                                 <div><label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Start Time</label><input type="time" id="req-time" required class="w-full bg-white border border-slate-300 rounded-lg p-3 outline-none focus:border-blue-500 text-slate-900"></div>
@@ -414,14 +428,25 @@
 
                 <!-- SUBVIEW: SCHEDULE CALENDAR -->
                 <div id="subview-calendar" class="subview-section hidden max-w-7xl mx-auto pb-20">
-                    <div class="flex justify-between items-end mb-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
                         <div>
                             <h2 class="text-2xl font-black text-slate-900">Training Schedule</h2>
-                            <p class="text-slate-500 text-sm font-medium mt-1">Monthly view of all approved and liquidated operations.</p>
+                            <p class="text-slate-500 text-sm font-medium mt-1">View all approved operations by month grid or organized folders.</p>
+                        </div>
+                        
+                        <!-- NEW: Custom View Toggle -->
+                        <div class="flex bg-slate-200 p-1 rounded-lg border border-slate-300 w-full md:w-auto">
+                            <button onclick="toggleCalendarView('month')" id="btn-cal-month" class="flex-1 md:flex-none px-6 py-2 text-xs font-bold rounded-md bg-white text-blue-600 shadow-sm transition-all whitespace-nowrap"><i class="fa-solid fa-calendar-days mr-2"></i>Month Grid</button>
+                            <button onclick="toggleCalendarView('folder')" id="btn-cal-folder" class="flex-1 md:flex-none px-6 py-2 text-xs font-bold rounded-md text-slate-500 hover:text-slate-900 transition-all whitespace-nowrap"><i class="fa-solid fa-folder-tree mr-2"></i>Folder List</button>
                         </div>
                     </div>
-                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200">
+                    
+                    <div class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-slate-200 min-h-[400px]">
+                        <!-- Month Grid Container -->
                         <div id="calendar-container" class="text-slate-800"></div>
+                        
+                        <!-- NEW: Interactive Folder Container -->
+                        <div id="calendar-folder-container" class="hidden text-slate-800 space-y-4"></div>
                     </div>
                 </div>
 
@@ -543,7 +568,7 @@
                     </div>
                 </div>
 
-                <!-- SUBVIEW: QR ATTENDANCE STATION (Upgraded for manual refresh & speed) -->
+                <!-- SUBVIEW: QR ATTENDANCE STATION -->
                 <div id="subview-qr-station" class="subview-section hidden absolute inset-0 bg-white z-40 flex flex-col md:flex-row overflow-hidden">
                     <div class="w-full md:w-1/2 p-6 md:p-12 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-slate-200 relative">
                         <button onclick="closeQRStation()" class="absolute top-4 left-4 md:top-6 md:left-6 text-slate-600 hover:text-slate-900 font-bold bg-slate-100 border border-slate-200 px-4 py-2 rounded-lg transition"><i class="fa-solid fa-arrow-left mr-2"></i> <span class="hidden md:inline">Stop Event</span></button>
@@ -556,7 +581,6 @@
                         <div class="flex justify-between items-center mb-6">
                             <h3 class="text-lg md:text-xl font-bold text-slate-900 flex items-center gap-3"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Live Feed</h3>
                             <div class="flex gap-3 items-center">
-                                <!-- Manual Refresh Button -->
                                 <button id="btn-refresh-headcount" onclick="fetchLiveAttendance()" class="bg-white hover:bg-slate-100 text-blue-600 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-bold border border-slate-200 shadow-sm flex items-center transition"><i class="fa-solid fa-arrows-rotate mr-2"></i> Refresh</button>
                                 
                                 <div class="bg-blue-600 px-3 md:px-4 py-2 rounded-lg text-center shadow-md">
@@ -650,7 +674,6 @@
                     <div class="bg-blue-50 p-4 rounded-xl border border-blue-200">
                         <label class="block text-[9px] md:text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1.5">Select Administrator to Sign</label>
                         <div class="flex flex-col sm:flex-row gap-3">
-                            <!-- Admin Dropdown instead of free typing -->
                             <select id="sig-admin-name" class="w-full bg-white border border-slate-300 text-slate-900 rounded-lg p-2.5 text-xs md:text-sm font-bold outline-none focus:border-blue-500 cursor-pointer">
                                 <option value="">Select Name...</option>
                             </select>
@@ -708,6 +731,32 @@
         </div>
     </div>
 
+    <!-- NEW MODAL: ADMIN SIGNATURE UPLOAD -->
+    <div id="modal-admin-sig" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center z-[80] p-4 no-print">
+        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-2xl max-w-md w-full mx-auto border border-slate-200 transform scale-95 transition-transform duration-300 anim-slide-in">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-lg md:text-xl font-black text-slate-900"><i class="fa-solid fa-file-signature text-blue-500 mr-2"></i> Upload Admin E-Sig</h3>
+                <button onclick="closeAdminSigModal()" class="text-slate-400 hover:text-slate-900 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            
+            <form id="admin-sig-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Administrator Name</label>
+                    <input type="text" id="upload-sig-name" required placeholder="e.g. Juan Admin" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Secure PIN / Password</label>
+                    <input type="password" id="upload-sig-pass" required placeholder="•••••" class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-3 outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-widest mb-1.5">Signature Image File</label>
+                    <input type="file" id="upload-sig-file" accept="image/*" required class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-lg p-2 text-sm outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                </div>
+                <button type="submit" id="btn-save-admin-sig" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-md mt-4 transition">Save Signature & PIN</button>
+            </form>
+        </div>
+    </div>
+
     <!-- PREVIEW MODAL (Clearance Viewer) -->
     <div id="modal-preview" class="hidden fixed inset-0 bg-slate-900/90 backdrop-blur-sm flex items-center justify-center z-[100] p-2 md:p-4 no-print">
         <div class="relative w-full max-w-5xl h-[90vh] md:h-[85vh] flex flex-col items-center justify-center">
@@ -727,9 +776,8 @@
             </a>
         </div>
     </div>
-
 <script>
-        // ⚠️ IMPORTANT: Replace this with your NEW V.5 Google Apps Script Web App URL
+        // ⚠️ IMPORTANT: Replace this with your NEW V.5.1 Google Apps Script Web App URL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycby5v9_OC3puTm0UC5nruKNgOV7bLxy_tUPzxDSn7gA0LwbNaRU8rWxLCRgHWxXyCPJVvQ/exec'; 
         
         let systemDepts = ["CQI", "Training & Development", "Hospital Admin", "HR", "Admitting", "Emergency Room", "NSO", "Operating Room", "Laboratory", "Pharmacy", "Dietary", "Cashier", "Billing", "Philhealth", "GSD Housekeeping", "GSD Linens", "GSD Room Facilities & Utilities (Maintenance & Elevator)", "GSD Security", "Radiology", "Pathology", "Heart Station", "NICU", "Hemodialysis", "HOMES", "GSD Parking", "IT", "Medical Records"];
@@ -738,12 +786,13 @@
         let currentDeptName = null;
         let currentUserPass = null; 
         
+        // Notice: employeesData is completely removed to secure the data leak
         let requestsData = []; let attendanceData = []; let licensesData = []; let absenteesData = []; 
-        let employeesData = []; let adminNamesList = [];
+        let adminNamesList = [];
         
         let currentFilter = 'active'; 
         let navLevelIndex = 0; let navDept = null; let navType = null; let navTitle = null;
-        let activeQRRequestId = null; let stopwatchInterval = null; let eventStartTime = null;
+        let activeQRRequestId = null;
 
         let currentPage = 1; const ITEMS_PER_PAGE = 30; let currentPaginatedList = [];
         
@@ -765,9 +814,16 @@
             container.appendChild(toast); setTimeout(() => { toast.remove() }, 4000);
         }
 
-        // --- HELPER: Date Cleaner (Strips China Time) ---
+        // Upgraded Date Formatter (Forces clean 12-hour AM/PM format)
         function cleanDateString(dateStr) {
-            return String(dateStr).replace(/\(Standard na Oras sa China\)/gi, '').trim();
+            let cleaned = String(dateStr).replace(/\(Standard na Oras sa China\)/gi, '').trim();
+            try {
+                let d = new Date(cleaned);
+                if (!isNaN(d)) {
+                    return d.toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true });
+                }
+            } catch(e) {}
+            return cleaned;
         }
 
         // --- CUSTOM MODAL PROMPTS ---
@@ -842,7 +898,7 @@
                 document.getElementById('public-title-display').textContent = urlParams.get('title') || 'Official Training'; 
                 document.getElementById('view-login').classList.add('hidden'); 
                 document.getElementById('view-public-signin').classList.remove('hidden'); 
-                initSignaturePad(); fetchPublicData(); 
+                initSignaturePad(); 
             } else {
                 const savedDept = localStorage.getItem('tdmh_dept'); const savedRole = localStorage.getItem('tdmh_role'); const savedPass = localStorage.getItem('tdmh_pass');
                 if (savedDept && savedRole && savedPass) { currentDeptName = savedDept; currentUserRole = savedRole; currentUserPass = savedPass; setupDashboardForUser(); } 
@@ -850,28 +906,31 @@
             }
         }
 
-        async function fetchPublicData() {
-            try {
-                const res = await fetch(GAS_URL + '?action=getData&dept=public');
-                const json = await res.json();
-                if(json.success) employeesData = json.employees;
-            } catch(e) {}
-        }
-
-        // --- EMPLOYEE ID AUTO-FILL (QR SCAN) ---
+        // --- FIX 3: SECURE EMPLOYEE ID AUTO-FILL (No Data Leaks) ---
+        let typingTimer;
         document.getElementById('public-emp-id').addEventListener('input', function(e) {
+            clearTimeout(typingTimer);
             const typedId = e.target.value.trim();
-            const match = employeesData.find(emp => emp.id === typedId);
-            if(match) {
-                document.getElementById('public-name').value = match.name;
-                document.getElementById('public-dept').value = match.dept;
-                document.getElementById('public-position').value = match.position || '';
-                showNotification('Employee Record Found & Auto-filled!', 'success');
-            }
+            if(typedId.length < 3) return; // Wait until they type something substantial
+            
+            typingTimer = setTimeout(async () => {
+                try {
+                    const res = await fetch(GAS_URL + `?action=verifyEmployee&empId=${encodeURIComponent(typedId)}`);
+                    const json = await res.json();
+                    if(json.success && json.match) {
+                        document.getElementById('public-name').value = json.match.name;
+                        document.getElementById('public-dept').value = json.match.dept;
+                        document.getElementById('public-position').value = json.match.position || '';
+                        showNotification('Employee Found & Auto-filled!', 'success');
+                    }
+                } catch(e) {}
+            }, 800); // 800ms debounce prevents spamming the server
         });
 
         function setupDashboardForUser() {
             document.getElementById('user-badge').innerHTML = `<span class="font-black text-blue-600 md:mr-1">${currentDeptName}</span><span class="hidden md:inline"> | ${currentUserRole}</span>`;
+            document.getElementById('logout-reminder').style.display = 'block'; // Show the shared computer warning
+
             if (currentUserRole === 'Admin') { 
                 document.getElementById('req-department-select').classList.remove('hidden'); document.getElementById('req-department-select').value = currentDeptName; 
                 document.getElementById('req-department').classList.add('hidden');
@@ -922,7 +981,7 @@
                 const res = await fetch(GAS_URL + `?action=getData&dept=${encodeURIComponent(currentDeptName)}&pass=${encodeURIComponent(currentUserPass)}`); 
                 const json = await res.json();
                 if(json.success) { 
-                    requestsData = json.requests; attendanceData = json.attendance; licensesData = json.licenses; absenteesData = json.absentees; employeesData = json.employees || []; adminNamesList = json.adminNames || [];
+                    requestsData = json.requests; attendanceData = json.attendance; licensesData = json.licenses; absenteesData = json.absentees; adminNamesList = json.adminNames || [];
                     
                     updateNotifications();
                     renderDashboard(); renderReports(); renderAttendance(); renderLicenses(); renderCalendar();
@@ -975,7 +1034,11 @@
                 navLevel(0); 
             }
         }
-        document.getElementById('search-input').addEventListener('input', () => { if(document.getElementById('search-input').value.length > 0) navLevelIndex = 3; renderDashboard(); });
+
+        // --- FIX 4: SEARCH BAR GLITCH RESOLVED ---
+        document.getElementById('search-input').addEventListener('input', (e) => { 
+            renderDashboard(); // We removed the line that forced navLevelIndex = 3. Now it just checks dynamically.
+        });
 
         window.navLevel = function(targetLevel, dept = null, type = null, title = null) {
             if(currentUserRole !== 'Admin' && targetLevel === 0) targetLevel = 1;
@@ -1052,7 +1115,7 @@
             }
         }
 
-        // --- DASHBOARD CARDS & CLEAN DATES ---
+        // --- DASHBOARD CARDS ---
         function renderPaginatedChunk() {
             const container = document.getElementById('directory-container');
             const startIndex = (currentPage - 1) * ITEMS_PER_PAGE; const endIndex = startIndex + ITEMS_PER_PAGE;
@@ -1114,7 +1177,7 @@
             });
         }
 
-        // --- NEW REQUEST FORM (RESET BUDGET FIX) ---
+        // --- NEW REQUEST FORM ---
         function toggleTrainingType() {
             const val = document.querySelector('input[name="training-type"]:checked').value; const isInternal = val === 'Internal';
             document.getElementById('field-employee-name').classList.toggle('hidden', isInternal); document.getElementById('field-position').classList.toggle('hidden', isInternal); document.getElementById('field-roster-builder').classList.toggle('hidden', !isInternal);
@@ -1144,44 +1207,128 @@
                 if (json.success) { 
                     showNotification("Request submitted successfully!", "success"); 
                     document.getElementById('request-form').reset(); 
-                    document.getElementById('total-amount').textContent = "0.00"; // FIX: Reset budget text
+                    document.getElementById('total-amount').textContent = "0.00"; 
                     fetchDashboardData(); 
                     switchTab('dashboard'); 
                 } else { throw new Error(json.message); } 
             } catch(e) { showNotification("Submission failed.", "error"); hideGlobalLoader(); } 
         });
 
-        // --- FULLCALENDAR DATE PARSER FIX ---
+        // --- FIX 1: INTERACTIVE CALENDAR FOLDER SYSTEM ---
         let calendarInstance = null;
+        
+        window.toggleCalendarView = function(mode) {
+            const btnMonth = document.getElementById('btn-cal-month');
+            const btnFolder = document.getElementById('btn-cal-folder');
+            const viewMonth = document.getElementById('calendar-container');
+            const viewFolder = document.getElementById('calendar-folder-container');
+
+            if(mode === 'month') {
+                btnMonth.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.remove('text-slate-500', 'hover:text-slate-900');
+                btnFolder.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnFolder.classList.add('text-slate-500', 'hover:text-slate-900');
+                viewFolder.classList.add('hidden'); viewMonth.classList.remove('hidden');
+                if(calendarInstance) calendarInstance.render();
+            } else {
+                btnFolder.classList.add('bg-white', 'text-blue-600', 'shadow-sm'); btnFolder.classList.remove('text-slate-500', 'hover:text-slate-900');
+                btnMonth.classList.remove('bg-white', 'text-blue-600', 'shadow-sm'); btnMonth.classList.add('text-slate-500', 'hover:text-slate-900');
+                viewMonth.classList.add('hidden'); viewFolder.classList.remove('hidden');
+                renderCalendarFolderView();
+            }
+        }
+
         window.renderCalendar = function() {
             const calEl = document.getElementById('calendar-container'); if (!calEl) return;
-            let calendarEvents = requestsData.filter(r => (r.status === 'Approved' || r.status === 'Liquidated') && !String(r.id).startsWith('LEGACY')).map(r => {
-                
+            
+            let validReqs = requestsData.filter(r => (r.status === 'Approved' || r.status === 'Liquidated') && !String(r.id).startsWith('LEGACY'));
+            let calendarEvents = validReqs.map(r => {
                 let startStr = null; let endStr = null;
                 try {
-                    let cleanDateStr = cleanDateString(r.dates);
-                    let eventStart = new Date(cleanDateStr);
-                    if (!isNaN(eventStart)) {
-                        startStr = eventStart.toISOString();
+                    let d = new Date(cleanDateString(r.dates));
+                    if (!isNaN(d)) {
+                        startStr = d.toISOString();
                         if (parseInt(r.totalDays) > 1) {
-                            let eventEnd = new Date(eventStart);
-                            eventEnd.setDate(eventEnd.getDate() + parseInt(r.totalDays));
-                            endStr = eventEnd.toISOString();
+                            let eventEnd = new Date(d); eventEnd.setDate(eventEnd.getDate() + parseInt(r.totalDays)); endStr = eventEnd.toISOString();
                         }
                     }
                 } catch(e) {}
-
-                return { id: r.id, title: r.title, start: startStr, end: endStr, allDay: false, backgroundColor: r.type === 'Internal' ? '#4f46e5' : '#2563eb', borderColor: 'transparent' };
+                let classN = r.type === 'Internal' ? 'internal-event' : r.type === 'Masteral' ? 'masteral-event' : 'external-event';
+                // We added "display: 'list-item'" back in so the calendar knows to draw the colored dots!
+                return { id: r.id, title: `${r.title} (${r.department})`, start: startStr, end: endStr, display: 'list-item', classNames: [classN] };
             });
             
             if (!calendarInstance) {
                 calendarInstance = new FullCalendar.Calendar(calEl, { 
                     initialView: 'dayGridMonth', contentHeight: 'auto', events: calendarEvents, 
-                    headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth,listMonth' }, 
+                    // Notice: We removed FullCalendar's native buttons because we built our own toggle
+                    headerToolbar: { left: 'prev,next today', center: 'title', right: '' }, 
                     eventClick: function(info) { openDetailsModal(info.event.id); } 
                 });
                 calendarInstance.render();
             } else { calendarInstance.removeAllEvents(); calendarInstance.addEventSource(calendarEvents); }
+        }
+
+        window.renderCalendarFolderView = function() {
+            const container = document.getElementById('calendar-folder-container');
+            container.innerHTML = '';
+            let validReqs = requestsData.filter(r => (r.status === 'Approved' || r.status === 'Liquidated') && !String(r.id).startsWith('LEGACY'));
+            
+            if(validReqs.length === 0) {
+                container.innerHTML = '<div class="text-center py-10 text-slate-500 font-medium">No scheduled trainings found.</div>'; return;
+            }
+
+            // Group by Date
+            let groupedByDate = {};
+            validReqs.forEach(req => {
+                let dateKey = 'Unknown Date';
+                try {
+                    let d = new Date(cleanDateString(req.dates));
+                    if(!isNaN(d)) dateKey = d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' });
+                } catch(e) {}
+                if(!groupedByDate[dateKey]) groupedByDate[dateKey] = [];
+                groupedByDate[dateKey].push(req);
+            });
+
+            // Build Date Folders
+            Object.keys(groupedByDate).sort((a,b) => new Date(a) - new Date(b)).forEach(dateString => {
+                let dayEvents = groupedByDate[dateString];
+                
+                // Group by Department within this Date
+                let groupedByDept = {};
+                dayEvents.forEach(req => {
+                    if(!groupedByDept[req.department]) groupedByDept[req.department] = [];
+                    groupedByDept[req.department].push(req);
+                });
+
+                let deptHtml = '';
+                Object.keys(groupedByDept).sort().forEach(dept => {
+                    let reqLinks = groupedByDept[dept].map(req => {
+                        // Matching the Green, Blue, and Yellow color coding
+                        let classN = req.type === 'Internal' ? 'text-green-600' : req.type === 'Masteral' ? 'text-blue-600' : 'text-yellow-600';
+                        return `<div onclick="openDetailsModal('${req.id}')" class="ml-10 p-3 bg-white border border-slate-200 rounded-lg mt-2 cursor-pointer hover:border-blue-500 hover:shadow-md transition flex justify-between items-center group">
+                                  <div>
+                                      <p class="font-bold text-slate-900 text-sm">${req.title}</p>
+                                      <p class="text-[10px] font-black uppercase tracking-widest ${classN} mt-0.5">${req.type} | ${req.totalDays} Day(s)</p>
+                                  </div>
+                                  <i class="fa-solid fa-chevron-right text-slate-300 group-hover:text-blue-500 transition"></i>
+                                </div>`;
+                    }).join('');
+
+                    deptHtml += `<div class="mt-3 ml-6 border-l-2 border-slate-200 pl-4">
+                                    <button onclick="this.nextElementSibling.classList.toggle('hidden')" class="flex items-center gap-2 font-bold text-slate-700 hover:text-blue-600 transition w-full text-left">
+                                        <i class="fa-solid fa-hospital-user text-slate-400"></i> ${dept} <span class="text-[10px] text-slate-400 bg-slate-100 px-2 py-0.5 rounded-full ml-auto">${groupedByDept[dept].length}</span>
+                                    </button>
+                                    <div class="hidden mt-2">${reqLinks}</div>
+                                 </div>`;
+                });
+
+                let dateFolder = document.createElement('div');
+                dateFolder.className = "bg-slate-50 border border-slate-200 rounded-xl p-4";
+                dateFolder.innerHTML = `<button onclick="this.nextElementSibling.classList.toggle('hidden')" class="flex items-center gap-3 font-black text-slate-900 text-lg w-full text-left hover:text-blue-600 transition">
+                                            <i class="fa-solid fa-calendar-day text-blue-500"></i> ${dateString}
+                                        </button>
+                                        <div class="hidden">${deptHtml}</div>`;
+                container.appendChild(dateFolder);
+            });
         }
 
         // --- LICENSE, ATTENDANCE & REPORTS ---
@@ -1269,12 +1416,14 @@
             if(!activeQRRequestId) return;
             const btn = document.getElementById('btn-refresh-headcount'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Syncing...';
             try {
-                const res = await fetch(GAS_URL + '?action=getData&dept=public'); const json = await res.json();
+                // Modified backend pull just for live attendance to keep it quick
+                const res = await fetch(GAS_URL + `?action=getData&dept=${encodeURIComponent(currentDeptName)}&pass=${encodeURIComponent(currentUserPass)}`); 
+                const json = await res.json();
                 if(json.success) {
                     const attendees = json.attendance.filter(a => a.reqId === activeQRRequestId);
                     document.getElementById('qr-headcount').textContent = attendees.length;
                     const listContainer = document.getElementById('qr-live-list');
-                    if(attendees.length === 0) listContainer.innerHTML = '<div class="text-slate-500 text-center mt-10 font-medium">Waiting for attendees... Click Refresh to update.</div>';
+                    if(attendees.length === 0) listContainer.innerHTML = '<div class="text-slate-500 text-center mt-10 font-medium text-sm">Waiting for attendees... Click Refresh to update.</div>';
                     else { listContainer.innerHTML = attendees.reverse().map(a => `<div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center anim-slide-in"><div><p class="font-bold text-slate-900 text-sm">${a.name}</p><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${a.dept}</p></div><span class="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-md font-bold"><i class="fa-solid fa-check"></i> Present</span></div>`).join(''); }
                 }
             } catch(e) {} finally { btn.innerHTML = '<i class="fa-solid fa-arrows-rotate mr-2"></i> Refresh'; }
@@ -1362,6 +1511,42 @@
                 } catch(e) { showNotification("Error authenticating.", "error"); hideGlobalLoader(); }
             });
         }
+
+        // --- FIX 5: ADMIN SIGNATURE UPLOAD LOGIC ---
+        window.openAdminSigModal = function() {
+            document.getElementById('admin-sig-form').reset();
+            document.getElementById('modal-admin-sig').classList.remove('hidden');
+            document.body.classList.add('modal-open');
+        }
+        window.closeAdminSigModal = function() {
+            document.getElementById('modal-admin-sig').classList.add('hidden');
+            document.body.classList.remove('modal-open');
+        }
+        document.getElementById('admin-sig-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const file = document.getElementById('upload-sig-file').files[0];
+            if (!file) return showNotification("Please select an image file.", "warning");
+            
+            showGlobalLoader("UPLOADING SIGNATURE...");
+            try {
+                const base64 = await compressImage(file);
+                const payload = {
+                    action: 'uploadAdminSignature',
+                    data: {
+                        name: document.getElementById('upload-sig-name').value,
+                        password: document.getElementById('upload-sig-pass').value,
+                        base64File: base64
+                    }
+                };
+                const res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+                const json = await res.json();
+                if(json.success) {
+                    showNotification("Signature saved! You can now use it to sign documents.", "success");
+                    closeAdminSigModal();
+                    fetchDashboardData();
+                } else { showNotification(json.message, "error"); hideGlobalLoader(); }
+            } catch(err) { showNotification("Upload failed.", "error"); hideGlobalLoader(); }
+        });
 
         // --- RECONCILIATION & MEMO ---
         let reconEditMode = false; let currentAbsentees = [];
