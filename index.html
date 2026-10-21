@@ -1074,8 +1074,16 @@
         // --- LAZY LOADING FETCH ENGINE ---
         async function fetchDashboardData(pageToLoad = 1, append = false) {
             isFetching = true;
-            if(!append) showGlobalLoader("SYNCING SECURE DATABASE...");
-            else document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
+            if(!append) {
+                showGlobalLoader("SYNCING SECURE DATABASE...");
+            } else {
+                const activeTabEl = document.querySelector('.subview-section:not(.hidden)');
+                const activeTabId = activeTabEl ? activeTabEl.id.replace('subview-', '') : '';
+                const allowedTabsForScroll = ['dashboard', 'admin-home', 'directory'];
+                if (allowedTabsForScroll.includes(activeTabId)) {
+                    document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
+                }
+            }
 
             try {
                 const res = await fetch(GAS_URL + `?action=getData&dept=${encodeURIComponent(currentDeptName)}&pass=${encodeURIComponent(currentUserPass)}&page=${pageToLoad}&limit=${ITEMS_PER_PAGE}`); 
@@ -1093,7 +1101,17 @@
                     }
 
                     hasMoreRequests = (pageToLoad * ITEMS_PER_PAGE) < json.totalItems;
-                    document.getElementById('infinite-scroll-trigger').classList.toggle('hidden', !hasMoreRequests);
+                    
+                    // Fix: Check which tab is active before showing the loader, even after data syncs
+                    const activeTabEl = document.querySelector('.subview-section:not(.hidden)');
+                    const activeTabId = activeTabEl ? activeTabEl.id.replace('subview-', '') : '';
+                    const allowedTabsForScroll = ['dashboard', 'admin-home', 'directory'];
+                    
+                    if (allowedTabsForScroll.includes(activeTabId) && hasMoreRequests) {
+                        document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
+                    } else {
+                        document.getElementById('infinite-scroll-trigger').classList.add('hidden');
+                    }
 
                     if (currentUserRole === 'Admin') {
                         renderAdminHome(); renderDirectoryGrid(); 
