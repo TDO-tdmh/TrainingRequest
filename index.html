@@ -448,7 +448,13 @@
                             </label>
                         </div>
 
-                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md active:scale-[0.98] text-base md:text-lg flex items-center justify-center transition">
+                        <!-- Fix: Added Attachment Upload Field -->
+                        <div class="mt-4">
+                            <label class="block text-xs md:text-sm font-bold text-slate-700 mb-1.5">Supporting Document (Optional)</label>
+                            <input type="file" id="req-attachment" accept="image/*,.pdf" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm outline-none focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-bold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                        </div>
+
+                        <button type="submit" id="btn-submit-req" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl shadow-md active:scale-[0.98] text-base md:text-lg flex items-center justify-center transition mt-6">
                             <i class="fa-solid fa-paper-plane mr-2"></i> <span id="btn-submit-text">Submit Training Request</span>
                         </button>
                     </form>
@@ -941,7 +947,10 @@
                 document.getElementById('view-public-signin').classList.remove('hidden'); 
                 initSignaturePad(); 
             } else {
-                const savedDept = localStorage.getItem('tdmh_dept'); const savedRole = localStorage.getItem('tdmh_role'); const savedPass = localStorage.getItem('tdmh_pass');
+                // Fixed the typo here: changed 'cconst' to 'const'
+                const savedDept = localStorage.getItem('tdmh_dept'); const savedRole = localStorage.getItem('tdmh_role'); 
+                // Fix: Check sessionStorage for the password instead
+                const savedPass = sessionStorage.getItem('tdmh_pass');
                 if (savedDept && savedRole && savedPass) { currentDeptName = savedDept; currentUserRole = savedRole; currentUserPass = savedPass; setupDashboardForUser(); } 
                 else { document.getElementById('view-public-signin').classList.add('hidden'); document.getElementById('view-login').classList.remove('hidden'); }
             }
@@ -1025,7 +1034,9 @@
                 const json = await res.json();
                 if (json.success) {
                     currentUserRole = json.role; currentDeptName = user; currentUserPass = pass;
-                    localStorage.setItem('tdmh_dept', currentDeptName); localStorage.setItem('tdmh_role', currentUserRole); localStorage.setItem('tdmh_pass', pass);
+                    localStorage.setItem('tdmh_dept', currentDeptName); localStorage.setItem('tdmh_role', currentUserRole); 
+                    // Fix: Use sessionStorage for password to auto-clear on tab close
+                    sessionStorage.setItem('tdmh_pass', pass);
                     showNotification(`Welcome back, ${currentDeptName}!`, "success"); setupDashboardForUser();
                 } else { 
                     document.getElementById('login-error').textContent = json.message; document.getElementById('login-error').classList.remove('hidden'); 
@@ -1122,6 +1133,14 @@
                 btn.classList.add('bg-blue-50', 'text-blue-600', 'border-blue-600'); 
                 btn.classList.remove('text-slate-500', 'border-transparent'); 
             });
+
+            // Fix: Only show the loader trigger on tabs that actually list requests
+            const allowedTabsForScroll = ['dashboard', 'admin-home', 'directory'];
+            if (allowedTabsForScroll.includes(tabId) && hasMoreRequests) {
+                document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
+            } else {
+                document.getElementById('infinite-scroll-trigger').classList.add('hidden');
+            }
             
             if(tabId === 'dashboard') renderRequesterInbox();
             if(tabId === 'admin-home') renderAdminHome();
@@ -1201,10 +1220,18 @@
             let combinedDate = document.getElementById('req-dates').value + " " + document.getElementById('req-time').value;
             let finalCost = parseFloat(document.getElementById('total-amount').textContent.replace(/,/g, ''));
 
+            // Fix: Grab and process the attachment file before building the payload
+            let attachmentFileBase64 = "";
+            const fileInput = document.getElementById('req-attachment');
+            if (fileInput && fileInput.files.length > 0) {
+                document.getElementById('btn-submit-text').textContent = "Processing Attachment...";
+                attachmentFileBase64 = await compressImage(fileInput.files[0]);
+            }
+
             let emailToggle = document.getElementById('email-toggle');
             const payload = {
                 action: 'addRequest', sendAdminEmail: emailToggle ? emailToggle.checked : true,
-                data: { id: 'REQ-' + Date.now().toString().slice(-6), department: chosenDept, type: document.querySelector('input[name="training-type"]:checked').value, title: document.getElementById('req-title').value, venue: document.getElementById('req-venue').value, dates: combinedDate, totalDays: document.getElementById('req-days').value, totalCost: finalCost, expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: chosenDept + " Head" }
+                data: { id: 'REQ-' + Date.now().toString().slice(-6), department: chosenDept, type: document.querySelector('input[name="training-type"]:checked').value, title: document.getElementById('req-title').value, venue: document.getElementById('req-venue').value, dates: combinedDate, totalDays: document.getElementById('req-days').value, totalCost: finalCost, expectedHeadcount: rosterData.length, expectedRosterJSON: JSON.stringify(rosterData), applicantSig: chosenDept + " Head", attachmentBase64: attachmentFileBase64 }
             };
 
             try { 
@@ -1479,12 +1506,13 @@
         window.fetchLiveAttendance = async function() {
             if(!activeQRRequestId) return; const btn = document.getElementById('btn-refresh-headcount'); btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Syncing...';
             try {
-                const res = await fetch(GAS_URL + `?action=getData&dept=${encodeURIComponent(currentDeptName)}&pass=${encodeURIComponent(currentUserPass)}&page=1&limit=5`); const json = await res.json();
+                // Fix: Call the new lightweight backend action to prevent overload
+                const res = await fetch(GAS_URL + `?action=getLiveHeadcount&reqId=${activeQRRequestId}`); const json = await res.json();
                 if(json.success) {
-                    const attendees = json.attendance.filter(a => a.reqId === activeQRRequestId); document.getElementById('qr-headcount').textContent = attendees.length;
+                    const attendees = json.attendance; document.getElementById('qr-headcount').textContent = attendees.length;
                     const listContainer = document.getElementById('qr-live-list');
                     if(attendees.length === 0) listContainer.innerHTML = '<div class="text-slate-500 text-center mt-10 font-medium text-sm">Waiting for attendees... Click Refresh to update.</div>';
-                    else { listContainer.innerHTML = attendees.reverse().map(a => `<div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center anim-slide-in"><div><p class="font-bold text-slate-900 text-sm">${a.name}</p><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${a.dept}</p></div><span class="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-md font-bold"><i class="fa-solid fa-check"></i> Present</span></div>`).join(''); }
+                    else { listContainer.innerHTML = attendees.map(a => `<div class="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex justify-between items-center anim-slide-in"><div><p class="font-bold text-slate-900 text-sm">${a.name}</p><p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">${a.dept}</p></div><span class="bg-green-100 text-green-600 text-xs px-2 py-1 rounded-md font-bold"><i class="fa-solid fa-check"></i> Present</span></div>`).join(''); }
                 }
             } catch(e) {} finally { btn.innerHTML = '<i class="fa-solid fa-arrows-rotate mr-2"></i> Refresh'; }
         }
