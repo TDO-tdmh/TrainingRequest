@@ -637,11 +637,8 @@
                     </div>
                 </div>
                 
-                <!-- Added invisible trigger block at the bottom of the main content area for Infinite Scroll to hit -->
-                <div id="infinite-scroll-trigger" class="w-full h-10 mt-8 mb-20 hidden flex justify-center items-center">
-                    <div class="loader"></div>
-                    <span class="ml-3 text-sm font-bold text-blue-500 uppercase tracking-widest">Loading Records...</span>
-                </div>
+                <!-- Invisible Trigger for Infinite Scroll -->
+                <div id="infinite-scroll-trigger" class="hidden"></div>
 
             </div> <!-- END MAIN CONTENT -->
         </div>
@@ -1076,14 +1073,8 @@
             isFetching = true;
             if(!append) {
                 showGlobalLoader("SYNCING SECURE DATABASE...");
-            } else {
-                const activeTabEl = document.querySelector('.subview-section:not(.hidden)');
-                const activeTabId = activeTabEl ? activeTabEl.id.replace('subview-', '') : '';
-                const allowedTabsForScroll = ['dashboard', 'admin-home', 'directory'];
-                if (allowedTabsForScroll.includes(activeTabId)) {
-                    document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
-                }
             }
+            // (Removed the logic that unhides the visual scroll trigger)
 
             try {
                 const res = await fetch(GAS_URL + `?action=getData&dept=${encodeURIComponent(currentDeptName)}&pass=${encodeURIComponent(currentUserPass)}&page=${pageToLoad}&limit=${ITEMS_PER_PAGE}`); 
@@ -1101,17 +1092,7 @@
                     }
 
                     hasMoreRequests = (pageToLoad * ITEMS_PER_PAGE) < json.totalItems;
-                    
-                    // Fix: Check which tab is active before showing the loader, even after data syncs
-                    const activeTabEl = document.querySelector('.subview-section:not(.hidden)');
-                    const activeTabId = activeTabEl ? activeTabEl.id.replace('subview-', '') : '';
-                    const allowedTabsForScroll = ['dashboard', 'admin-home', 'directory'];
-                    
-                    if (allowedTabsForScroll.includes(activeTabId) && hasMoreRequests) {
-                        document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
-                    } else {
-                        document.getElementById('infinite-scroll-trigger').classList.add('hidden');
-                    }
+                    // The visual scroll loader has been permanently hidden to run silently in the background
 
                     if (currentUserRole === 'Admin') {
                         renderAdminHome(); renderDirectoryGrid(); 
@@ -1152,13 +1133,7 @@
                 btn.classList.remove('text-slate-500', 'border-transparent'); 
             });
 
-            // Fix: Only show the loader trigger on tabs that actually list requests
-            const allowedTabsForScroll = ['dashboard', 'admin-home', 'directory'];
-            if (allowedTabsForScroll.includes(tabId) && hasMoreRequests) {
-                document.getElementById('infinite-scroll-trigger').classList.remove('hidden');
-            } else {
-                document.getElementById('infinite-scroll-trigger').classList.add('hidden');
-            }
+            // (Removed visual loader logic so it stays 100% hidden in the background)
             
             if(tabId === 'dashboard') renderRequesterInbox();
             if(tabId === 'admin-home') renderAdminHome();
