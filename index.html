@@ -978,7 +978,7 @@
             desktopHtml += `<button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-file-circle-plus w-7 opacity-70"></i> New Request</button>`;
             desktopHtml += `<button data-tab="reports" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-chart-pie w-7 opacity-70"></i> Analytics & Reports</button>`;
             desktopHtml += `<button data-tab="attendance" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-users-viewfinder w-7 opacity-70"></i> Attendance Logs</button>`;
-            desktopHtml += `<button data-tab="licenses" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-id-card-clip w-7 opacity-70"></i> License Monitor</button>`;
+            if (currentUserRole === 'Admin') desktopHtml += `<button data-tab="licenses" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-id-card-clip w-7 opacity-70"></i> License Monitor</button>`;
             desktopNav.innerHTML = desktopHtml;
 
             // Dynamically Inject Mobile Nav
@@ -995,7 +995,7 @@
             if (currentUserRole === 'Admin') mobileHtml += `<button data-tab="new-request" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-plus text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">New</span></button>`;
             mobileHtml += `<button data-tab="reports" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-chart-pie text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Reports</span></button>`;
             mobileHtml += `<button data-tab="attendance" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-users text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Logs</span></button>`;
-            mobileHtml += `<button data-tab="licenses" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-id-card-clip text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Licenses</span></button>`;
+            if (currentUserRole === 'Admin') mobileHtml += `<button data-tab="licenses" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-id-card-clip text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Licenses</span></button>`;
             mobileNav.innerHTML = mobileHtml;
 
             // Re-bind click listeners
@@ -1072,7 +1072,7 @@
         async function fetchDashboardData(pageToLoad = 1, append = false) {
             isFetching = true;
             if(!append) {
-                showGlobalLoader("SYNCING SECURE DATABASE...");
+                showGlobalLoader("LOADING...");
             }
             // (Removed the logic that unhides the visual scroll trigger)
 
