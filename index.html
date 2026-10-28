@@ -1432,7 +1432,8 @@
                     const res = await fetch(GAS_URL, fetchPostParams({ action: 'updateStatus', id: id, status: newStatus })); 
                     const json = await res.json(); 
                     if(json.success) { showNotification(`Request marked as ${newStatus}`, "success"); fetchDashboardData(1); } 
-                } catch(e) { showNotification("Update failed", "error"); hideGlobalLoader(); }
+                } catch(e) { showNotification("Update failed", "error"); }
+                finally { hideGlobalLoader(); } // FIX: Ensure loader always hides
             });
         }
 
@@ -1791,15 +1792,42 @@
             const attendees = attendanceData.filter(a => a.reqId === id); let rosterHtml = '';
             if (attendees.length > 0) { rosterHtml = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px;"><thead><tr style="background-color: #f1f5f9;"><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Name</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Dept</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Signature Link</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Timestamp</th></tr></thead><tbody>${attendees.map(a => `<tr><td style="border: 1px solid #cbd5e1; padding: 8px;"><b>${a.name}</b></td><td style="border: 1px solid #cbd5e1; padding: 8px;">${a.dept}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${a.sig.startsWith('http') ? `<a href="${a.sig}">View Signature File</a>` : 'Signed'}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${new Date(a.timestamp || Date.now()).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`; } 
             else { try { let rObj = JSON.parse(req.expectedRoster); rosterHtml = `<p><b>Approved Trainee:</b> ${rObj[0].name} (${rObj[0].position})</p>`; } catch(e) {} }
+            
             let cleanDate = req.dates; try { cleanDate = cleanDateString(req.dates); } catch(e) {}
+            
+            // NEW: Display RSA and Admin Remarks on the Dossier
+            let rsaText = (req.rsaDuration === 'Yes' || req.rsaDuration > 0) && req.rsaEndDate ? `<p style="margin: 10px 0 0 0; font-size: 10px; color: #d97706; font-weight: bold; text-transform: uppercase;">🔒 RSA Lock-in: ${req.rsaEndDate}</p>` : '';
+            let remarksText = req.adminRemarks ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;"><p style="margin: 0; font-size: 11px; color: #333;"><b>Admin Remarks:</b> <i>"${req.adminRemarks}"</i></p></div>` : '';
+
             document.getElementById('print-dossier-content').innerHTML = `
                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 15px;"><div><p style="margin: 0; font-size: 12px; color: #64748b; font-weight: bold;">REQUEST ID</p><h2 style="margin: 0; font-size: 20px;">${req.id}</h2></div><div style="text-align: right;"><p style="margin: 0; font-size: 12px; color: #64748b; font-weight: bold;">DEPARTMENT</p><h2 style="margin: 0; font-size: 20px;">${req.department}</h2></div></div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;"><div><p><b>Training Type:</b> ${req.type}</p><p><b>Title:</b> ${req.title}</p><p><b>Venue:</b> ${req.venue}</p><p><b>Dates/Time:</b> ${cleanDate}</p></div><div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;"><h4 style="margin: 0 0 10px 0;">Budget Authorization</h4><p style="font-size: 24px; font-weight: 900; margin: 0; color: #2563eb;">₱${parseFloat(req.totalCost).toLocaleString('en-US', {minimumFractionDigits: 2})}</p><p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;">STATUS: ${req.status.toUpperCase()}</p></div></div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div><p><b>Training Type:</b> ${req.type}</p><p><b>Title:</b> ${req.title}</p><p><b>Venue:</b> ${req.venue}</p><p><b>Dates/Time:</b> ${cleanDate}</p></div>
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 8px;">
+                        <h4 style="margin: 0 0 10px 0;">Budget Authorization</h4>
+                        <p style="font-size: 24px; font-weight: 900; margin: 0; color: #2563eb;">₱${parseFloat(req.totalCost).toLocaleString('en-US', {minimumFractionDigits: 2})}</p>
+                        <p style="margin: 5px 0 0 0; font-size: 12px; color: #64748b; font-weight: bold;">STATUS: ${req.status.toUpperCase()}</p>
+                        ${rsaText}
+                        ${remarksText}
+                    </div>
+                </div>
                 <div><h3 style="border-bottom: 2px solid #000; padding-bottom: 5px;">ATTENDANCE RECORD</h3>${rosterHtml}</div>`;
+            
             document.getElementById('print-date-stamp').textContent = new Date().toLocaleString(); 
-            document.getElementById('print-admin-name').innerHTML = (req.adminAttachmentUrl && req.adminAttachmentUrl.startsWith('http') ? `<img src="${req.adminAttachmentUrl}" style="height: 60px; display: block; margin: 0 auto -10px auto;">` : '') + (req.signatures ? req.signatures.appName : '');
+            
+            // NEW: Generate Google Drive Thumbnail API link so Chrome allows the image to render
+            let sigImgHtml = '';
+            if (req.adminAttachmentUrl && req.adminAttachmentUrl.startsWith('http')) {
+                let fileIdMatch = req.adminAttachmentUrl.match(/id=([a-zA-Z0-9_-]+)/);
+                if (fileIdMatch) {
+                    sigImgHtml = `<img src="https://drive.google.com/thumbnail?id=${fileIdMatch[1]}&sz=w800" style="height: 60px; display: block; margin: 0 auto -10px auto;">`;
+                }
+            }
+            
+            document.getElementById('print-admin-name').innerHTML = sigImgHtml + (req.signatures ? req.signatures.appName : '');
+            
             const printContainer = document.getElementById('print-dossier-container'); printContainer.classList.add('print-mode'); 
-            setTimeout(() => { window.print(); printContainer.classList.remove('print-mode'); }, 100);
+            setTimeout(() => { window.print(); printContainer.classList.remove('print-mode'); }, 300); // Slight delay to ensure image loads before print box opens
         }
 
         window.setRSA = function(months) {
