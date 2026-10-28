@@ -637,6 +637,28 @@
                     </div>
                 </div>
                 
+<!-- SUBVIEW: CERTIFICATE VAULT (PHASE 1) -->
+                <div id="subview-certificate-vault" class="subview-section hidden max-w-7xl mx-auto pb-20">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-slate-900">Certificate Vault</h2>
+                            <p class="text-slate-500 text-sm font-medium mt-1">Official repository for all generated and uploaded training certificates.</p>
+                        </div>
+                        <div class="flex gap-2 overflow-x-auto w-full md:w-auto pb-2 md:pb-0">
+                            <button onclick="filterVault('All')" id="btn-vault-all" class="px-4 py-1.5 text-xs font-bold rounded-full bg-slate-800 text-white shadow-sm whitespace-nowrap">All</button>
+                            <button onclick="filterVault('Internal')" id="btn-vault-internal" class="px-4 py-1.5 text-xs font-bold rounded-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Internal</button>
+                            <button onclick="filterVault('External')" id="btn-vault-external" class="px-4 py-1.5 text-xs font-bold rounded-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 whitespace-nowrap">External</button>
+                            <button onclick="filterVault('Masteral')" id="btn-vault-masteral" class="px-4 py-1.5 text-xs font-bold rounded-full bg-white border border-slate-300 text-slate-600 hover:bg-slate-100 whitespace-nowrap">Masteral</button>
+                        </div>
+                    </div>
+                    
+                    <div id="vault-container" class="bg-white border border-slate-200 rounded-xl shadow-sm p-10 text-center flex flex-col items-center justify-center min-h-[300px]">
+                        <i class="fa-solid fa-vault text-5xl text-slate-200 mb-4"></i>
+                        <h3 class="text-lg font-black text-slate-400">Vault Infrastructure Pending</h3>
+                        <p class="text-sm font-medium text-slate-400 mt-1 max-w-md">The certificate storage engine is currently being built. Drive indexing will appear here.</p>
+                    </div>
+                </div>
+
                 <!-- Invisible Trigger for Infinite Scroll -->
                 <div id="infinite-scroll-trigger" class="hidden"></div>
 
@@ -736,6 +758,8 @@
             <div class="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-5 border-t border-slate-200 flex-shrink-0 mt-4">
                 <button onclick="closeDetailsModal()" class="w-full sm:w-auto bg-slate-200 text-slate-800 font-bold px-5 py-2.5 rounded-lg hover:bg-slate-300 shadow-sm text-sm transition">Close</button>
                 <button id="btn-upload-clearance" class="hidden w-full sm:w-auto bg-green-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-green-700 shadow-md text-sm transition">Upload & Liquidate</button>
+                <!-- NEW: Generate Certificates Button for Admins -->
+                <button id="btn-generate-certs" class="hidden w-full sm:w-auto bg-purple-600 text-white font-bold px-6 py-2.5 rounded-lg hover:bg-purple-700 shadow-md text-sm transition"><i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> Generate Certificates</button>
             </div>
         </div>
     </div>
@@ -976,9 +1000,16 @@
             }
             desktopHtml += `<button data-tab="dashboard" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold ${currentUserRole === 'Admin' ? 'text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-transparent' : 'bg-blue-50 text-blue-600 border-blue-600'} group transition border-r-4"><i class="fa-solid fa-inbox w-7 opacity-80"></i> My Requests</button>`;
             desktopHtml += `<button data-tab="new-request" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-file-circle-plus w-7 opacity-70"></i> New Request</button>`;
-            desktopHtml += `<button data-tab="reports" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-chart-pie w-7 opacity-70"></i> Analytics & Reports</button>`;
-            desktopHtml += `<button data-tab="attendance" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-users-viewfinder w-7 opacity-70"></i> Attendance Logs</button>`;
-            if (currentUserRole === 'Admin') desktopHtml += `<button data-tab="licenses" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-id-card-clip w-7 opacity-70"></i> License Monitor</button>`;
+            
+            // NEW: Certificate Vault visible to all users
+            desktopHtml += `<button data-tab="certificate-vault" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-award w-7 opacity-70"></i> Certificate Vault</button>`;
+            
+            // Fix: Placed these tabs inside the Admin conditional block
+            if (currentUserRole === 'Admin') {
+                desktopHtml += `<button data-tab="reports" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-chart-pie w-7 opacity-70"></i> Analytics & Reports</button>`;
+                desktopHtml += `<button data-tab="attendance" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-users-viewfinder w-7 opacity-70"></i> Attendance Logs</button>`;
+                desktopHtml += `<button data-tab="licenses" class="nav-tab flex items-center w-full px-6 py-3.5 text-left font-bold text-slate-500 hover:bg-slate-50 hover:text-slate-900 border-r-4 border-transparent group transition"><i class="fa-solid fa-id-card-clip w-7 opacity-70"></i> License Monitor</button>`;
+            }
             desktopNav.innerHTML = desktopHtml;
 
             // Dynamically Inject Mobile Nav
@@ -992,10 +1023,18 @@
                 mobileHtml += `<button data-tab="dashboard" class="nav-tab flex flex-col items-center p-3 text-blue-600 w-20 flex-shrink-0"><i class="fa-solid fa-inbox text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Inbox</span></button>`;
             }
             mobileHtml += `<button data-tab="${currentUserRole === 'Admin' ? 'dashboard' : 'new-request'}" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid ${currentUserRole === 'Admin' ? 'fa-inbox' : 'fa-plus'} text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">${currentUserRole === 'Admin' ? 'My Reqs' : 'New'}</span></button>`;
-            if (currentUserRole === 'Admin') mobileHtml += `<button data-tab="new-request" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-plus text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">New</span></button>`;
-            mobileHtml += `<button data-tab="reports" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-chart-pie text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Reports</span></button>`;
-            mobileHtml += `<button data-tab="attendance" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-users text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Logs</span></button>`;
-            if (currentUserRole === 'Admin') mobileHtml += `<button data-tab="licenses" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-id-card-clip text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Licenses</span></button>`;
+            
+            // NEW: Certificate Vault mobile button
+            mobileHtml += `<button data-tab="certificate-vault" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-award text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Vault</span></button>`;
+
+            if (currentUserRole === 'Admin') {
+                mobileHtml += `<button data-tab="new-request" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-plus text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">New</span></button>`;
+                
+                // Fix: Placed these tabs inside the Admin conditional block
+                mobileHtml += `<button data-tab="reports" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-chart-pie text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Reports</span></button>`;
+                mobileHtml += `<button data-tab="attendance" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-users text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Logs</span></button>`;
+                mobileHtml += `<button data-tab="licenses" class="nav-tab flex flex-col items-center p-3 text-slate-500 w-20 flex-shrink-0"><i class="fa-solid fa-id-card-clip text-lg mb-1"></i><span class="text-[9px] font-bold uppercase tracking-wider">Licenses</span></button>`;
+            }
             mobileNav.innerHTML = mobileHtml;
 
             // Re-bind click listeners
@@ -1577,6 +1616,7 @@
             if(isLegacy) {
                 document.getElementById('modal-legacy-badge').classList.remove('hidden'); document.getElementById('legacy-warning-section').classList.remove('hidden');
                 document.getElementById('clearance-section').classList.add('hidden'); document.getElementById('rsa-section').classList.add('hidden'); document.getElementById('admin-actions-section').classList.add('hidden'); document.getElementById('attendance-reconciliation-section').classList.add('hidden');
+                document.getElementById('btn-generate-certs').classList.add('hidden');
             } else {
                 document.getElementById('modal-legacy-badge').classList.add('hidden'); document.getElementById('legacy-warning-section').classList.add('hidden');
                 if(req && req.status === 'Approved' && (req.type !== 'Internal' || currentUserRole === 'Admin')) document.getElementById('clearance-section').classList.remove('hidden'); else document.getElementById('clearance-section').classList.add('hidden');
@@ -1584,6 +1624,14 @@
                 if (req && req.type === 'Internal' && (req.status === 'Approved' || req.status === 'Liquidated') && currentUserRole === 'Admin') {
                     document.getElementById('attendance-reconciliation-section').classList.remove('hidden'); renderReconSection(id); document.getElementById('manual-add-dept').innerHTML = document.getElementById('req-department-select').innerHTML;
                 } else { document.getElementById('attendance-reconciliation-section').classList.add('hidden'); }
+                
+                // NEW: Show "Generate Certificates" if it is an Internal training that is completely finished and liquidated
+                if (req && req.type === 'Internal' && req.status === 'Liquidated' && currentUserRole === 'Admin') {
+                    document.getElementById('btn-generate-certs').classList.remove('hidden');
+                    document.getElementById('btn-generate-certs').setAttribute('onclick', `triggerGenerateCertificates('${id}')`);
+                } else {
+                    document.getElementById('btn-generate-certs').classList.add('hidden');
+                }
             }
 
             let cleanDate = req.dates; try { cleanDate = cleanDateString(req.dates); } catch(e) {}
@@ -1827,6 +1875,34 @@
                 else if(record.sig === 'Manually Overridden') sigHtml = `<span class="bg-indigo-100 text-indigo-700 text-[10px] font-bold px-2 py-1 rounded border border-indigo-200">Manual Override</span>`;
                 tbody.insertAdjacentHTML('beforeend', `<tr class="hover:bg-slate-50 transition border-b border-slate-200"><td class="px-5 py-4 text-xs text-slate-600" data-label="Timestamp"><span>${record.reqId.startsWith('LEGACY') ? 'Imported' : new Date(record.timestamp || Date.now()).toLocaleString()}</span></td><td class="px-5 py-4 font-bold text-blue-600 text-xs uppercase" data-label="Event / Req ID"><span>${record.reqId}</span></td><td class="px-5 py-4 font-bold text-slate-900 text-xs" data-label="Attendee Name"><span>${record.name}</span></td><td class="px-5 py-4 text-xs text-slate-600" data-label="Department"><span>${record.dept}</span></td><td class="px-5 py-2 text-center" data-label="Signature"><div>${sigHtml}</div></td></tr>`);
             });
+        }
+// --- CERTIFICATE VAULT PHASE 1 LOGIC ---
+        window.filterVault = function(type) {
+            ['All', 'Internal', 'External', 'Masteral'].forEach(t => {
+                let btn = document.getElementById('btn-vault-' + t.toLowerCase());
+                if(btn) {
+                    if (t === type) { btn.classList.add('bg-slate-800', 'text-white'); btn.classList.remove('bg-white', 'text-slate-600'); } 
+                    else { btn.classList.remove('bg-slate-800', 'text-white'); btn.classList.add('bg-white', 'text-slate-600'); }
+                }
+            });
+            // Vault rendering logic will be connected here in Phase 2
+        }
+
+        window.triggerGenerateCertificates = async function(reqId) {
+            showGlobalLoader("GENERATING CERTIFICATES...");
+            try {
+                const res = await fetch(GAS_URL, fetchPostParams({ action: 'generateCertificates', reqId: reqId }));
+                const json = await res.json();
+                hideGlobalLoader();
+                if (json.success) {
+                    showNotification(json.message, "success");
+                } else {
+                    showNotification(json.message, "error");
+                }
+            } catch (e) {
+                hideGlobalLoader();
+                showNotification("Failed to connect to generator engine.", "error");
+            }
         }
 
         init();
