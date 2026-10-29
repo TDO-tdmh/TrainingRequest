@@ -1815,19 +1815,21 @@
             
             document.getElementById('print-date-stamp').textContent = new Date().toLocaleString(); 
             
-            // NEW: Generate Google Drive Thumbnail API link so Chrome allows the image to render
+            // FIX: Direct Drive embed link and a longer timeout to ensure image loads
             let sigImgHtml = '';
-            if (req.adminAttachmentUrl && req.adminAttachmentUrl.startsWith('http')) {
+            if (req.adminAttachmentUrl && req.adminAttachmentUrl.includes('id=')) {
                 let fileIdMatch = req.adminAttachmentUrl.match(/id=([a-zA-Z0-9_-]+)/);
                 if (fileIdMatch) {
-                    sigImgHtml = `<img src="https://drive.google.com/thumbnail?id=${fileIdMatch[1]}&sz=w800" style="height: 60px; display: block; margin: 0 auto -10px auto;">`;
+                    sigImgHtml = `<img src="https://drive.google.com/uc?id=${fileIdMatch[1]}" style="height: 60px; display: block; margin: 0 auto -10px auto;">`;
                 }
             }
             
             document.getElementById('print-admin-name').innerHTML = sigImgHtml + (req.signatures ? req.signatures.appName : '');
             
             const printContainer = document.getElementById('print-dossier-container'); printContainer.classList.add('print-mode'); 
-            setTimeout(() => { window.print(); printContainer.classList.remove('print-mode'); }, 300); // Slight delay to ensure image loads before print box opens
+            
+            // Give the image a full 1 second (1000ms) to download before freezing the screen for print
+            setTimeout(() => { window.print(); printContainer.classList.remove('print-mode'); }, 1000); 
         }
 
         window.setRSA = function(months) {
