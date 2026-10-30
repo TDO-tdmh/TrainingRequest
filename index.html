@@ -161,7 +161,12 @@
         <div id="print-dossier-content" class="space-y-6"></div>
         <div class="mt-12 pt-8 border-t-2 border-black flex justify-between items-end">
             <div><p class="text-[10px] font-bold text-gray-500 mb-1">DATE PRINTED:</p><p class="font-bold text-sm" id="print-date-stamp"></p></div>
-            <div class="text-center"><p class="text-[10px] font-bold text-gray-500 mb-8">AUTHORIZED APPROVAL STAMP</p><div class="border-b border-black w-56 mb-2"></div><p class="font-bold text-sm" id="print-admin-name"></p><p class="text-[10px] text-gray-500">Electronically Signed via TDMH Portal</p></div>
+            <div class="text-center">
+                <p class="text-[10px] font-bold text-gray-500 mb-2">AUTHORIZED APPROVAL STAMP</p>
+                <div id="print-sig-image" class="min-h-[80px] flex items-end justify-center -mb-5 z-10 relative"></div>
+                <div class="border-b border-black w-56 relative z-0"></div>
+                <p class="font-bold text-sm mt-2" id="print-admin-name"></p>
+            </div>
         </div>
     </div>
 
@@ -951,9 +956,23 @@
             window.location.reload();
         }
 
-        function init() {
+        async function init() {
             document.getElementById('req-date-app').valueAsDate = new Date(); updateTotal(); toggleTrainingType();
+            
+            // Fetch live departments from backend
+            try {
+                const res = await fetch(GAS_URL + '?action=getDepartments');
+                const json = await res.json();
+                if (json.success && json.departments.length > 0) {
+                    systemDepts = json.departments; 
+                }
+            } catch (e) {
+                console.warn("Failed to fetch departments, using default list.");
+            }
+
             const select = document.getElementById('req-department-select'); const loginSelect = document.getElementById('login-dept'); const publicSelect = document.getElementById('public-dept');
+            
+            select.innerHTML = ''; loginSelect.innerHTML = ''; publicSelect.innerHTML = '';
             systemDepts.forEach(d => { select.innerHTML += `<option value="${d}">${d}</option>`; loginSelect.innerHTML += `<option value="${d}">${d}</option>`; publicSelect.innerHTML += `<option value="${d}">${d}</option>`; });
             
             if (localStorage.getItem('tdmh_email_alert') === 'false') {
@@ -1256,8 +1275,13 @@
             let attachmentFileBase64 = "";
             const fileInput = document.getElementById('req-attachment');
             if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                if (file.size > 5 * 1024 * 1024) { 
+                    hideGlobalLoader();
+                    return showNotification("File is too large. Please keep attachments under 5MB.", "error");
+                }
                 document.getElementById('btn-submit-text').textContent = "Processing Attachment...";
-                attachmentFileBase64 = await compressImage(fileInput.files[0]);
+                attachmentFileBase64 = await compressImage(file);
             }
 
             let emailToggle = document.getElementById('email-toggle');
@@ -1416,6 +1440,7 @@
                 if(req.type === 'Internal' && (currentUserRole !== 'Admin' || currentDeptName === req.department)) {
                     actionHtml += `<button onclick="openQRStation('${req.id}', '${req.title.replace(/'/g, "\\'")}', ${req.qrActive})" class="flex-1 text-[11px] bg-indigo-600 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-indigo-700 transition" title="Manage QR Event"><i class="fa-solid fa-qrcode"></i> QR</button>`;
                 }
+                actionHtml += `<button onclick="openPreviewModal('${req.id}')" class="flex-1 flex items-center justify-center gap-1.5 text-[11px] bg-white border border-blue-600 text-blue-600 font-bold py-2 rounded-lg shadow-sm hover:bg-blue-50 transition"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" /><path stroke-linecap="round" stroke-linejoin="round" d="M15 14a3 3 0 116 0 3 3 0 01-6 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M17.1 16.5l-1.1 3.5 2-1.5 2 1.5-1.1-3.5" fill="currentColor"/></svg> Preview</button>`;
                 actionHtml += `<button onclick="printDossier('${req.id}')" class="flex-1 text-[11px] bg-slate-100 text-slate-700 font-bold py-2 rounded-lg shadow-sm hover:bg-slate-200 transition"><i class="fa-solid fa-print"></i> Print</button>`;
             }
             actionHtml += `<button onclick="openDetailsModal('${req.id}')" class="flex-1 text-[11px] bg-slate-800 text-white font-bold py-2 rounded-lg shadow-sm hover:bg-slate-700 transition"><i class="fa-solid fa-folder-open mr-1"></i> Open</button></div>`;
@@ -1517,7 +1542,7 @@
                 indicator.textContent = 'Session is LIVE and accepting scans.'; indicator.classList.replace('bg-slate-100', 'bg-green-100'); indicator.classList.replace('text-slate-500', 'text-green-700');
                 overlay.classList.add('hidden'); container.classList.remove('opacity-20');
                 toggleBtn.innerHTML = '<i class="fa-solid fa-stop mr-2"></i> Stop Attendance'; toggleBtn.classList.replace('bg-green-600', 'bg-red-600'); toggleBtn.classList.replace('hover:bg-green-700', 'hover:bg-red-700');
-                qrCodeInstance = new QRCode(container, { text: window.location.href.split('?')[0] + `?reqId=${activeQRRequestId}&title=${encodeURIComponent(document.getElementById('qr-title-display-station').textContent)}`, width: 250, height: 250, colorDark : "#2563eb", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
+                qrCodeInstance = new QRCode(container, { text: GAS_URL + `?reqId=${activeQRRequestId}&title=${encodeURIComponent(document.getElementById('qr-title-display-station').textContent)}`, width: 250, height: 250, colorDark : "#2563eb", colorLight : "#ffffff", correctLevel : QRCode.CorrectLevel.H });
             } else {
                 indicator.textContent = 'Session is CLOSED.'; indicator.classList.replace('bg-green-100', 'bg-slate-100'); indicator.classList.replace('text-green-700', 'text-slate-500');
                 overlay.classList.remove('hidden'); container.classList.add('opacity-20');
@@ -1587,7 +1612,8 @@
             e.preventDefault(); if (!hasSigned) return showNotification("Please provide your digital signature.", "error");
             const btn = document.getElementById('btn-public-submit'); btn.innerHTML = '<div class="loader mx-auto border-t-white"></div>'; btn.disabled = true;
             try {
-                const payload = { action: 'addAttendance', data: { reqId: new URLSearchParams(window.location.search).get('reqId'), empId: document.getElementById('public-emp-id').value, name: document.getElementById('public-name').value, dept: document.getElementById('public-dept').value, position: document.getElementById('public-position').value, signature: canvas.toDataURL('image/jpeg', 0.5) } };
+                // Fix: Changed 'image/jpeg' to 'image/png' to prevent black-background signatures
+                const payload = { action: 'addAttendance', data: { reqId: new URLSearchParams(window.location.search).get('reqId'), empId: document.getElementById('public-emp-id').value, name: document.getElementById('public-name').value, dept: document.getElementById('public-dept').value, position: document.getElementById('public-position').value, signature: canvas.toDataURL('image/png') } };
                 const res = await fetch(GAS_URL, fetchPostParams(payload)); const json = await res.json();
                 if(json.status === 'duplicate') { showNotification(json.message, "error"); } else if(json.status === 'closed') { showNotification(json.message, "error"); }
                 else { document.getElementById('public-signin-form').classList.add('hidden'); document.getElementById('public-success').classList.remove('hidden'); }
@@ -1750,8 +1776,12 @@
         let compressedFileBase64 = null;
         document.getElementById('clearance-input').addEventListener('change', async function(e) {
             if(e.target.files.length > 0) {
+                const file = e.target.files[0];
+                if (file.size > 5 * 1024 * 1024) { 
+                    return showNotification("File is too large. Please keep clearance documents under 5MB.", "error"); 
+                }
                 document.getElementById('clearance-label').innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Processing...`; document.getElementById('clearance-label').classList.add('pointer-events-none', 'opacity-70');
-                compressedFileBase64 = await compressImage(e.target.files[0]);
+                compressedFileBase64 = await compressImage(file);
                 document.getElementById('clearance-label').innerHTML = `<i class="fa-solid fa-check"></i> File Ready`; document.getElementById('clearance-label').classList.remove('pointer-events-none', 'opacity-70'); document.getElementById('clearance-label').classList.replace('bg-green-600', 'bg-slate-700'); document.getElementById('btn-upload-clearance').classList.remove('hidden');
             }
         });
@@ -1790,12 +1820,19 @@
         window.printDossier = function(id) {
             const req = requestsData.find(r => r.id === id); if (!req) return;
             const attendees = attendanceData.filter(a => a.reqId === id); let rosterHtml = '';
-            if (attendees.length > 0) { rosterHtml = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px;"><thead><tr style="background-color: #f1f5f9;"><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Name</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Dept</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Signature Link</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Timestamp</th></tr></thead><tbody>${attendees.map(a => `<tr><td style="border: 1px solid #cbd5e1; padding: 8px;"><b>${a.name}</b></td><td style="border: 1px solid #cbd5e1; padding: 8px;">${a.dept}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${a.sig.startsWith('http') ? `<a href="${a.sig}">View Signature File</a>` : 'Signed'}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${new Date(a.timestamp || Date.now()).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`; } 
-            else { try { let rObj = JSON.parse(req.expectedRoster); rosterHtml = `<p><b>Approved Trainee:</b> ${rObj[0].name} (${rObj[0].position})</p>`; } catch(e) {} }
+            
+            if (attendees.length > 0) { 
+                rosterHtml = `<table style="width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px;"><thead><tr style="background-color: #f1f5f9;"><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Name</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: left;">Dept</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Signature Link</th><th style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">Timestamp</th></tr></thead><tbody>${attendees.map(a => `<tr><td style="border: 1px solid #cbd5e1; padding: 8px;"><b>${a.name}</b></td><td style="border: 1px solid #cbd5e1; padding: 8px;">${a.dept}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${a.sig.startsWith('http') ? `<a href="${a.sig}">View Signature File</a>` : 'Signed'}</td><td style="border: 1px solid #cbd5e1; padding: 8px; text-align: center;">${new Date(a.timestamp || Date.now()).toLocaleDateString()}</td></tr>`).join('')}</tbody></table>`; 
+            } else { 
+                try { 
+                    let rObj = JSON.parse(req.expectedRoster); 
+                    let listItems = rObj.map(r => `<li style="margin-bottom: 4px;"><b>${r.name}</b>${r.position && r.position !== 'N/A' ? ` <span style="color:#64748b;">(${r.position})</span>` : ''}</li>`).join('');
+                    rosterHtml = `<ol style="font-size: 12px; margin-top: 10px; padding-left: 24px; line-height: 1.5; list-style-type: decimal;">${listItems}</ol>`; 
+                } catch(e) {} 
+            }
             
             let cleanDate = req.dates; try { cleanDate = cleanDateString(req.dates); } catch(e) {}
             
-            // NEW: Display RSA and Admin Remarks on the Dossier
             let rsaText = (req.rsaDuration === 'Yes' || req.rsaDuration > 0) && req.rsaEndDate ? `<p style="margin: 10px 0 0 0; font-size: 10px; color: #d97706; font-weight: bold; text-transform: uppercase;">🔒 RSA Lock-in: ${req.rsaEndDate}</p>` : '';
             let remarksText = req.adminRemarks ? `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1;"><p style="margin: 0; font-size: 11px; color: #333;"><b>Admin Remarks:</b> <i>"${req.adminRemarks}"</i></p></div>` : '';
 
@@ -1811,27 +1848,62 @@
                         ${remarksText}
                     </div>
                 </div>
-                <div><h3 style="border-bottom: 2px solid #000; padding-bottom: 5px;">ATTENDANCE RECORD</h3>${rosterHtml}</div>`;
+                <div><h3 style="border-bottom: 2px solid #000; padding-bottom: 5px; font-size: 14px;">ATTENDANCE RECORD (Approved Trainees)</h3>${rosterHtml}</div>
+            `;
             
-            document.getElementById('print-date-stamp').textContent = new Date().toLocaleString(); 
-            
-            // FIX: Direct Drive embed link and a longer timeout to ensure image loads
             let sigImgHtml = '';
             if (req.adminAttachmentUrl && req.adminAttachmentUrl.includes('id=')) {
                 let fileIdMatch = req.adminAttachmentUrl.match(/id=([a-zA-Z0-9_-]+)/);
                 if (fileIdMatch) {
-                    sigImgHtml = `<img src="https://drive.google.com/uc?id=${fileIdMatch[1]}" style="height: 60px; display: block; margin: 0 auto -10px auto;">`;
+                    let imgUrl = `https://lh3.googleusercontent.com/d/${fileIdMatch[1]}`;
+                    // Restored translation but strictly controlled the bottom margin
+                    sigImgHtml = `<img src="${imgUrl}" style="height: 100px; object-fit: contain; mix-blend-mode: multiply; transform: translateY(12px);" crossorigin="anonymous">`;
                 }
             }
             
-            document.getElementById('print-admin-name').innerHTML = sigImgHtml + (req.signatures ? req.signatures.appName : '');
+            document.getElementById('print-date-stamp').textContent = new Date().toLocaleString(); 
+            document.getElementById('print-sig-image').innerHTML = sigImgHtml;
             
-            const printContainer = document.getElementById('print-dossier-container'); printContainer.classList.add('print-mode'); 
+            // Wrapped the text block in a relative container with margin-top to clear the translated image
+            document.getElementById('print-admin-name').innerHTML = `<div style="position: relative; z-index: 20; margin-top: 15px;"><p style="font-weight: bold; font-size: 14px; margin: 0;">${req.signatures ? req.signatures.appName : ''}</p><p style="font-size: 10px; color: #64748b; margin: 2px 0 0 0;">Electronically Signed via TDO Portal</p></div>`;
             
-            // Give the image a full 1 second (1000ms) to download before freezing the screen for print
-            setTimeout(() => { window.print(); printContainer.classList.remove('print-mode'); }, 1000); 
+            const printContainer = document.getElementById('print-dossier-container'); 
+            printContainer.classList.add('print-mode'); 
+            
+            setTimeout(() => { 
+                window.print(); 
+                printContainer.classList.remove('print-mode'); 
+            }, 1500); 
         }
 
+
+window.currentPreviewId = null;
+
+window.openPreviewModal = function(id) {
+    window.currentPreviewId = id;
+    const originalPrint = window.print;
+    
+    window.print = function() {
+        const printContent = document.getElementById('print-dossier-container').innerHTML;
+        document.getElementById('preview-dossier-content').innerHTML = printContent;
+        document.getElementById('print-dossier-container').classList.remove('print-mode');
+        window.print = originalPrint; 
+    };
+    
+    document.getElementById('preview-dossier-content').innerHTML = '<div class="text-center mt-40"><p class="font-bold text-xl text-gray-600">Generating Dossier...</p><p class="text-sm text-gray-400 mt-2">Fetching signatures and rendering A4 layout.</p></div>';
+    document.getElementById('preview-dossier-modal').classList.remove('hidden');
+    
+    printDossier(id);
+}
+
+window.closePreviewModal = function() {
+    document.getElementById('preview-dossier-modal').classList.add('hidden');
+    document.getElementById('preview-dossier-content').innerHTML = '';
+}
+
+window.printFromPreview = function() {
+    printDossier(window.currentPreviewId);
+}
         window.setRSA = function(months) {
             if(months === 0) { document.getElementById('rsa-end-date').value = ''; return; }
             let d = new Date(); d.setMonth(d.getMonth() + months); document.getElementById('rsa-end-date').value = d.toISOString().split('T')[0];
@@ -1937,5 +2009,15 @@
 
         init();
     </script>
+<!-- Preview Dossier Modal -->
+<div id="preview-dossier-modal" class="fixed inset-0 bg-black/70 hidden z-50 overflow-y-auto py-10">
+    <div class="relative mx-auto w-full max-w-[210mm] min-h-[297mm] bg-white p-12 shadow-2xl flex flex-col">
+        <div class="absolute top-4 right-4 flex gap-2 print:hidden z-50">
+            <button onclick="printFromPreview()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 font-bold text-sm">Print Document</button>
+            <button onclick="closePreviewModal()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded shadow hover:bg-gray-300 font-bold text-sm">Close</button>
+        </div>
+        <div id="preview-dossier-content" class="mt-8 text-black bg-white relative z-0"></div>
+    </div>
+</div>
 </body>
 </html>
